@@ -1,0 +1,9 @@
+src/config.py
+**/*.pyc
+**/__pycache__/
+**/.DS_Store
+**/.env
+**/.vscode/
+myvenv/
+images/
+saves/
