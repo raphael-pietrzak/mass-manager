@@ -5,4 +5,6 @@ node_modules
 dist
 .DS_Store
 
+# database
+mass_manager.db
 
