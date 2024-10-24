@@ -1,0 +1,50 @@
+Donors
++-----------------+
+| id (PK)         |
+| name            |
+| email           |
+| phone           |
+| address         |
+| wants_notification|
++-----------------+
+
+Celebrants
++-----------------+
+| id (PK)         |
+| name            |
+| email           |
+| is_available    |
++-----------------+
+
+Intentions
++-----------------+
+| id (PK)         |
+| description     |
+| amount          |
+| donor_id (FK)   |
+| date_requested   |
++-----------------+
+
+Masses
++-----------------+
+| id (PK)         |
+| date            |
+| celebrant_id (FK)|
+| intention_id (FK)|
+| status          |
++-----------------+
+
+SpecialDays
++-----------------+
+| id (PK)         |
+| date            |
+| note            |
+| number_of_masses|
++-----------------+
+
+
+
+•	Donors ↔ Intentions : Un donateur peut faire plusieurs intentions de messe.
+•	Celebrants ↔ Masses : Un célébrant peut célébrer plusieurs messes.
+•	Intentions ↔ Masses : Une intention de messe peut être associée à une messe spécifique.
+•	SpecialDays : Permet de définir des jours particuliers où des messes spéciales peuvent être programmées.
