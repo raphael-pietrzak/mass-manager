@@ -8,10 +8,11 @@
 npm install
 ```
 
-Create Database
+Create Database + Tables + Seed Data
 
 ```bash 
-node src/database/database.js
+npm run migrate
+npm run seed
 ```
 
 ## Run

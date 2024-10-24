@@ -1,41 +1,81 @@
+// const knex = require('knex');
+
+// // Configuration de la connexion à la base de données SQLite
+// const db = knex({
+//   client: 'sqlite3',
+//   connection: {
+//     filename: './src/database/mass_manager.db',
+//   },
+//   useNullAsDefault: true, // Nécessaire pour SQLite
+// });
+
+// module.exports = db;
+
+
 const express = require('express');
-const { db } = require('./database/db');
+const db = require('./database/database');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 app.use(express.json());
 
-// Exemple d'utilisation avec SQLite
-app.get('/api/data', (req, res) => {
-  db.all('SELECT * FROM data_table', [], (err, rows) => {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
-    res.json({
-      message: 'Données récupérées avec succès',
-      data: rows,
-    });
-  });
+app.get('/api/data/donors', async (req, res) => {
+  try {
+    const data = await db.select().from('Donors');
+    res.json(data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Erreur lors de la récupération des données');
+  }
 });
 
-// Exemple de route pour ajouter des données (SQL INSERT)
-app.post('/api/data', (req, res) => {
-  const { name, value } = req.body;
-  db.run('INSERT INTO data_table (name, value) VALUES (?, ?)', [name, value], function(err) {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
-    res.json({
-      message: 'Données ajoutées avec succès',
-      id: this.lastID,
-    });
-  });
+app.get('/api/data/celebrants', async (req, res) => {
+  try {
+    const data = await db.select().from('Celebrants');
+    res.json(data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Erreur lors de la récupération des données');
+  }
+});
+
+app.get('/api/data/intentions', async (req, res) => {
+  try {
+    const data = await db.select().from('Intentions');
+    res.json(data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Erreur lors de la récupération des données');
+  }
+});
+
+app.get('/api/data/masses', async (req, res) => {
+  try {
+    const data = await db.select().from('Masses');
+    res.json(data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Erreur lors de la récupération des données');
+  }
+});
+
+app.get('/api/data/special-days', async (req, res) => {
+  try {
+    const data = await db.select().from('SpecialDays');
+    res.json(data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Erreur lors de la récupération des données');
+  }
 });
 
 // Lancement du serveur
 app.listen(PORT, () => {
   console.log(`Le serveur écoute sur le port ${PORT}`);
   console.log(`http://localhost:${PORT}/api/data`);
+  console.log('donors : http://localhost:3001/api/data/donors');
+  console.log('celebrants : http://localhost:3001/api/data/celebrants');
+  console.log('intentions : http://localhost:3001/api/data/intentions');
+  console.log('masses : http://localhost:3001/api/data/masses');
+  console.log('special-days : http://localhost:3001/api/data/special-days');
 });
