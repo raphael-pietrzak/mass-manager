@@ -1,18 +1,11 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 import HomePage from './pages/HomePage';
 import Error404Page from './pages/Error404Page';
+import AdminPage from './pages/AdminPage';
 
 
-{/* <nav className="nav">
-    <ul>
-        <li><a href="#enregistrer-demande">Enregistrer une Demande</a></li>
-        <li><a href="#visualiser-messes">Visualiser les Messes</a></li>
-        <li><a href="#jours-particuliers">Jours Particuliers</a></li>
-        <li><a href="#administration">Administration</a></li>
-    </ul>
-</nav> */}
 
 
 const App: React.FC = () => {
@@ -27,6 +20,7 @@ const App: React.FC = () => {
                 <Route path="/administration" element={<HomePage />} />
 
                 {/* Pages administrateurs */}
+                <Route path="/admin" element={<AdminPage />} />
 
 
                 {/* Page d'erreur 404 */}
