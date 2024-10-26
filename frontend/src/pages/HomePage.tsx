@@ -1,6 +1,5 @@
 // src/HomePage.tsx
 import React from 'react';
-import '../styles/HomePage.css';
 
 const HomePage: React.FC = () => {
     return (

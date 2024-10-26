@@ -60,3 +60,11 @@ npm start
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## Preview
+
+
+
+![alt text](<frontend/public/Screenshot 2024-10-26 at 23.56.33.png>)
+![alt text](<frontend/public/Screenshot 2024-10-26 at 23.56.41.png>)
+![alt text](<frontend/public/Screenshot 2024-10-26 at 23.56.50.png>)
+![alt text](<frontend/public/Screenshot 2024-10-26 at 23.57.20.png>)

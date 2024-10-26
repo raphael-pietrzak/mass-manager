@@ -1,21 +1,11 @@
-// const knex = require('knex');
-
-// // Configuration de la connexion à la base de données SQLite
-// const db = knex({
-//   client: 'sqlite3',
-//   connection: {
-//     filename: './src/database/mass_manager.db',
-//   },
-//   useNullAsDefault: true, // Nécessaire pour SQLite
-// });
-
-// module.exports = db;
-
 
 const express = require('express');
 const db = require('./database/database');
 const app = express();
 const PORT = process.env.PORT || 3001;
+const cors = require('cors');
+
+app.use(cors());
 
 app.use(express.json());
 
@@ -68,6 +58,8 @@ app.get('/api/data/special-days', async (req, res) => {
     res.status(500).send('Erreur lors de la récupération des données');
   }
 });
+
+
 
 // Lancement du serveur
 app.listen(PORT, () => {
