@@ -17,7 +17,7 @@ const DonorForm: React.FC<FormProps> = ({ prevStep }) => {
     address: ''
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log('Donor Data:', donorData);
   };
@@ -44,7 +44,7 @@ const DonorForm: React.FC<FormProps> = ({ prevStep }) => {
             <Checkbox
               id="wantsCelebrationDate"
               checked={donorData.wantsCelebrationDate}
-              onCheckedChange={(checked) => 
+              onCheckedChange={(checked: boolean) => 
                 setDonorData({ ...donorData, wantsCelebrationDate: checked })
               }
             />
@@ -60,7 +60,7 @@ const DonorForm: React.FC<FormProps> = ({ prevStep }) => {
               type="email"
               placeholder="exemple@email.com"
               value={donorData.email}
-              onChange={(e) => setDonorData({ ...donorData, email: e.target.value })}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDonorData({ ...donorData, email: e.target.value })}
             />
           </div>
 
@@ -71,7 +71,7 @@ const DonorForm: React.FC<FormProps> = ({ prevStep }) => {
               type="tel"
               placeholder="01 23 45 67 89"
               value={donorData.phone}
-              onChange={(e) => setDonorData({ ...donorData, phone: e.target.value })}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDonorData({ ...donorData, phone: e.target.value })}
             />
           </div>
 
@@ -82,7 +82,7 @@ const DonorForm: React.FC<FormProps> = ({ prevStep }) => {
               type="text"
               placeholder="Adresse complète"
               value={donorData.address}
-              onChange={(e) => setDonorData({ ...donorData, address: e.target.value })}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDonorData({ ...donorData, address: e.target.value })}
             />
           </div>
 

@@ -11,10 +11,6 @@ import FormProps from "../interfaces/formProps";
 
 
 
-
-
-
-
 const MassRequestForm: React.FC<FormProps> = ({ nextStep }) => {
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [dateType, setDateType] = useState("indifferente");
@@ -46,13 +42,6 @@ const MassRequestForm: React.FC<FormProps> = ({ nextStep }) => {
     { value: "neuvaine", label: "Neuvaine (9 messes)" },
     { value: "trentaine", label: "Trentain (30 messes)" }
   ];
-
-  // const priests = [
-  //   { value: "indifferent", label: "Indifférent" },
-  //   { value: "pere1", label: "Père 1" },
-  //   { value: "pere2", label: "Père 2" },
-  //   { value: "pere3", label: "Père 3" }
-  // ];
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -145,7 +134,7 @@ const MassRequestForm: React.FC<FormProps> = ({ nextStep }) => {
                     <Calendar
                       mode="single"
                       selected={date}
-                      onSelect={(date) => {
+                      onSelect={(date: Date) => {
                         setDate(date);
                         setShowCalendar(false);
                       }}
