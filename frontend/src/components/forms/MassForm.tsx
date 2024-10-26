@@ -7,12 +7,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { CalendarIcon } from "lucide-react"
+import FormProps from "../interfaces/formProps";
 
 
 
 
 
-const MassRequestForm = () => {
+
+
+const MassRequestForm: React.FC<FormProps> = ({ nextStep }) => {
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [dateType, setDateType] = useState("indifferente");
   const [showCalendar, setShowCalendar] = useState(false);
@@ -59,7 +62,18 @@ const MassRequestForm = () => {
   return (
     <Card className="w-full max-w-xl mx-auto">
       <CardHeader>
-        <CardTitle className="text-xl font-bold">Demande de messes</CardTitle>
+        <div className="flex justify-between items-center">
+          <CardTitle className="text-2xl">Demande de messe</CardTitle>
+          <span className="text-sm text-muted-foreground">
+            Étape 1 sur 3
+          </span>
+        </div>
+        <div className="w-full bg-muted h-2 rounded-full mt-4">
+          <div 
+            className="bg-primary h-2 rounded-full" 
+            style={{ width: '33.33%' }}
+          />
+        </div>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -159,8 +173,8 @@ const MassRequestForm = () => {
             </Select>
           </div>
 
-          <Button type="submit" className="w-full">
-            Soumettre la demande
+          <Button type="submit" className="w-full" onClick={nextStep}>
+            Suivant
           </Button>
         </form>
       </CardContent>

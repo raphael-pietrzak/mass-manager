@@ -2,16 +2,13 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import FormProps from "../interfaces/formProps";
 
-const OfferingForm = () => {
+
+
+const OfferingForm: React.FC<FormProps> = ({ nextStep, prevStep }) => {
   const [offeringData, setOfferingData] = React.useState({
     amount: '',
     paymentMethod: '',
@@ -21,13 +18,24 @@ const OfferingForm = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log('Offering Data:', offeringData);
-    // Add your submission logic here
+    nextStep();
   };
 
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle className="text-2xl">Informations sur l'offrande</CardTitle>
+        <div className="flex justify-between items-center">
+          <CardTitle className="text-2xl">Informations sur l'offrande</CardTitle>
+          <span className="text-sm text-muted-foreground">
+            Étape 2 sur 3
+          </span>
+        </div>
+        <div className="w-full bg-muted h-2 rounded-full mt-4">
+          <div 
+            className="bg-primary h-2 rounded-full" 
+            style={{ width: '66.66%' }}
+          />
+        </div>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -71,9 +79,15 @@ const OfferingForm = () => {
             />
           </div>
 
-          <Button type="submit" className="w-full">
-            Enregistrer
-          </Button>
+          <div className="flex space-x-4">
+            <Button variant="outline" type="button" className="w-full" onClick={prevStep}>
+              Précédent
+            </Button>
+            <Button type="submit" className="w-full" onClick={nextStep}>
+              Suivant
+            </Button>
+          </div>
+
         </form>
       </CardContent>
     </Card>

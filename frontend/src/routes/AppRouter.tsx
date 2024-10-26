@@ -2,18 +2,16 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import AboutPage from '../pages/AboutPage';
-import MassRequestForm from '../pages/MassRequestForm';
-import OfferingForm from '../pages/OfferingForm';
-import DonorForm from '../pages/DonorForm';
+import FormWizard from '../components/forms/formWizard';
+import RegularityForm from '../components/forms/RegularityForm';
+
 
 const AppRouter: React.FC = () => (
   <Router>
     <Routes>
       <Route path="/about" element={<AboutPage />} />
-      <Route path="/" element={<MassRequestForm />} />
-      <Route path="/offering" element={<OfferingForm />} />
-      <Route path="/donor" element={<DonorForm />} />
-
+      <Route path="/" element={<FormWizard />} />
+      <Route path="/regularity" element={<RegularityForm />} />
 
     </Routes>
   </Router>
