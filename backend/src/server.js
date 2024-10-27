@@ -5,6 +5,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const cors = require('cors');
 
+
 app.use(cors());
 
 app.use(express.json());
@@ -59,12 +60,27 @@ app.get('/api/data/special-days', async (req, res) => {
   }
 });
 
+app.post('/api/data/intentions', async (req, res) => {
+  try {
+    
+    console.log("\n\n##################################################");
+    console.log("# RECUPERATION DES DONNEES : " + new Date().toLocaleString() + " #");
+    console.log("##################################################\n\n");
+
+
+    console.log(req.body);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Erreur lors de la récupération des données');
+  }
+});
+
 
 
 // Lancement du serveur
 app.listen(PORT, () => {
-  console.log(`Le serveur écoute sur le port ${PORT}`);
-  console.log(`http://localhost:${PORT}/api/data`);
+  console.log(`Le serveur écoute sur le port ${PORT} \n\n`);
+  console.log('Api paths : ');
   console.log('donors : http://localhost:3001/api/data/donors');
   console.log('celebrants : http://localhost:3001/api/data/celebrants');
   console.log('intentions : http://localhost:3001/api/data/intentions');
