@@ -5,7 +5,7 @@ import AboutPage from '../pages/AboutPage';
 import FormWizard from '../components/forms/formWizard';
 import RegularityForm from '../components/forms/RegularityForm';
 import CalendarView from '../pages/CalendrierPage';
-import AdminPage from '../pages/adminPage';
+import AdminPage from '../pages/AdminPage';
 
 
 const AppRouter: React.FC = () => (
