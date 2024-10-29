@@ -63,12 +63,49 @@ app.get('/api/data/special-days', async (req, res) => {
 app.post('/api/data/intentions', async (req, res) => {
   try {
     
-    console.log("\n\n##################################################");
+    console.log("\n\n");
+    console.log("##################################################");
     console.log("# RECUPERATION DES DONNEES : " + new Date().toLocaleString() + " #");
-    console.log("##################################################\n\n");
-
-
+    console.log("##################################################");
+    console.log("\n\n");
     console.log(req.body);
+
+    // Insertion de l'intention, du donateur et des messes
+    const donor = {
+      name: req.body.brotherName,
+      email: req.body.email,
+      phone: req.body.phone,
+      address: req.body.address
+    };
+
+    const donorId = await db('Donors').insert(donor);
+    console.log("donorId : ", donorId);
+    
+    const intention = {
+      description: req.body.intention,
+      amount: req.body.amount,
+      donor_id: donorId[0],
+      date_requested: req.body.date
+    };
+
+    const intentionId = await db('Intentions').insert(intention);
+    console.log("intentionId : ", intentionId);
+
+    for (let i = 0; i < req.body.date; i++) {
+      const mass = {
+        date: req.body.massDate,
+        celebrant_id: 0,
+        intention_id: intentionId[0]
+      };
+
+      const massId = await db('Masses').insert(mass);
+      console.log("massId : ", massId);
+
+    }
+
+    res.status(201).send('Intention enregistrée');
+
+
   } catch (error) {
     console.error(error);
     res.status(500).send('Erreur lors de la récupération des données');

@@ -5,7 +5,7 @@ exports.up = function(knex) {
       .createTable('Donors', function(table) {
         table.increments('id').primary();
         table.string('name', 100).notNullable();
-        table.string('email', 100);
+        table.string('email', 100)
         table.string('phone', 20);
         table.string('address', 255);
         table.boolean('wants_notification').defaultTo(false);
