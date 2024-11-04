@@ -7,7 +7,7 @@ import RegularityForm from '../components/forms/RegularityForm';
 import CalendarView from '../pages/CalendrierPage';
 import AdminPage from '../pages/AdminPage';
 import HomePage from '../pages/HomePage';
-
+import PendingMasses from '../pages/PendingMass';
 
 
 const AppRouter: React.FC = () => (
@@ -19,6 +19,7 @@ const AppRouter: React.FC = () => (
       <Route path="/regularity" element={<RegularityForm />} />
       <Route path="/calendar" element={<CalendarView />} />
       <Route path="/admin" element={<AdminPage />} />
+      <Route path="/pending" element={<PendingMasses />} />
 
     </Routes>
   </Router>

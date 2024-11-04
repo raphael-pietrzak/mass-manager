@@ -21,6 +21,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Box } from 'lucide-react';
+import { Card } from '../components/ui/card';
 
 // Types
 interface Celebrant {
@@ -91,7 +93,9 @@ const CalendarView = () => {
   };
 
   return (
+    
     <div className="p-4 space-y-4">
+      <Card>
       <div className="w-full max-w-xs">
         <Select
           value={selectedMonth}
@@ -158,6 +162,7 @@ const CalendarView = () => {
           ))}
         </TableBody>
       </Table>
+      </Card>
     </div>
   );
 };

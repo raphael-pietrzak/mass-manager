@@ -5,19 +5,21 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Drawer } from "@/components/ui/drawer";
-import { MenuIcon, XIcon } from "lucide-react";
+import { MenuIcon } from "lucide-react";
 
 interface NavLink {
   label: string;
   href: string;
 }
 
+// intention regularity calendar admin
+
 const NAV_LINKS: NavLink[] = [
-  { label: "Home", href: "/" },
-  { label: "About", href: "/about" },
-  { label: "Services", href: "/services" },
-  { label: "Contact", href: "/contact" },
+  { label: "Intention", href: "/intention" },
+  { label: "Regularity", href: "/regularity" },
+  { label: "Calendar", href: "/calendar" },
+  { label: "Pending", href: "/pending" },
+  { label: "Admin", href: "/admin" },
 ];
 
 const Navbar: React.FC = () => {
@@ -51,28 +53,6 @@ const Navbar: React.FC = () => {
           <MenuIcon className="h-6 w-6" />
         </Button>
       </div>
-
-      {/* Mobile Drawer Menu */}
-      <Drawer open={isMobileMenuOpen} onClose={toggleMobileMenu}>
-        <div className="p-4 flex justify-between items-center border-b">
-          <span className="text-xl font-semibold text-primary">Menu</span>
-          <Button variant="ghost" onClick={toggleMobileMenu}>
-            <XIcon className="h-6 w-6" />
-          </Button>
-        </div>
-        <nav className="flex flex-col p-4 space-y-4">
-          {NAV_LINKS.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              className="text-gray-700 hover:text-primary transition-colors"
-              onClick={toggleMobileMenu}
-            >
-              {link.label}
-            </a>
-          ))}
-        </nav>
-      </Drawer>
     </header>
   );
 };
