@@ -7,16 +7,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { CalendarIcon } from "lucide-react"
-import FormProps from "../interfaces/formProps";
+import { FormData } from "./formWizard";
 
 
+interface FormProps {
+  formData: FormData;
+  updateFormData: (data: Partial<FormProps["formData"]>) => void;
+  nextStep: () => void;
+}
 
-const MassRequestForm: React.FC<FormProps> = ({ nextStep }) => {
-  const [date, setDate] = useState<Date | undefined>(undefined);
-  const [dateType, setDateType] = useState("indifferente");
+
+const MassRequestForm: React.FC<FormProps> = ({ nextStep, formData, updateFormData }) => {
+
+
   const [showCalendar, setShowCalendar] = useState(false);
+  const [priests, setPriests] = useState<{ name: string; id: number }[]>([]);
 
-  const [priests, setPriests] = useState<{ name: string; label: string }[]>([]);
 
 
   useEffect(() => {
@@ -40,13 +46,10 @@ const MassRequestForm: React.FC<FormProps> = ({ nextStep }) => {
   const massTypes = [
     { value: "unite", label: "Unité" },
     { value: "neuvaine", label: "Neuvaine (9 messes)" },
-    { value: "trentaine", label: "Trentain (30 messes)" }
+    { value: "trentain", label: "Trentain (30 messes)" }
   ];
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    console.log("Form submitted");
-  }
+
 
   return (
     <Card className="w-full max-w-xl mx-auto">
@@ -65,11 +68,11 @@ const MassRequestForm: React.FC<FormProps> = ({ nextStep }) => {
         </div>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form className="space-y-6">
           {/* Intention */}
           <div className="space-y-2">
             <Label htmlFor="intention">Intention</Label>
-            <Input id="intention" placeholder="Votre intention..." />
+            <Input id="intention" placeholder="Votre intention..." onChange={(e:React.ChangeEvent<HTMLInputElement>) => updateFormData({ intention: e.target.value })} />
           </div>
 
           {/* Nombre de messes */}
@@ -81,8 +84,10 @@ const MassRequestForm: React.FC<FormProps> = ({ nextStep }) => {
                 type="number" 
                 min="1" 
                 className="w-24"
+                value={formData.massCount}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ massCount: parseInt(e.target.value) })}
               />
-              <Select>
+              <Select onValueChange={(value: string) => updateFormData({ massType: value })}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Type de messe" />
                 </SelectTrigger>
@@ -102,7 +107,7 @@ const MassRequestForm: React.FC<FormProps> = ({ nextStep }) => {
             <Label>Type de date</Label>
             <RadioGroup 
               defaultValue="indifferente" 
-              onValueChange={setDateType}
+              onValueChange={(value: string) => updateFormData({ dateType: value })}
               className="flex flex-col space-y-2"
             >
               <div className="flex items-center space-x-2">
@@ -119,23 +124,30 @@ const MassRequestForm: React.FC<FormProps> = ({ nextStep }) => {
               </div>
             </RadioGroup>
 
-            {dateType !== "indifferente" && (
+            { formData.dateType !== "indifferente" && (
               <div className="relative">
                 <Button
                   variant="outline"
                   className="w-full justify-start text-left font-normal"
-                  onClick={() => setShowCalendar(!showCalendar)}
+                  onClick={(e: React.MouseEvent) => {
+                    e.preventDefault();  // Prevents form submission
+                    setShowCalendar(!showCalendar);
+                  }}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date ? date.toLocaleDateString() : "Sélectionner une date"}
+                  {formData.date ? (
+                    formData.date.toLocaleDateString()
+                  ) : (
+                    <span>Sélectionner une date</span>
+                  )}
                 </Button>
                 {showCalendar && (
                   <div className="absolute mt-2 p-2 bg-white border rounded-md shadow-lg z-10">
                     <Calendar
                       mode="single"
-                      selected={date}
+                      selected={formData.date}
                       onSelect={(date: Date) => {
-                        setDate(date);
+                        updateFormData({ date });
                         setShowCalendar(false);
                       }}
                     />
@@ -147,14 +159,14 @@ const MassRequestForm: React.FC<FormProps> = ({ nextStep }) => {
 
           {/* Célébrant */}
           <div className="space-y-2">
-            <Label>Célébrant</Label>
+            <Label>Chanoine</Label>
             <Select>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Choisir un célébrant" />
+                <SelectValue placeholder="Choisir un chanoine" />
               </SelectTrigger>
               <SelectContent>
                 {priests.map((priest) => (
-                  <SelectItem key={priest.name} value={priest.name}>
+                  <SelectItem key={priest.id} value={priest.name} onClick={() => updateFormData({ celebrant: priest.name })}>
                     {priest.name}
                   </SelectItem>
                 ))}
@@ -162,7 +174,7 @@ const MassRequestForm: React.FC<FormProps> = ({ nextStep }) => {
             </Select>
           </div>
 
-          <Button type="submit" className="w-full" onClick={nextStep}>
+          <Button type="button" className="w-full" onClick={nextStep}>
             Suivant
           </Button>
         </form>
