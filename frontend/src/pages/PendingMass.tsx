@@ -1,6 +1,64 @@
 import { Clock, Trash, Edit } from 'lucide-react';
+import { format } from 'path';
+import React, { useEffect, useState } from 'react';
+
+interface Intention {
+    id: number;
+    date_requested: string;
+    description: string;
+    type: string;
+    amount: string;
+}
+
+const formatDate = (date: string) => {
+    const dateObject = new Date(date);
+    return dateObject.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    });
+}
+
 
 function PendingMasses() {
+
+    const [intentions, setIntentions] = useState<Intention[]>([]);
+
+    const deleteIntention = (id: number) => {
+        fetch(`http://localhost:3001/api/data/intentions/${id}`, {
+            method: 'DELETE'
+        })
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error('Erreur lors de la suppression de l\'intention');
+            }
+            setIntentions((prevIntentions) => prevIntentions.filter((intention) => intention.id !== id));
+        })
+        .catch((error) => {
+            console.error('Erreur:', error);
+        });
+    }
+
+    useEffect(() => {
+        // Récupère les données depuis l'API
+        fetch("http://localhost:3001/api/data/intentions")
+          .then((response) => {
+            console.log(response);
+            if (!response.ok) {
+              throw new Error("Erreur lors de la récupération des données");
+            }
+            return response.json();
+            }
+            )
+            .then((data) => {
+                setIntentions(data || []);
+            }
+            )
+            .catch((error) => {
+                console.error("Erreur:", error);
+            });
+    });
+
   return (
     <div className="bg-white shadow-xl rounded-lg p-6">
       <div className="flex items-center mb-8">
@@ -72,6 +130,36 @@ function PendingMasses() {
         
                 </td>
               </tr>
+
+                {/* Intention rows */}
+                {intentions.map((intention) => (
+                    <tr key={intention.id}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                            <input
+                                type="checkbox"
+                                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                            />
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {formatDate(intention.date_requested)}
+                        </td>
+                        <td className="px-6 py-4">
+                            <div className="text-sm text-gray-900">{intention.description}</div>
+                            <div className="text-sm text-gray-500">{intention.type}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            ${intention.amount}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button className="text-indigo-600 hover:text-indigo-900 mr-4">
+                                <Edit className="h-5 w-5" />
+                            </button>
+                            <button className="text-red-600 hover:text-red-900" onClick={() => deleteIntention(intention.id)}>
+                                <Trash className="h-5 w-5" />
+                            </button>
+                        </td>
+                    </tr>
+                ))}
             </tbody>
           </table>
         </div>

@@ -60,6 +60,17 @@ app.get('/api/data/special-days', async (req, res) => {
   }
 });
 
+app.delete('/api/data/intentions/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    await db('Intentions').where('id', id).del();
+    res.status(204).send();
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Erreur lors de la suppression de l\'intention');
+  }
+});
+
 app.post('/api/data/intentions', async (req, res) => {
   try {
     
