@@ -19,6 +19,10 @@ const formatDate = (date: string) => {
     });
 }
 
+const formatAmount = (amount: string) => {
+    return parseFloat(amount).toFixed(2);
+}
+
 
 function PendingMasses() {
 
@@ -148,7 +152,7 @@ function PendingMasses() {
                             <div className="text-sm text-gray-500">{intention.type}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            ${intention.amount}
+                            ${formatAmount(intention.amount)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <button className="text-indigo-600 hover:text-indigo-900 mr-4">
