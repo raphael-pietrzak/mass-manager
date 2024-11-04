@@ -21,7 +21,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Box } from 'lucide-react';
 import { Card } from '../components/ui/card';
 
 // Types

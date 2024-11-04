@@ -1,6 +1,4 @@
-import React from 'react';
 import { Clock, Trash, Edit } from 'lucide-react';
-import Button from '@/components/ui/button';
 
 function PendingMasses() {
   return (
