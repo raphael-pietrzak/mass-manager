@@ -10,6 +10,7 @@ import HomePage from '../pages/HomePage';
 import PendingMasses from '../pages/PendingMass';
 
 
+
 const AppRouter: React.FC = () => (
   <Router>
     <Routes>
