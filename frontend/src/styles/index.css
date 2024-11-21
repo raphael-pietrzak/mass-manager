@@ -69,3 +69,33 @@
     @apply bg-background text-foreground;
   }
 }
+
+header .logo {
+  display: flex;
+  align-items: baseline;
+}
+
+header .logo img {
+  height: 150px;
+  width: auto;
+  object-fit: contain;
+}
+
+header .logo h1 {
+  margin-left: 20px;
+  font-size: 44px;
+  font-family: "Cardo", serif;
+  font-weight: 400;
+  font-style: italic;
+  color: #333;
+  align-items: baseline;
+}
+
+header .logo span {
+  margin-left: 20px;
+  font-size: 22px;
+  font-family: "Cardo", serif;
+  font-weight: 400;
+  font-style: italic;
+  align-items: baseline;
+}

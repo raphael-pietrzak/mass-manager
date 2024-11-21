@@ -6,6 +6,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MenuIcon } from "lucide-react";
+import logo from '../assets/logo.png';
 
 interface NavLink {
   label: string;
@@ -31,8 +32,10 @@ const Navbar: React.FC = () => {
     <header className="w-full bg-white shadow-md">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         {/* Logo */}
-        <a href="/" className="text-xl font-semibold text-primary">
-          MyBrand
+        <a href="/" className="logo">
+          <img src={logo} alt="Logo" />
+          <h1 className="text-xl font-semibold text-primary">Abbaye</h1>
+          <span> Sainte-Marie de Lagrasse </span>
         </a>
 
         {/* Desktop Navigation */}
