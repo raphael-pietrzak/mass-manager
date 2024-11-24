@@ -1,11 +1,37 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api'
+  baseURL: 'http://localhost:3001/api/data',
 });
 
-// Components
-export const getComponents = () => api.get('/components');
-export const createComponent = (component: any) => api.post('/components', component);
-export const updateComponent = (id: string, component: any) => api.patch(`/components/${id}`, component);
-export const deleteComponent = (id: string) => api.delete(`/components/${id}`);
+
+// Donors
+export const getDonors = () => api.get('/donors');
+export const createDonor = (donor: any) => api.post('/donors', donor);
+export const updateDonor = (id: string, donor: any) => api.patch(`/donors/${id}`, donor);
+export const deleteDonor = (id: string) => api.delete(`/donors/${id}`);
+
+// Celebrants
+export const getCelebrants = () => api.get('/celebrants');
+export const createCelebrant = (celebrant: any) => api.post('/celebrants', celebrant);
+export const updateCelebrant = (id: string, celebrant: any) => api.patch(`/celebrants/${id}`, celebrant);
+export const deleteCelebrant = (id: string) => api.delete(`/celebrants/${id}`);
+
+// Intentions
+export const getIntentions = () => api.get('/intentions');
+export const createIntention = (intention: any) => api.post('/intentions', intention);
+export const updateIntention = (id: string, intention: any) => api.patch(`/intentions/${id}`, intention);
+export const deleteIntention = (id: string) => api.delete(`/intentions/${id}`);
+
+// Masses
+export const getMasses = () => api.get('/masses');
+export const createMass = (mass: any) => api.post('/masses', mass);
+export const updateMass = (id: string, mass: any) => api.patch(`/masses/${id}`, mass);
+export const deleteMass = (id: string) => api.delete(`/masses/${id}`);
+
+// Special Days
+export const getSpecialDays = () => api.get('/special-days');
+export const createSpecialDay = (specialDay: any) => api.post('/special-days', specialDay);
+export const updateSpecialDay = (id: string, specialDay: any) => api.patch(`/special-days/${id}`, specialDay);
+export const deleteSpecialDay = (id: string) => api.delete(`/special-days/${id}`);
+

@@ -17,7 +17,28 @@ app.get('/api/data/intentions', dataController.getIntentions);
 app.get('/api/data/masses', dataController.getMasses);
 app.get('/api/data/special-days', dataController.getSpecialDays);
 
+app.get('/api/data/donors/:id', dataController.getDonor);
+app.get('/api/data/celebrants/:id', dataController.getCelebrant);
+app.get('/api/data/intentions/:id', dataController.getIntention);
+app.get('/api/data/masses/:id', dataController.getMass);
+app.get('/api/data/special-days/:id', dataController.getSpecialDay);
+
+app.post('/api/data/donors', dataController.createDonor);
+app.post('/api/data/celebrants', dataController.createCelebrant);
 app.post('/api/data/intentions', dataController.createIntention);
+app.post('/api/data/masses', dataController.createMass);
+app.post('/api/data/special-days', dataController.createSpecialDay);
+
+app.put('/api/data/donors/:id', dataController.updateDonor);
+app.put('/api/data/celebrants/:id', dataController.updateCelebrant);
+app.put('/api/data/intentions/:id', dataController.updateIntention);
+app.put('/api/data/masses/:id', dataController.updateMass);
+app.put('/api/data/special-days/:id', dataController.updateSpecialDay);
+
+app.delete('/api/data/donors/:id', dataController.deleteDonor);
+app.delete('/api/data/celebrants/:id', dataController.deleteCelebrant);
+app.delete('/api/data/masses/:id', dataController.deleteMass);
+app.delete('/api/data/special-days/:id', dataController.deleteSpecialDay);
 app.delete('/api/data/intentions/:id', dataController.deleteIntention);
 
 

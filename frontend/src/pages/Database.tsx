@@ -1,22 +1,18 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Edit, Trash } from 'lucide-react';
+import { tabs } from '../api/tabs';
+import { EditRowDialog } from '../components/EditRowDialog';
 
-interface DatabaseTabsProps {
-  tabs: Array<{
-    key: string;
-    label: string;
-    endpoint: string;
-    columns?: string[];
-    formatters?: Record<string, (value: any) => string>;
-  }>;
-}
+const DatabaseTabs: React.FC = () => {
 
-const DatabaseTabs: React.FC<DatabaseTabsProps> = ({ tabs }) => {
   const [activeTab, setActiveTab] = useState(tabs[0].key);
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editRowData, setEditRowData] = useState<any>(null);
+  const [editColumns, setEditColumns] = useState<string[]>([]);
 
   const fetchData = async (endpoint: string) => {
     setLoading(true);
@@ -49,6 +45,25 @@ const DatabaseTabs: React.FC<DatabaseTabsProps> = ({ tabs }) => {
     } catch (err) {
       console.error('Delete failed', err);
     }
+  };
+
+  const handleEdit = (row: any) => {
+    const selectedTab = tabs.find(tab => tab.key === activeTab);
+    if (!selectedTab) return;
+    
+    // Obtenir les colonnes soit depuis la définition du tab, soit depuis les clés de la première ligne
+    const columns = selectedTab.columns || Object.keys(row);
+    
+    setEditRowData(row);
+    setEditColumns(columns);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleSave = (updatedData: any) => {
+    const selectedTab = tabs.find(tab => tab.key === activeTab);
+    if (!selectedTab) return;
+
+    setData(prevData => prevData.map((item: any) => item.id === updatedData.id ? updatedData : item));
   };
 
   const renderTable = () => {
@@ -89,7 +104,10 @@ const DatabaseTabs: React.FC<DatabaseTabsProps> = ({ tabs }) => {
                 </td>
               ))}
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <button className="text-indigo-600 hover:text-indigo-900 mr-4">
+                <button 
+                  className="text-indigo-600 hover:text-indigo-900 mr-4"
+                  onClick={() => handleEdit(row)}
+                >
                   <Edit className="h-5 w-5" />
                 </button>
                 <button 
@@ -141,6 +159,15 @@ const DatabaseTabs: React.FC<DatabaseTabsProps> = ({ tabs }) => {
           </div>
         )}
       </div>
+
+      <EditRowDialog
+        isOpen={isEditDialogOpen}
+        onClose={() => setIsEditDialogOpen(false)}
+        onSave={handleSave}
+        data={editRowData}
+        columns={editColumns} // Colonnes obtenues dynamiquement
+        formatters={tabs.find(tab => tab.key === activeTab)?.formatters}
+      />
     </div>
   );
 };
