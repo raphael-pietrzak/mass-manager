@@ -43,7 +43,7 @@ export const EditRowDialog: React.FC<EditRowDialogProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+      <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity "></div>
       
       <div className="flex items-center justify-center min-h-screen">
         <div className="relative bg-white rounded-lg w-full max-w-md p-6 mx-4">

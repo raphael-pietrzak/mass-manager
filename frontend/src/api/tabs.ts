@@ -11,7 +11,7 @@ export const tabs: TabColumn[] = [
     key: "donors",
     label: "Donateurs",
     endpoint: "http://localhost:3001/api/data/donors",
-    columns: ["name", "address", "phone", "email", "amount", "date", "comment"],
+    columns: ["name", "address", "phone", "email", "amount"]
   },
   {
     key: "celebrants",
