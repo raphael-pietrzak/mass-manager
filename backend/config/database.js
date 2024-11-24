@@ -4,7 +4,7 @@ const knex = require('knex');
 const db = knex({
   client: 'sqlite3',
   connection: {
-    filename: './src/database/mass_manager.db',
+    filename: './database/mass_manager.db',
   },
   useNullAsDefault: true, // Nécessaire pour SQLite
 });

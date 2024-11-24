@@ -1,137 +1,57 @@
+const dataController = require('./controllers/data.controller');
 
 const express = require('express');
-const db = require('./database/database');
 const app = express();
+
 const PORT = process.env.PORT || 3001;
 const cors = require('cors');
 
-
 app.use(cors());
-
 app.use(express.json());
 
-app.get('/api/data/donors', async (req, res) => {
-  try {
-    const data = await db.select().from('Donors');
-    res.json(data);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Erreur lors de la récupération des données');
-  }
-});
-
-app.get('/api/data/celebrants', async (req, res) => {
-  try {
-    const data = await db.select().from('Celebrants');
-    res.json(data);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Erreur lors de la récupération des données');
-  }
-});
-
-app.get('/api/data/intentions', async (req, res) => {
-  try {
-    const data = await db.select().from('Intentions');
-    res.json(data);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Erreur lors de la récupération des données');
-  }
-});
-
-app.get('/api/data/masses', async (req, res) => {
-  try {
-    const data = await db.select().from('Masses');
-    res.json(data);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Erreur lors de la récupération des données');
-  }
-});
-
-app.get('/api/data/special-days', async (req, res) => {
-  try {
-    const data = await db.select().from('SpecialDays');
-    res.json(data);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Erreur lors de la récupération des données');
-  }
-});
-
-app.delete('/api/data/intentions/:id', async (req, res) => {
-  try {
-    const id = req.params.id;
-    await db('Intentions').where('id', id).del();
-    res.status(204).send();
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Erreur lors de la suppression de l\'intention');
-  }
-});
-
-app.post('/api/data/intentions', async (req, res) => {
-  try {
-    
-    console.log("\n\n");
-    console.log("##################################################");
-    console.log("# RECUPERATION DES DONNEES : " + new Date().toLocaleString() + " #");
-    console.log("##################################################");
-    console.log("\n\n");
-    console.log(req.body);
-
-    // Insertion de l'intention, du donateur et des messes
-    const donor = {
-      name: req.body.brotherName,
-      email: req.body.email,
-      phone: req.body.phone,
-      address: req.body.address
-    };
-
-    const donorId = await db('Donors').insert(donor);
-    console.log("donorId : ", donorId);
-    
-    const intention = {
-      description: req.body.intention,
-      amount: req.body.amount,
-      donor_id: donorId[0],
-      date_requested: req.body.date
-    };
-
-    const intentionId = await db('Intentions').insert(intention);
-    console.log("intentionId : ", intentionId);
-
-    for (let i = 0; i < req.body.date; i++) {
-      const mass = {
-        date: req.body.massDate,
-        celebrant_id: 0,
-        intention_id: intentionId[0]
-      };
-
-      const massId = await db('Masses').insert(mass);
-      console.log("massId : ", massId);
-
-    }
-
-    res.status(201).send('Intention enregistrée');
 
 
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Erreur lors de la récupération des données');
-  }
-});
+app.get('/api/data/donors', dataController.getDonors);
+app.get('/api/data/celebrants', dataController.getCelebrants);
+app.get('/api/data/intentions', dataController.getIntentions);
+app.get('/api/data/masses', dataController.getMasses);
+app.get('/api/data/special-days', dataController.getSpecialDays);
+
+app.get('/api/data/donors/:id', dataController.getDonor);
+app.get('/api/data/celebrants/:id', dataController.getCelebrant);
+app.get('/api/data/intentions/:id', dataController.getIntention);
+app.get('/api/data/masses/:id', dataController.getMass);
+app.get('/api/data/special-days/:id', dataController.getSpecialDay);
+
+app.post('/api/data/donors', dataController.createDonor);
+app.post('/api/data/celebrants', dataController.createCelebrant);
+app.post('/api/data/intentions', dataController.createIntention);
+app.post('/api/data/masses', dataController.createMass);
+app.post('/api/data/special-days', dataController.createSpecialDay);
+
+app.put('/api/data/donors/:id', dataController.updateDonor);
+app.put('/api/data/celebrants/:id', dataController.updateCelebrant);
+app.put('/api/data/intentions/:id', dataController.updateIntention);
+app.put('/api/data/masses/:id', dataController.updateMass);
+app.put('/api/data/special-days/:id', dataController.updateSpecialDay);
+
+app.delete('/api/data/donors/:id', dataController.deleteDonor);
+app.delete('/api/data/celebrants/:id', dataController.deleteCelebrant);
+app.delete('/api/data/masses/:id', dataController.deleteMass);
+app.delete('/api/data/special-days/:id', dataController.deleteSpecialDay);
+app.delete('/api/data/intentions/:id', dataController.deleteIntention);
 
 
 
 // Lancement du serveur
 app.listen(PORT, () => {
-  console.log(`Le serveur écoute sur le port ${PORT} \n\n`);
-  console.log('Api paths : ');
-  console.log('donors : http://localhost:3001/api/data/donors');
-  console.log('celebrants : http://localhost:3001/api/data/celebrants');
-  console.log('intentions : http://localhost:3001/api/data/intentions');
-  console.log('masses : http://localhost:3001/api/data/masses');
+  console.log(`Le serveur écoute sur le port ${PORT} !!!\n`);
+  console.log('\n ----------------------- API PATHS ----------------------- \n');
+  console.log('donors       : http://localhost:3001/api/data/donors');
+  console.log('celebrants   : http://localhost:3001/api/data/celebrants');
+  console.log('intentions   : http://localhost:3001/api/data/intentions');
+  console.log('masses       : http://localhost:3001/api/data/masses');
   console.log('special-days : http://localhost:3001/api/data/special-days');
+
+  console.log('\n [CTRL + CLICK] on the links to open in browser');
 });
