@@ -50,6 +50,7 @@ const OfferingForm: React.FC<FormProps> = ({ prevStep, nextStep, formData, updat
             <Label htmlFor="paymentMethod">Mode de paiement</Label>
             <Select 
               onValueChange={(value: string) => updateFormData({ paymentMethod: value })}
+              value={formData.paymentMethod}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Sélectionner le mode de paiement" />
@@ -59,21 +60,22 @@ const OfferingForm: React.FC<FormProps> = ({ prevStep, nextStep, formData, updat
                 <SelectItem value="cash">Liquide</SelectItem>
                 <SelectItem value="card">CB</SelectItem>
                 <SelectItem value="transfer">Virement</SelectItem>
-                <SelectItem value="unknown">Inconnu</SelectItem>
               </SelectContent>
             </Select>
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="brotherName">Transmise par le frère</Label>
-            <Input
-              id="brotherName"
-              type="text"
-              placeholder="Nom du frère"
-              value={formData.brotherName}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ brotherName: e.target.value })}
-            />
-          </div>
+          
+          { (formData.paymentMethod === 'cash' || formData.paymentMethod === 'cheque') && (
+            <div className="space-y-2">
+              <Label htmlFor="brotherName">Transmise par le frère</Label>
+              <Input
+                id="brotherName"
+                type="text"
+                placeholder="Nom du frère"
+                value={formData.brotherName}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ brotherName: e.target.value })}
+              />
+            </div>
+          )}
 
           <div className="flex space-x-4">
             <Button variant="outline" type="button" className="w-full" onClick={prevStep}>

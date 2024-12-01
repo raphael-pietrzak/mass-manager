@@ -4,7 +4,6 @@ const api = axios.create({
   baseURL: 'http://localhost:3001/api/data',
 });
 
-
 // Donors
 export const getDonors = () => api.get('/donors');
 export const createDonor = (donor: any) => api.post('/donors', donor);

@@ -1,4 +1,8 @@
-const dataController = require('./controllers/data.controller');
+const dataController = require('./controllers/data.controller')
+const paymentIntent = require('./controllers/payment.controller')
+
+
+require('dotenv').config();
 
 const express = require('express');
 const app = express();
@@ -41,6 +45,8 @@ app.delete('/api/data/masses/:id', dataController.deleteMass);
 app.delete('/api/data/special-days/:id', dataController.deleteSpecialDay);
 app.delete('/api/data/intentions/:id', dataController.deleteIntention);
 
+// Ajouter cette route
+app.post('/api/create-payment-intent', paymentIntent.createPaymentIntent);
 
 
 // Lancement du serveur

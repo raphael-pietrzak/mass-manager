@@ -87,7 +87,10 @@ const MassRequestForm: React.FC<FormProps> = ({ nextStep, formData, updateFormDa
                 value={formData.massCount}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ massCount: parseInt(e.target.value) })}
               />
-              <Select onValueChange={(value: string) => updateFormData({ massType: value })}>
+              <Select 
+                onValueChange={(value: string) => updateFormData({ massType: value })}
+                value={formData.massType}
+              >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Type de messe" />
                 </SelectTrigger>
