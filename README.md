@@ -26,18 +26,25 @@ cd frontend
 
 follow README.md in frontend folder
 
-## You can also run the project by following the steps below
+## Just copy paste this in your terminal
 
 ```bash
+# Clone le dépôt
 git clone https://github.com/raphael-pietrzak/mass-manager.git
-cd mass-manager
-cd backend
+cd mass-manager || exit 1
+
+# Lancer le backend
+echo "Installing and starting the backend..."
+cd backend || exit 1
 npm install
 npm run migrate
 npm run seed
-npm start
+npm start & # Lance le backend en arrière-plan
 cd ..
-cd frontend
+
+# Lancer le frontend
+echo "Installing and starting the frontend..."
+cd frontend || exit 1
 npm install
 npm start
 ```
