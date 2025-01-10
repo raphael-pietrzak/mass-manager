@@ -57,13 +57,13 @@ const MassRequestForm: React.FC<FormProps> = ({ nextStep, formData, updateFormDa
         <div className="flex justify-between items-center">
           <CardTitle className="text-2xl">Demande de messe</CardTitle>
           <span className="text-sm text-muted-foreground">
-            Étape 1 sur 3
+            Étape 1 sur 4
           </span>
         </div>
         <div className="w-full bg-muted h-2 rounded-full mt-4">
           <div 
             className="bg-primary h-2 rounded-full" 
-            style={{ width: '33.33%' }}
+            style={{ width: '25%' }}
           />
         </div>
       </CardHeader>
@@ -87,7 +87,10 @@ const MassRequestForm: React.FC<FormProps> = ({ nextStep, formData, updateFormDa
                 value={formData.massCount}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ massCount: parseInt(e.target.value) })}
               />
-              <Select onValueChange={(value: string) => updateFormData({ massType: value })}>
+              <Select 
+                onValueChange={(value: string) => updateFormData({ massType: value })}
+                value={formData.massType}
+              >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Type de messe" />
                 </SelectTrigger>
