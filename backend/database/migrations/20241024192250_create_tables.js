@@ -46,3 +46,4 @@ exports.up = function(knex) {
       .dropTableIfExists('Celebrants')
       .dropTableIfExists('SpecialDays');
   };
+

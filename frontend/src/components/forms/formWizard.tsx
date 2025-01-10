@@ -5,6 +5,7 @@ import MassRequestForm from './MassForm';
 import OfferingForm from './OfferingForm';
 import DonorForm from './DonorForm';
 import PaymentForm from './PaymentForm';
+import RegularityForm from './RegularityForm';
 
 export interface FormData {
   intention: string;
@@ -20,6 +21,12 @@ export interface FormData {
   email: string;
   phone: string;
   address: string;
+  isRecurrent: boolean;
+  startDate: Date | null;
+  recurrenceType: string;
+  endType: 'occurrences' | 'date';
+  occurrences: number;
+  endDate: Date | null;
 }
 
 const FormWizard = () => {
@@ -39,11 +46,17 @@ const FormWizard = () => {
     wantsCelebrationDate: false,
     email: '',
     phone: '',
-    address: ''
+    address: '',
+    isRecurrent: false,
+    startDate: null,
+    recurrenceType: '',
+    endType: 'occurrences',
+    occurrences: 1,
+    endDate: null
   });
 
   // Fonction de transition vers l'étape suivante
-  const nextStep = () => setStep((prev) => Math.min(prev + 1, 3));
+  const nextStep = () => setStep((prev) => Math.min(prev + 1, 4)); // Augmenter le max à 4
   
   // Fonction de transition vers l'étape précédente
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
@@ -124,6 +137,20 @@ const FormWizard = () => {
               </motion.div>
             )}
             {step === 3 && (
+              <motion.div
+                initial={{ x: 300, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -300, opacity: 0 }}
+              >
+                <RegularityForm 
+                  formData={formData}
+                  updateFormData={updateFormData}
+                  nextStep={nextStep} 
+                  prevStep={prevStep}
+                />
+              </motion.div>
+            )}
+            {step === 4 && (
               <motion.div
               initial={{ x: 300, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}

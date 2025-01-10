@@ -23,13 +23,13 @@ const OfferingForm: React.FC<FormProps> = ({ prevStep, nextStep, formData, updat
         <div className="flex justify-between items-center">
           <CardTitle className="text-2xl">Informations sur l'offrande</CardTitle>
           <span className="text-sm text-muted-foreground">
-            Étape 2 sur 3
+            Étape 2 sur 4
           </span>
         </div>
         <div className="w-full bg-muted h-2 rounded-full mt-4">
           <div 
             className="bg-primary h-2 rounded-full" 
-            style={{ width: '66.66%' }}
+            style={{ width: '50%' }}
           />
         </div>
       </CardHeader>

@@ -19,7 +19,6 @@ const AppRouter: React.FC = () => (
       <Route path="/" element={<HomePage />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/intention" element={<Intention />} />
-      <Route path="/regularity" element={<Regularity />} />
       <Route path="/calendar" element={<CalendarView />} />
       <Route path="/admin" element={<AdminPage />} />
       <Route path="/pending" element={<PendingMasses />} />
