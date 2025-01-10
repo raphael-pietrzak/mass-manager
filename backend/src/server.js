@@ -1,53 +1,28 @@
-const dataController = require('./controllers/data.controller')
-const paymentIntent = require('./controllers/payment.controller')
-
-
 require('dotenv').config();
-
 const express = require('express');
-const app = express();
-
-const PORT = process.env.PORT || 3001;
 const cors = require('cors');
+
+// Import des routes
+const donorsRoutes = require('./routes/donors.routes');
+const celebrantsRoutes = require('./routes/celebrants.routes');
+const intentionsRoutes = require('./routes/intentions.routes');
+const massesRoutes = require('./routes/masses.routes');
+const specialDaysRoutes = require('./routes/specialDays.routes');
+const paymentRoutes = require('./routes/payment.routes');
+
+const app = express();
+const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
 
-
-
-app.get('/api/data/donors', dataController.getDonors);
-app.get('/api/data/celebrants', dataController.getCelebrants);
-app.get('/api/data/intentions', dataController.getIntentions);
-app.get('/api/data/masses', dataController.getMasses);
-app.get('/api/data/special-days', dataController.getSpecialDays);
-
-app.get('/api/data/donors/:id', dataController.getDonor);
-app.get('/api/data/celebrants/:id', dataController.getCelebrant);
-app.get('/api/data/intentions/:id', dataController.getIntention);
-app.get('/api/data/masses/:id', dataController.getMass);
-app.get('/api/data/special-days/:id', dataController.getSpecialDay);
-
-app.post('/api/data/donors', dataController.createDonor);
-app.post('/api/data/celebrants', dataController.createCelebrant);
-app.post('/api/data/intentions', dataController.createIntention);
-app.post('/api/data/masses', dataController.createMass);
-app.post('/api/data/special-days', dataController.createSpecialDay);
-
-app.put('/api/data/donors/:id', dataController.updateDonor);
-app.put('/api/data/celebrants/:id', dataController.updateCelebrant);
-app.put('/api/data/intentions/:id', dataController.updateIntention);
-app.put('/api/data/masses/:id', dataController.updateMass);
-app.put('/api/data/special-days/:id', dataController.updateSpecialDay);
-
-app.delete('/api/data/donors/:id', dataController.deleteDonor);
-app.delete('/api/data/celebrants/:id', dataController.deleteCelebrant);
-app.delete('/api/data/masses/:id', dataController.deleteMass);
-app.delete('/api/data/special-days/:id', dataController.deleteSpecialDay);
-app.delete('/api/data/intentions/:id', dataController.deleteIntention);
-
-// Ajouter cette route
-app.post('/api/create-payment-intent', paymentIntent.createPaymentIntent);
-
+// Utilisation des routes
+app.use('/api/data/donors', donorsRoutes);
+app.use('/api/data/celebrants', celebrantsRoutes);
+app.use('/api/data/intentions', intentionsRoutes);
+app.use('/api/data/masses', massesRoutes);
+app.use('/api/data/special-days', specialDaysRoutes);
+app.use('/api', paymentRoutes);
 
 // Lancement du serveur
 app.listen(PORT, () => {
