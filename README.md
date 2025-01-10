@@ -2,7 +2,6 @@
 
 ## Description
 
-
 ## Requirements
 
 Node.js and npm are required to run this project. You can download them from [here](https://nodejs.org/en/download/).
@@ -15,7 +14,7 @@ Open one terminal
 
 ```bash
 cd backend
-``` 
+```
 
 follow README.md in backend folder
 
@@ -27,8 +26,7 @@ cd frontend
 
 follow README.md in frontend folder
 
-
-## You can also run the project by following the steps below:
+## You can also run the project by following the steps below
 
 ```bash
 git clone https://github.com/raphael-pietrzak/mass-manager.git
@@ -37,34 +35,48 @@ cd backend
 npm install
 npm run migrate
 npm run seed
+npm start
 cd ..
 cd frontend
 npm install
+npm start
 ```
 
 ## Run
 
 Terminal 1 Backend
+
 ```bash
 cd backend
+npm install
 npm start
 ```
 
 Terminal 2 Frontend
+
 ```bash
 cd frontend
+npm install
 npm start
 ```
-
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
 ## Preview
 
+Page 1
+![alt text](<frontend/public/Capture d’écran 2025-01-10 à 22.26.59.png>)
 
+Page 2
+![alt text](<frontend/public/Capture d’écran 2025-01-10 à 22.27.08.png>)
 
-![alt text](<frontend/public/Screenshot 2024-10-26 at 23.56.33.png>)
-![alt text](<frontend/public/Screenshot 2024-10-26 at 23.56.41.png>)
-![alt text](<frontend/public/Screenshot 2024-10-26 at 23.56.50.png>)
-![alt text](<frontend/public/Screenshot 2024-10-26 at 23.57.20.png>)
+Page 3
+![alt text](<frontend/public/Capture d’écran 2025-01-10 à 22.27.14.png>)
+
+Page 4
+![alt text](<frontend/public/Capture d’écran 2025-01-10 à 22.27.18.png>)
+
+Page 5
+![alt text](<frontend/public/Capture d’écran 2025-01-10 à 22.27.23.png>)
