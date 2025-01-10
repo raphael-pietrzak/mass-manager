@@ -1,6 +1,7 @@
 require('dotenv').config();
 const Stripe = require('stripe');
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY || 'sk_test_fallbackKey';
+const stripe = new Stripe(stripeSecretKey);
 
 module.exports = {
   createPaymentIntent: async (req, res) => {
