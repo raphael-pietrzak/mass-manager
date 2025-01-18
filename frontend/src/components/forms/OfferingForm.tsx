@@ -21,7 +21,7 @@ const OfferingForm: React.FC<FormProps> = ({ prevStep, nextStep, formData, updat
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle className="text-2xl">Informations sur l'offrande</CardTitle>
+          <CardTitle className="text-2xl">Don</CardTitle>
           <span className="text-sm text-muted-foreground">
             Étape 2 sur 4
           </span>

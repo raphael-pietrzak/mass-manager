@@ -26,8 +26,8 @@ exports.seed = function(knex) {
     })
     .then(function () {
       return knex('Celebrants').insert([
-        { name: 'Père Michel', email: 'pere.michel@example.com', is_available: true },
-        { name: 'Père Jean', email: 'pere.jean@example.com', is_available: true },
+        { name: 'Chanoine Michel', email: 'chanoine.michel@example.com', is_available: true },
+        { name: 'Chanoine Jean', email: 'chanoine.jean@example.com', is_available: true },
       ]);
     })
     .then(function () {

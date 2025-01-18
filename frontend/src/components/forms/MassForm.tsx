@@ -55,7 +55,7 @@ const MassRequestForm: React.FC<FormProps> = ({ nextStep, formData, updateFormDa
     <Card className="w-full max-w-xl mx-auto">
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle className="text-2xl">Demande de messe</CardTitle>
+          <CardTitle className="text-2xl">Intention</CardTitle>
           <span className="text-sm text-muted-foreground">
             Étape 1 sur 4
           </span>

@@ -22,7 +22,7 @@ const DonorForm: React.FC<FormProps> = ({ prevStep, handleFinalSubmit, formData,
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle className="text-2xl">Informations sur le donateur</CardTitle>
+          <CardTitle className="text-2xl">Contact</CardTitle>
           <span className="text-sm text-muted-foreground">
             Étape 4 sur 4
           </span>

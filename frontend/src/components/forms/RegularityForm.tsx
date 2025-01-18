@@ -69,7 +69,7 @@ const RegularityForm: React.FC<RegularityFormProps> = ({
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle className="text-2xl">Informations sur la régularité</CardTitle>
+          <CardTitle className="text-2xl">Récurrence</CardTitle>
           <span className="text-sm text-muted-foreground">
             Étape 3 sur 4
           </span>
