@@ -181,6 +181,13 @@ export function Calendar({ currentDate, onDateChange, intentions, onIntentionCli
                 <div className="mt-1 text-xs text-left p-1 bg-blue-50 rounded">
                   <p className="font-medium truncate">{intention.intention}</p>
                   <p className="text-gray-500 truncate">Par: {intention.requestedBy}</p>
+                  {intention.mass && (
+                    <p className="text-green-600 truncate mt-1">
+                      Messe {intention.mass.status === 'scheduled' ? 'prévue' : 
+                            intention.mass.status === 'completed' ? 'célébrée' : 'annulée'}
+                      {intention.mass.time && ` à ${intention.mass.time}`}
+                    </p>
+                  )}
                 </div>
               )}
             </button>

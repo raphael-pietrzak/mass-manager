@@ -9,4 +9,9 @@ export interface Canon {
     date: string;
     intention: string;
     requestedBy: string;
+    mass?: {
+      celebrantId: string;
+      status: 'scheduled' | 'completed' | 'cancelled';
+      time?: string;
+    };
   }

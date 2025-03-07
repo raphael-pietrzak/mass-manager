@@ -24,9 +24,9 @@ exports.getIntention = async (req, res) => {
 
 exports.createIntention = async (req, res) => {
   try {
-    // Insertion de l'intention et du donateur
+
     const donor = {
-      name: req.body.brotherName,
+      name: "",
       email: req.body.email,
       phone: req.body.phone,
       address: req.body.address
@@ -39,8 +39,8 @@ exports.createIntention = async (req, res) => {
       donor_id: donorId,
       date_requested: req.body.date
     };
+    await Intention.create(intention);
 
-    // ...ici vous pouvez ajouter l'insertion des messes si nécessaire...
     res.status(201).send('Intention enregistrée');
   } catch (error) {
     console.error(error);
