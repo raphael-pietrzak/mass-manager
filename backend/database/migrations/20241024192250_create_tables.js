@@ -12,9 +12,11 @@ exports.up = function(knex) {
       })
       .createTable('Celebrants', function(table) {
         table.increments('id').primary();
-        table.string('name', 100).notNullable();
-        table.string('email', 100);
-        table.boolean('is_available').defaultTo(true);
+        table.string('religious_name', 50).notNullable();
+        table.string('civil_first_name', 50).notNullable();
+        table.string('civil_last_name', 50).notNullable();
+        table.string('title', 10);
+        table.string('role', 50);
       })
       .createTable('Intentions', function(table) {
         table.increments('id').primary();
