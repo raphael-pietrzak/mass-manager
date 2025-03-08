@@ -19,7 +19,7 @@ const DonorForm: React.FC<FormProps> = ({ prevStep, handleFinalSubmit, formData,
 
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="w-full max-w-md mx-auto min-h-[600px] flex flex-col">
       <CardHeader>
         <div className="flex justify-between items-center">
           <CardTitle className="text-2xl">Contact</CardTitle>
@@ -34,14 +34,14 @@ const DonorForm: React.FC<FormProps> = ({ prevStep, handleFinalSubmit, formData,
           />
         </div>
       </CardHeader>
-      <CardContent>
-        <form className="space-y-6">
+      <CardContent className="flex-1 flex flex-col">
+        <div className="flex-1 space-y-6">
           <div className="flex items-center space-x-2">
-          <Checkbox
-            id="wantsCelebrationDate"
-            checked={formData.wantsCelebrationDate}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ wantsCelebrationDate: e.target.checked })}
-          />
+            <Checkbox
+              id="wantsCelebrationDate"
+              checked={formData.wantsCelebrationDate}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ wantsCelebrationDate: e.target.checked })}
+            />
             <Label htmlFor="wantsCelebrationDate">
               Souhaite connaître la date de la célébration
             </Label>
@@ -79,7 +79,9 @@ const DonorForm: React.FC<FormProps> = ({ prevStep, handleFinalSubmit, formData,
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ address: e.target.value })}
             />
           </div>
+        </div>
 
+        <div className="mt-auto pt-6">
           <div className="flex space-x-4">
             <Button variant="outline" type="button" className="w-full" onClick={prevStep}>
               Précédent
@@ -88,7 +90,7 @@ const DonorForm: React.FC<FormProps> = ({ prevStep, handleFinalSubmit, formData,
               Valider
             </Button>
           </div>
-        </form>
+        </div>
       </CardContent>
     </Card>
   );

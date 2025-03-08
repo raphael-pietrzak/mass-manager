@@ -32,8 +32,8 @@ const Navbar: React.FC = () => {
     <header className="w-full bg-white shadow-md">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         {/* Logo */}
-        <a href="/" className="text-xl font-semibold text-primary">
-          MyBrand
+        <a href="https://www.lagrasse.org/" className="text-xl font-semibold text-primary">
+          Lagrasse.org
         </a>
 
         {/* Desktop Navigation */}

@@ -15,7 +15,7 @@ export const tabs: TabColumn[] = [
   },
   {
     key: "celebrants",
-    label: "Celebrants",
+    label: "Prêtres",
     endpoint: "http://localhost:3001/api/data/celebrants",
     formatters: {
       is_available: (value: boolean) => value ? "Disponible" : "Indisponible",
@@ -32,7 +32,7 @@ export const tabs: TabColumn[] = [
   },
   {
     key: "masses",
-    label: "Masses",
+    label: "Messes",
     endpoint: "http://localhost:3001/api/data/masses",
     formatters: {
       date: (value: string) => new Date(value).toLocaleDateString("fr-FR"),
