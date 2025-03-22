@@ -1,11 +1,17 @@
 import axios from 'axios';
+import { Mass } from '../features/calendar/types';
+import { formatDate } from '../utils/dateUtils';
 
 const API_URL = 'http://localhost:3001/api/data';
 
 export const massService = {
-  getMasses: async () => {
+  getMasses: async (): Promise<Mass[]> => {
     const response = await axios.get(`${API_URL}/masses`);
-    return response.data;
+    const data = response.data;
+    return data.map((mass: any) => ({
+      ...mass,
+      date: formatDate(mass.date) // Convertir le timestamp en format YYYY-MM-DD
+    }));
   },
 
   getMass: async (id: string) => {

@@ -6,10 +6,9 @@ const Mass = {
             .select(
                 'Masses.id',
                 'Masses.date',
-                db.raw("strftime('%H:%M', Masses.date) as time"),
-                'Celebrants.name as celebrant',
+                'Celebrants.religious_name as celebrant',
                 'Intentions.description as intention',
-                db.raw("COALESCE(Masses.type, 'basse') as type"),
+                db.raw("COALESCE(Masses.status, 'basse') as type"),
                 db.raw("'Chapelle principale' as location")
             )
             .leftJoin('Celebrants', 'Masses.celebrant_id', 'Celebrants.id')
