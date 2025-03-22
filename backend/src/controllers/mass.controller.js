@@ -23,45 +23,37 @@ exports.getMass = async (req, res) => {
 
 exports.createMass = async (req, res) => {
   try {
-    let targetDate = req.body.date;
-    let nextCelebrant;
-
-    if (targetDate) {
-      nextCelebrant = await Mass.findNextAvailableCelebrant(targetDate);
-      if (!nextCelebrant) {
-        return res.status(400).json({
-          message: 'Aucun célébrant disponible pour cette date'
-        });
-      }
-    } else {
-      const nextSlot = await Mass.findNextAvailableSlot();
-      if (!nextSlot) {
-        return res.status(400).json({
-          message: 'Aucun créneau disponible dans les 30 prochains jours'
-        });
-      }
-      targetDate = nextSlot.date;
-      nextCelebrant = nextSlot.celebrant;
-    }
-
     const mass = {
-      date: targetDate,
-      celebrant_id: nextCelebrant.id,
-      intention_id: req.body.intention_id,
+      date: `${req.body.date} ${req.body.time}`,
+      type: req.body.type || 'basse',
+      location: req.body.location,
+      celebrant_id: await getCelebrantIdByName(req.body.celebrant),
+      intention_id: req.body.intention ? await createIntention(req.body.intention) : null,
       status: 'scheduled'
     };
 
     const massId = await Mass.create(mass);
-    res.status(201).json({
-      message: 'Messe enregistrée',
-      date: targetDate,
-      celebrant: nextCelebrant.name
-    });
+    const createdMass = await Mass.getById(massId);
+    res.status(201).json(createdMass);
   } catch (error) {
     console.error(error);
     res.status(500).send('Erreur lors de l\'enregistrement de la messe');
   }
 };
+
+// Fonctions utilitaires à ajouter
+async function getCelebrantIdByName(celebrantName) {
+  const celebrant = await db('Celebrants')
+    .where('name', celebrantName)
+    .first();
+  return celebrant ? celebrant.id : null;
+}
+
+async function createIntention(description) {
+  const [id] = await db('Intentions')
+    .insert({ description });
+  return id;
+}
 
 exports.updateMass = async (req, res) => {
   try {

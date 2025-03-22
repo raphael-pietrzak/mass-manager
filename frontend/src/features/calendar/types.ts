@@ -2,10 +2,11 @@ export interface Mass {
     id: string;
     date: string;
     time: string;
-    type: 'chantée' | 'basse';
+    type: 'basse' | 'chantée';
     intention?: string;
     celebrant: string;
     location: string;
-  }
-  
-  export type ViewMode = 'calendar' | 'list';
+    status?: 'scheduled' | 'cancelled';
+}
+
+export type ViewMode = 'calendar' | 'list';
