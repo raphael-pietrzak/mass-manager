@@ -1,6 +1,7 @@
 import React from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
+import interactionPlugin from '@fullcalendar/interaction';
 import { Mass } from './types';
 import { fr } from 'date-fns/locale';
 
@@ -17,6 +18,7 @@ export const MassCalendar: React.FC<MassCalendarProps> = ({
 }) => {
   // Group masses by date
   const massesByDate = masses.reduce((acc, mass) => {
+    console.log(mass.date);
     if (!acc[mass.date]) {
       acc[mass.date] = {
         masses: [],
@@ -47,7 +49,7 @@ export const MassCalendar: React.FC<MassCalendarProps> = ({
   return (
     <div className="bg-white rounded-lg shadow p-4">
       <FullCalendar
-        plugins={[dayGridPlugin]}
+        plugins={[dayGridPlugin, interactionPlugin]}
         initialView="dayGridMonth"
         events={events}
         locale={fr}
@@ -55,6 +57,9 @@ export const MassCalendar: React.FC<MassCalendarProps> = ({
           left: 'prev,next today',
           center: 'title',
           right: 'dayGridMonth,dayGridWeek'
+        }}
+        dateClick={(info) => {
+          onDateClick(info.dateStr);
         }}
         eventClick={(info) => {
           onDateClick(info.event.start!.toISOString().split('T')[0]);
@@ -80,6 +85,16 @@ export const MassCalendar: React.FC<MassCalendarProps> = ({
               )}
             </div>
           );
+        }}
+        timeZone="UTC"
+        eventTimeFormat={{
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        }}
+        dayCellClassNames="hover:bg-gray-50 transition-colors cursor-pointer"
+        dayCellDidMount={(info) => {
+          info.el.style.transition = 'background-color 0.2s';
         }}
       />
     </div>

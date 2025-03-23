@@ -69,6 +69,7 @@ exports.seed = function(knex) {
         { date: new Date('2024-12-25'), note: 'Noël', number_of_masses: 3 },
       ]);
     });
+    
 };
 
 

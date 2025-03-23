@@ -4,7 +4,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import MassRequestForm from './MassForm';
 import OfferingForm from './OfferingForm';
 import DonorForm from './DonorForm';
-import PaymentForm from './PaymentForm';
 import RegularityForm from './RegularityForm';
 
 export interface FormData {
@@ -31,7 +30,7 @@ export interface FormData {
 
 const FormWizard = () => {
   const [step, setStep] = useState(1);
-  const [showPayment, setShowPayment] = useState(false);
+  const [notification, setNotification] = useState<{type: 'success' | 'error', message: string} | null>(null);
 
   const [formData, setFormData] = useState<FormData>({
     intention: '',
@@ -76,98 +75,81 @@ const FormWizard = () => {
         body: JSON.stringify(formData),
       });
       if (!response.ok) throw new Error("Error submitting form");
+      setNotification({ type: 'success', message: 'Intention de messe bien enregistrée!' });
       console.log("Form successfully submitted:", formData);
     } catch (error) {
       console.error("Submission error:", error);
+      setNotification({ type: 'error', message: 'Erreur lors de l\'enregistrement de l\'intention' });
     }
   };
 
   const handleFinalSubmit = async () => {
-    if (formData.paymentMethod === 'card') {
-      setShowPayment(true);
-    } else {
-      // Soumission normale du formulaire
-      submitForm();
-    }
-  };
-
-  const handlePaymentSuccess = () => {
     submitForm();
-    setShowPayment(false);
-  };
-
-  const handlePaymentCancel = () => {
-    setShowPayment(false);
   };
 
   return (
-    <>
-      {showPayment ? (
-        <PaymentForm 
-          amount={Number(formData.amount)}
-          onSuccess={handlePaymentSuccess}
-          onCancel={handlePaymentCancel}
-        />
-      ) : (
-        <div className="relative w-full max-w-md mx-auto">
-          <AnimatePresence>
-            {step === 1 && (
-              <motion.div
-              initial={{ x: 300, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -300, opacity: 0 }}
-              >
-                <MassRequestForm 
-                nextStep={nextStep} 
-                formData={formData}
-                updateFormData={updateFormData}
-                />
-              </motion.div>
-            )}
-            {step === 2 && (
-              <motion.div
-              initial={{ x: 300, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -300, opacity: 0 }}
-              >
-                <OfferingForm 
-                formData={formData}
-                updateFormData={updateFormData}
-                nextStep={nextStep} prevStep={prevStep} />
-              </motion.div>
-            )}
-            {step === 3 && (
-              <motion.div
-                initial={{ x: 300, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: -300, opacity: 0 }}
-              >
-                <RegularityForm 
-                  formData={formData}
-                  updateFormData={updateFormData}
-                  nextStep={nextStep} 
-                  prevStep={prevStep}
-                />
-              </motion.div>
-            )}
-            {step === 4 && (
-              <motion.div
-              initial={{ x: 300, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -300, opacity: 0 }}
-              >
-                <DonorForm 
-                formData={formData}
-                updateFormData={updateFormData}
-                prevStep={prevStep}
-                handleFinalSubmit={handleFinalSubmit}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
+    <div className="relative w-full max-w-md mx-auto">
+      {notification && (
+        <div className={`mb-4 p-4 rounded ${notification.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+          {notification.message}
         </div>
       )}
-    </>
+      <AnimatePresence>
+        {step === 1 && (
+          <motion.div
+          initial={{ x: 300, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          exit={{ x: -300, opacity: 0 }}
+          >
+            <MassRequestForm 
+            nextStep={nextStep} 
+            formData={formData}
+            updateFormData={updateFormData}
+            />
+          </motion.div>
+        )}
+        {step === 2 && (
+          <motion.div
+          initial={{ x: 300, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          exit={{ x: -300, opacity: 0 }}
+          >
+            <OfferingForm 
+            formData={formData}
+            updateFormData={updateFormData}
+            nextStep={nextStep} prevStep={prevStep} />
+          </motion.div>
+        )}
+        {step === 3 && (
+          <motion.div
+            initial={{ x: 300, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -300, opacity: 0 }}
+          >
+            <RegularityForm 
+              formData={formData}
+              updateFormData={updateFormData}
+              nextStep={nextStep} 
+              prevStep={prevStep}
+            />
+          </motion.div>
+        )}
+        {step === 4 && (
+          <motion.div
+          initial={{ x: 300, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          exit={{ x: -300, opacity: 0 }}
+          >
+            <DonorForm 
+            formData={formData}
+            updateFormData={updateFormData}
+            prevStep={prevStep}
+            handleFinalSubmit={handleFinalSubmit}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 

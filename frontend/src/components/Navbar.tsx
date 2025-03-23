@@ -18,7 +18,6 @@ const NAV_LINKS: NavLink[] = [
   { label: "Database", href: "/database" },
   { label: "Intention", href: "/intention" },
   { label: "Calendar", href: "/calendar" },
-  { label: "Pending", href: "/pending" },
   { label: "Admin", href: "/admin" },
 
 ];

@@ -24,9 +24,11 @@ exports.getCelebrant = async (req, res) => {
 exports.createCelebrant = async (req, res) => {
   try {
     const celebrant = {
-      name: req.body.name,
-      email: req.body.email,
-      phone: req.body.phone
+      religious_name: req.body.religious_name,
+      civil_first_name: req.body.civil_first_name,
+      civil_last_name: req.body.civil_last_name,
+      title: req.body.title,
+      role: req.body.role
     };
 
     const celebrantId = await Celebrant.create(celebrant);
@@ -41,9 +43,11 @@ exports.updateCelebrant = async (req, res) => {
   try {
     const celebrant = {
       id: req.params.id,
-      name: req.body.name,
-      email: req.body.email,
-      phone: req.body.phone
+      religious_name: req.body.religious_name,
+      civil_first_name: req.body.civil_first_name,
+      civil_last_name: req.body.civil_last_name,
+      title: req.body.title,
+      role: req.body.role
     };
 
     await Celebrant.update(celebrant);

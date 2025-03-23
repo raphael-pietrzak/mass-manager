@@ -15,13 +15,23 @@ export const MassModal: React.FC<MassModalProps> = ({
   onClose,
   onSave,
 }) => {
-  if (!isOpen || !mass) return null;
+  if (!isOpen) return null;
+
+  const defaultMass = mass || {
+    id: '',
+    date: new Date().toISOString().split('T')[0],
+    time: '08:00',
+    celebrant: '',
+    location: 'Main Chapel',
+    type: 'basse',
+    intention: '',
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
     const updatedMass: Mass = {
-      ...mass,
+      ...defaultMass,
       date: formData.get('date') as string,
       time: formData.get('time') as string,
       celebrant: formData.get('celebrant') as string,
@@ -36,7 +46,9 @@ export const MassModal: React.FC<MassModalProps> = ({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 max-w-lg w-full mx-4">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Modifier la messe</h2>
+          <h2 className="text-xl font-semibold">
+            {mass ? 'Modifier la messe' : 'Ajouter une messe'}
+          </h2>
           <button
             onClick={onClose}
             className="p-1 hover:bg-gray-100 rounded-full"
@@ -54,7 +66,7 @@ export const MassModal: React.FC<MassModalProps> = ({
               <input
                 type="date"
                 name="date"
-                defaultValue={mass.date}
+                defaultValue={defaultMass.date}
                 className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 required
               />
@@ -66,7 +78,7 @@ export const MassModal: React.FC<MassModalProps> = ({
               <input
                 type="time"
                 name="time"
-                defaultValue={mass.time}
+                defaultValue={defaultMass.time}
                 className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 required
               />
@@ -80,7 +92,7 @@ export const MassModal: React.FC<MassModalProps> = ({
             <input
               type="text"
               name="celebrant"
-              defaultValue={mass.celebrant}
+              defaultValue={defaultMass.celebrant}
               className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               required
             />
@@ -92,7 +104,7 @@ export const MassModal: React.FC<MassModalProps> = ({
             </label>
             <select
               name="location"
-              defaultValue={mass.location}
+              defaultValue={defaultMass.location}
               className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               required
             >
@@ -108,7 +120,7 @@ export const MassModal: React.FC<MassModalProps> = ({
             </label>
             <select
               name="type"
-              defaultValue={mass.type}
+              defaultValue={defaultMass.type}
               className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               required
             >
@@ -123,7 +135,7 @@ export const MassModal: React.FC<MassModalProps> = ({
             </label>
             <textarea
               name="intention"
-              defaultValue={mass.intention}
+              defaultValue={defaultMass.intention}
               className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               rows={3}
             />

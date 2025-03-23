@@ -13,12 +13,6 @@ export const massService = {
       date: formatDate(mass.date) // Convertir le timestamp en format YYYY-MM-DD
     }));
   },
-
-  getMass: async (id: string) => {
-    const response = await axios.get(`${API_URL}/masses/${id}`);
-    return response.data;
-  },
-
   createMass: async (mass: any) => {
     const response = await axios.post(`${API_URL}/masses`, mass);
     return response.data;
