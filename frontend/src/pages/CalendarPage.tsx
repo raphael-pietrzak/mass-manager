@@ -62,6 +62,19 @@ function CalendarPage() {
     }
   };
 
+  const handleDeleteMass = async (massToDelete: Mass) => {
+    try {
+      if (massToDelete.id) {
+        await massService.deleteMass(massToDelete.id);
+        const newMasses = await massService.getMasses();
+        setMasses(newMasses);
+      }
+      setIsModalOpen(false);
+    } catch (err) {
+      setError('Erreur lors de la suppression de la messe');
+    }
+  };
+
   const handleFilterChange = (key: string, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
@@ -114,6 +127,7 @@ function CalendarPage() {
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           onSave={handleSaveMass}
+          onDelete={handleDeleteMass}
         />
 
         <DaySlider

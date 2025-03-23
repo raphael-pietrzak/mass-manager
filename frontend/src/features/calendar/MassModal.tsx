@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, AlertTriangle } from 'lucide-react';
 import { Mass } from './types';
 import { DropdownSearch } from '../../components/DropdownSearch';
 import { celebrantService, Celebrant } from '../../api/celebrantService';
@@ -9,6 +9,7 @@ interface MassModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (mass: Mass) => void;
+  onDelete?: (mass: Mass) => void;
 }
 
 export const MassModal: React.FC<MassModalProps> = ({
@@ -16,8 +17,36 @@ export const MassModal: React.FC<MassModalProps> = ({
   isOpen,
   onClose,
   onSave,
+  onDelete,
 }) => {
   const [celebrants, setCelebrants] = useState<Celebrant[]>([]);
+  const [selectedCelebrant, setSelectedCelebrant] = useState<string>('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false); // État pour la confirmation
+  
+  // Valeur par défaut pour le célébrant non assigné
+  const UNASSIGNED_VALUE = "unassigned";
+  
+  // Initialise les données par défaut
+  const defaultMass = mass || {
+    id: '',
+    date: new Date().toISOString().split('T')[0],
+    time: '08:00',
+    celebrant: UNASSIGNED_VALUE,
+    location: 'Main Chapel',
+    type: 'basse',
+    intention: '',
+  };
+  
+  // Met à jour l'état du célébrant sélectionné quand le modal s'ouvre
+  useEffect(() => {
+    if (isOpen && mass) {
+      setSelectedCelebrant(mass.celebrant || UNASSIGNED_VALUE);
+    } else if (isOpen) {
+      setSelectedCelebrant(UNASSIGNED_VALUE);
+    }
+    // Réinitialiser l'état de confirmation à chaque ouverture
+    setShowDeleteConfirm(false);
+  }, [isOpen, mass]);
 
   useEffect(() => {
     const fetchCelebrants = async () => {
@@ -36,16 +65,6 @@ export const MassModal: React.FC<MassModalProps> = ({
 
   if (!isOpen) return null;
 
-  const defaultMass = mass || {
-    id: '',
-    date: new Date().toISOString().split('T')[0],
-    time: '08:00',
-    celebrant: '',
-    location: 'Main Chapel',
-    type: 'basse',
-    intention: '',
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
@@ -53,7 +72,7 @@ export const MassModal: React.FC<MassModalProps> = ({
       ...defaultMass,
       date: formData.get('date') as string,
       time: formData.get('time') as string,
-      celebrant: formData.get('celebrant') as string,
+      celebrant: selectedCelebrant, // Utilise l'état local au lieu du formulaire
       location: formData.get('location') as string,
       type: formData.get('type') as 'basse' | 'chantée',
       intention: formData.get('intention') as string,
@@ -61,10 +80,19 @@ export const MassModal: React.FC<MassModalProps> = ({
     onSave(updatedMass);
   };
 
-  const celebrantOptions = celebrants.map(c => ({
-    value: c.id,
-    label: c.religious_name || `${c.civil_first_name} ${c.civil_last_name}`
-  }));
+  const handleDelete = () => {
+    if (mass && onDelete) {
+      onDelete(mass);
+    }
+  };
+
+  const celebrantOptions = [
+    { value: UNASSIGNED_VALUE, label: "Aléatoire" },
+    ...celebrants.map(c => ({
+      value: c.id,
+      label: c.religious_name || `${c.civil_first_name} ${c.civil_last_name}`
+    }))
+  ];
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -80,6 +108,35 @@ export const MassModal: React.FC<MassModalProps> = ({
             <X className="w-5 h-5" />
           </button>
         </div>
+        
+        {/* Boîte de dialogue de confirmation de suppression */}
+        {showDeleteConfirm && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-300 rounded-md">
+            <div className="flex items-center gap-2 mb-2">
+              <AlertTriangle className="w-5 h-5 text-red-500" />
+              <p className="text-red-700 font-medium">Confirmer la suppression</p>
+            </div>
+            <p className="text-sm text-red-600 mb-3">
+              Êtes-vous sûr de vouloir supprimer cette messe ? Cette action est irréversible.
+            </p>
+            <div className="flex justify-end space-x-2">
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(false)}
+                className="px-3 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="px-3 py-1 text-xs font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+              >
+                Supprimer
+              </button>
+            </div>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -115,50 +172,11 @@ export const MassModal: React.FC<MassModalProps> = ({
             </label>
             <DropdownSearch
               options={celebrantOptions}
-              value={defaultMass.celebrant}
-              onChange={(value) => {
-                const form = document.querySelector('form') as HTMLFormElement;
-                if (form) {
-                  const input = form.querySelector('input[name="celebrant"]') as HTMLInputElement;
-                  if (input) {
-                    input.value = value;
-                  }
-                }
-              }}
+              value={selectedCelebrant}
+              onChange={(value) => setSelectedCelebrant(value)}
               placeholder="Sélectionner un célébrant"
+              defaultValue={UNASSIGNED_VALUE}
             />
-            <input type="hidden" name="celebrant" defaultValue={defaultMass.celebrant} />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Lieu
-            </label>
-            <select
-              name="location"
-              defaultValue={defaultMass.location}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              required
-            >
-              <option value="Main Chapel">Chapelle principale</option>
-              <option value="Side Chapel">Chapelle latérale</option>
-              <option value="Cathedral">Cathédrale</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Type
-            </label>
-            <select
-              name="type"
-              defaultValue={defaultMass.type}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              required
-            >
-              <option value="basse">Messe basse</option>
-              <option value="chantée">Messe chantée</option>
-            </select>
           </div>
 
           <div>
@@ -173,20 +191,33 @@ export const MassModal: React.FC<MassModalProps> = ({
             />
           </div>
 
-          <div className="flex justify-end space-x-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-            >
-              Annuler
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
-            >
-              Enregistrer
-            </button>
+          <div className="flex justify-between space-x-3 pt-4">
+            {/* Bouton de suppression, visible uniquement lors de la modification d'une messe existante */}
+            {mass && mass.id && onDelete && (
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(true)}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+              >
+                Supprimer
+              </button>
+            )}
+            
+            <div className="flex justify-end space-x-3 ml-auto">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Annuler
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+              >
+                Enregistrer
+              </button>
+            </div>
           </div>
         </form>
       </div>

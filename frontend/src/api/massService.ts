@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { Mass } from '../features/calendar/types';
-import { formatDate } from '../utils/dateUtils';
+import { formatDate, extractTimeOnly } from '../utils/dateUtils';
 
 const API_URL = 'http://localhost:3001/api/data';
 
@@ -8,9 +8,14 @@ export const massService = {
   getMasses: async (): Promise<Mass[]> => {
     const response = await axios.get(`${API_URL}/masses`);
     const data = response.data;
+    console.log("Date formated:", data.map((mass: any) => ({
+        date: formatDate(mass.date),
+        time: extractTimeOnly(mass.date)
+    })));
     return data.map((mass: any) => ({
       ...mass,
-      date: formatDate(mass.date) // Convertir le timestamp en format YYYY-MM-DD
+      date: formatDate(mass.date), // Convertir le timestamp en format YYYY-MM-DD
+      time: extractTimeOnly(mass.date) // Extrait juste l'heure au format HH:MM
     }));
   },
   createMass: async (mass: any) => {

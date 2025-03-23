@@ -24,11 +24,11 @@ exports.getMass = async (req, res) => {
 exports.createMass = async (req, res) => {
   try {
     const mass = {
-      date: `${req.body.date} ${req.body.time}`,
+      date: new Date(req.body.date + ' ' + req.body.time),
       type: req.body.type || 'basse',
       location: req.body.location,
-      celebrant_id: await getCelebrantIdByName(req.body.celebrant),
-      intention_id: req.body.intention ? await createIntention(req.body.intention) : null,
+      celebrant_id: req.body.celebrant,
+      intention: req.body.intention,
       status: 'scheduled'
     };
 
@@ -59,9 +59,12 @@ exports.updateMass = async (req, res) => {
   try {
     const mass = {
       id: req.params.id,
-      date: req.body.date,
+      date: new Date(req.body.date + ' ' + req.body.time),
       celebrant_id: req.body.celebrant_id,
-      intention_id: req.body.intention_id
+      intention: req.body.intention,
+      location: req.body.location,
+      type: req.body.type,
+      status: req.body.status
     };
 
     await Mass.update(mass);

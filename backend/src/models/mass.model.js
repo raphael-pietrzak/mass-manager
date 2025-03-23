@@ -7,12 +7,13 @@ const Mass = {
                 'Masses.id',
                 'Masses.date',
                 'Celebrants.religious_name as celebrant',
-                'Intentions.description as intention',
+                'Masses.intention',
+                'Masses.status',
                 db.raw("COALESCE(Masses.status, 'basse') as type"),
-                db.raw("'Chapelle principale' as location")
+                db.raw("'Chapelle principale' as location"),
             )
             .leftJoin('Celebrants', 'Masses.celebrant_id', 'Celebrants.id')
-            .leftJoin('Intentions', 'Masses.intention_id', 'Intentions.id')
+
             .orderBy('Masses.date');
     },
 
