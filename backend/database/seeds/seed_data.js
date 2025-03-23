@@ -61,8 +61,8 @@ exports.seed = function(knex) {
     })
     .then(function () {
       return knex('Masses').insert([
-        { date: new Date('2024-10-28'), celebrant_id: 1, intention_id: 1, status: 'scheduled' },
-        { date: new Date('2024-10-30'), celebrant_id: 2, intention_id: 2, status: 'scheduled' },
+        { date: new Date('2025-03-28 08:00:00'), celebrant_id: 1, intention: "Messe pour les défunts", status: 'scheduled' },
+        { date: new Date('2025-04-30 10:00:00'), celebrant_id: 2, intention: "Messe pour les malades", status: 'scheduled' },
       ]);
     })
     .then(function () {
@@ -75,6 +75,7 @@ exports.seed = function(knex) {
         {login_name: 'admin', password: bcrypt.hashSync('admin', 10), email: 'secretariat@lagrasse.org'}
       ])
     });
+    
 };
 
 

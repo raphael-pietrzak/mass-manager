@@ -29,8 +29,10 @@ exports.up = function(knex) {
         table.increments('id').primary();
         table.datetime('date').notNullable();
         table.integer('celebrant_id').unsigned().references('id').inTable('Celebrants');
-        table.integer('intention_id').unsigned().references('id').inTable('Intentions');
+        table.string('intention').nullable();
         table.enu('status', ['scheduled', 'cancelled']);
+        table.enu('type', ['basse', 'chantée']).defaultTo('basse');
+        table.string('location').defaultTo('Chapelle principale');
       })
       .createTable('SpecialDays', function(table) {
         table.increments('id').primary();

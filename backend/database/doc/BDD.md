@@ -14,7 +14,7 @@
 |------------------|--------------|------------------------------------------|
 | `id`             | `INT`        | Identifiant unique de l'intention (PK)  |
 | `description`    | `TEXT`       | Description de l'intention               |
-| `amount`         | `DECIMAL`    | Montant de l'offrande                    |
+| `amount`         | `DECIMAL`    | Montant du don                    |
 | `donor_id`       | `INT`        | Identifiant du donateur (FK)            |
 | `date_requested` | `DATETIME`   | Date à laquelle l'intention a été demandée |
 

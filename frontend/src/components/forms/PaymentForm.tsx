@@ -28,7 +28,7 @@ const PaymentForm = ({ amount, onSuccess, onCancel }: PaymentFormProps) => {
   }, [amount]);
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="w-full max-w-md mx-auto min-h-[600px]">
       <CardHeader>
         <CardTitle>Paiement sécurisé</CardTitle>
       </CardHeader>

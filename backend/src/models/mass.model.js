@@ -2,7 +2,19 @@ const db = require('../../config/database');
 
 const Mass = {
     getAll: async () => {
-        return db.select().from('Masses');
+        return db('Masses')
+            .select(
+                'Masses.id',
+                'Masses.date',
+                'Celebrants.religious_name as celebrant',
+                'Masses.intention',
+                'Masses.status',
+                db.raw("COALESCE(Masses.status, 'basse') as type"),
+                db.raw("'Chapelle principale' as location"),
+            )
+            .leftJoin('Celebrants', 'Masses.celebrant_id', 'Celebrants.id')
+
+            .orderBy('Masses.date');
     },
 
     create: async (mass) => {
