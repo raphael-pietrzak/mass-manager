@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { Mass } from './types';
+import { DropdownSearch } from '../../components/DropdownSearch';
+import { celebrantService, Celebrant } from '../../api/celebrantService';
 
 interface MassModalProps {
   mass: Mass | null;
@@ -15,6 +17,23 @@ export const MassModal: React.FC<MassModalProps> = ({
   onClose,
   onSave,
 }) => {
+  const [celebrants, setCelebrants] = useState<Celebrant[]>([]);
+
+  useEffect(() => {
+    const fetchCelebrants = async () => {
+      try {
+        const data = await celebrantService.getCelebrants();
+        setCelebrants(data);
+      } catch (error) {
+        console.error('Erreur lors du chargement des célébrants:', error);
+      }
+    };
+    
+    if (isOpen) {
+      fetchCelebrants();
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const defaultMass = mass || {
@@ -41,6 +60,11 @@ export const MassModal: React.FC<MassModalProps> = ({
     };
     onSave(updatedMass);
   };
+
+  const celebrantOptions = celebrants.map(c => ({
+    value: c.id,
+    label: c.religious_name || `${c.civil_first_name} ${c.civil_last_name}`
+  }));
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -89,13 +113,21 @@ export const MassModal: React.FC<MassModalProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Célébrant
             </label>
-            <input
-              type="text"
-              name="celebrant"
-              defaultValue={defaultMass.celebrant}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              required
+            <DropdownSearch
+              options={celebrantOptions}
+              value={defaultMass.celebrant}
+              onChange={(value) => {
+                const form = document.querySelector('form') as HTMLFormElement;
+                if (form) {
+                  const input = form.querySelector('input[name="celebrant"]') as HTMLInputElement;
+                  if (input) {
+                    input.value = value;
+                  }
+                }
+              }}
+              placeholder="Sélectionner un célébrant"
             />
+            <input type="hidden" name="celebrant" defaultValue={defaultMass.celebrant} />
           </div>
 
           <div>

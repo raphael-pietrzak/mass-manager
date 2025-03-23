@@ -16,6 +16,7 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredOptions, setFilteredOptions] = useState(options);
+  const [isFocused, setIsFocused] = useState(false);
 
   useEffect(() => {
     const filtered = options.filter((option) =>
@@ -26,41 +27,47 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
 
   const selectedOption = options.find((opt) => opt.value === value);
 
+  const displayValue = isFocused ? searchTerm : (selectedOption?.label || '');
+
   return (
     <div className="relative w-full">
-      <button
-        type="button"
+      <input
+        type="text"
         className="w-full px-4 py-2 text-left bg-white border rounded-md shadow-sm focus:outline-none focus:ring-2"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        {selectedOption ? selectedOption.label : placeholder}
-      </button>
+        placeholder={placeholder}
+        value={displayValue}
+        onChange={(e) => {
+          setSearchTerm(e.target.value);
+          setIsOpen(true);
+        }}
+        onFocus={() => {
+          setIsOpen(true);
+          setIsFocused(true);
+          setSearchTerm('');
+        }}
+        onBlur={() => {
+          setTimeout(() => {
+            setIsOpen(false);
+            setIsFocused(false);
+          }, 200);
+        }}
+      />
 
-      {isOpen && (
-        <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg">
-          <input
-            type="text"
-            className="w-full p-2 border-b"
-            placeholder="Rechercher..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onClick={(e) => e.stopPropagation()}
-          />
-          <div className="max-h-60 overflow-auto">
-            {filteredOptions.map((option) => (
-              <div
-                key={option.value}
-                className="px-4 py-2 cursor-pointer hover:bg-gray-100"
-                onClick={() => {
-                  onChange(option.value);
-                  setIsOpen(false);
-                  setSearchTerm('');
-                }}
-              >
-                {option.label}
-              </div>
-            ))}
-          </div>
+      {isOpen && filteredOptions.length > 0 && (
+        <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-auto">
+          {filteredOptions.map((option) => (
+            <div
+              key={option.value}
+              className="px-4 py-2 cursor-pointer hover:bg-gray-100"
+              onClick={() => {
+                onChange(option.value);
+                setIsOpen(false);
+                setSearchTerm('');
+              }}
+            >
+              {option.label}
+            </div>
+          ))}
         </div>
       )}
     </div>

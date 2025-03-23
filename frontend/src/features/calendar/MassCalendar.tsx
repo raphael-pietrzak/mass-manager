@@ -18,7 +18,6 @@ export const MassCalendar: React.FC<MassCalendarProps> = ({
 }) => {
   // Group masses by date
   const massesByDate = masses.reduce((acc, mass) => {
-    console.log(mass.date);
     if (!acc[mass.date]) {
       acc[mass.date] = {
         masses: [],

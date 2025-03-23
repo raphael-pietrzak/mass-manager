@@ -29,7 +29,6 @@ const MassRequestForm: React.FC<FormProps> = ({ nextStep, formData, updateFormDa
     // Récupère les données depuis l'API
     fetch("http://localhost:3001/api/data/celebrants")
       .then((response) => {
-        console.log(response);
         if (!response.ok) {
           throw new Error("Erreur lors de la récupération des données");
         }
