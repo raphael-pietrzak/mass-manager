@@ -8,4 +8,6 @@ router.post('/', massController.createMass);
 router.put('/:id', massController.updateMass);
 router.delete('/:id', massController.deleteMass);
 
+// Les routes d'exportation ont été déplacées vers export.routes.js
+
 module.exports = router;

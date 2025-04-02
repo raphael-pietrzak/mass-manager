@@ -105,6 +105,19 @@ const Mass = {
         }
         
         return null; // Aucun créneau trouvé dans les 30 prochains jours
+    },
+
+    getUpcomingMonth: async () => {
+        // Nouvelle méthode pour récupérer les intentions du mois à venir
+        const today = new Date();
+        const startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const endDate = new Date(today.getFullYear(), today.getMonth() + 1, today.getDate());
+        
+        return await db('Masses')
+            .whereBetween('date', [startDate.toISOString(), endDate.toISOString()])
+            .leftJoin('Celebrants', 'Masses.celebrant_id', 'Celebrants.id')
+            .select('Masses.*', 'Celebrants.religious_name as celebrant_name')
+            .orderBy('date');
     }
 };
 

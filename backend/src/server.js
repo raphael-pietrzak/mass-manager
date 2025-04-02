@@ -9,6 +9,7 @@ const intentionsRoutes = require('./routes/intentions.routes');
 const massesRoutes = require('./routes/masses.routes');
 const specialDaysRoutes = require('./routes/specialDays.routes');
 const paymentRoutes = require('./routes/payment.routes');
+const exportRoutes = require('./routes/export.routes');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -32,6 +33,7 @@ app.use('/api/data/intentions', intentionsRoutes);
 app.use('/api/data/masses', massesRoutes);
 app.use('/api/data/special-days', specialDaysRoutes);
 app.use('/api', paymentRoutes);
+app.use('/api/export', exportRoutes); // Intégration des routes d'exportation
 
 // Lancement du serveur
 app.listen(PORT, () => {
@@ -42,6 +44,7 @@ app.listen(PORT, () => {
   console.log('intentions   : http://localhost:3001/api/data/intentions');
   console.log('masses       : http://localhost:3001/api/data/masses');
   console.log('special-days : http://localhost:3001/api/data/special-days');
+  console.log('export masses: http://localhost:3001/api/export/masses/[format]');
 
   console.log('\n [CTRL + CLICK] on the links to open in browser');
 });
