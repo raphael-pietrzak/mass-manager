@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 interface DropdownSearchProps {
   options: { value: string; label: string }[];
@@ -18,6 +18,7 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredOptions, setFilteredOptions] = useState(options);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   
   // Utiliser defaultValue si value n'est pas défini
   const effectiveValue = value || defaultValue;
@@ -31,8 +32,22 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
 
   const selectedOption = options.find((opt) => opt.value === effectiveValue);
 
+  // le DropdownSearch disparait lorsqu'on clique ailleurs
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
-    <div className="relative w-full">
+    <div className="relative w-full" ref={dropdownRef}>
       <div 
         className="w-full px-4 py-2 text-left bg-white border rounded-md shadow-sm cursor-pointer flex justify-between items-center"
         onClick={() => setIsOpen(!isOpen)}
