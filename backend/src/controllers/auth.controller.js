@@ -11,13 +11,13 @@ exports.loginUser = async (req, res) => {
     const user = await User.getByLoginName(login_name);
      
     if (!user) {
-      return res.status(404).send('Utilisateur non trouvé');
+      return res.status(404).json({ error: 'Utilisateur non trouvé' });
     }
 
     // Vérifier si le mot de passe correspond
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).send('Mot de passe incorrect');
+      return res.status(401).json({ error: 'Mot de passe incorrect' });
     }
 
     // Créer un token JWT
@@ -34,6 +34,6 @@ exports.loginUser = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).send('Erreur lors de l\'authentification');
+    res.status(500).json({ error: 'Erreur lors de l\'authentification' });
   }
 };

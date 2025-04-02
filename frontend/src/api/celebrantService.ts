@@ -9,7 +9,7 @@ export interface Celebrant {
   role: string;
 }
 
-const API_URL = 'http://localhost:3001/api/data';
+const API_URL = `${import.meta.env.VITE_API_URL}/api/data`;
 
 export const celebrantService = {
   getCelebrants: async (): Promise<Celebrant[]> => {

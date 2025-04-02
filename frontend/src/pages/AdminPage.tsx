@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { celebrantService, Celebrant } from '../api/celebrantService';
+import { DropdownSearch } from '../components/DropdownSearch';
 import { Input } from "@/components/ui/input";
 import { 
   AlertDialog,
@@ -15,24 +17,19 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Save, Trash2, UserPlus, Lock, Mail, Plus } from 'lucide-react';
 
+const UNASSIGNED_VALUE = 'unassigned';
+
 const AdminPage = () => {
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [showCelebrantDialog, setShowCelebrantDialog] = useState(false);
-  const [celebrant, setCelebrant] = useState({
-    religious_name: '',
-    civil_firstname: '',
-    civil_lastname: '',
-    title: '',
-    role: ''
-  });
-
-  // State for managing search and new celebrant
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filteredCelebrants, setFilteredCelebrants] = useState([]);
+  const [selectedCelebrant, setSelectedCelebrant] = useState<string>("unassigned");
+  const [celebrants, setCelebrants] = useState<Celebrant[]>([]); // Tableau pour stocker les célébrants récupérés
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showUpdateForm, setShowUpdateForm] = useState(false);  // État pour afficher ou cacher le formulaire de mise à jour
+  const [selectedCelebrantData, setSelectedCelebrantData] = useState<Celebrant | null>(null); // Informations du célébrants récupérées
   const [newCelebrant, setNewCelebrant] = useState({
     religious_name: '',
     civil_firstname: '',
@@ -41,16 +38,31 @@ const AdminPage = () => {
     role: ''
   });
 
+  const celebrantOptions = celebrants.map((celebrant) => ({
+    value: celebrant.id,
+    label: `Père ${celebrant.religious_name} `
+  }));
+
+  // Charger les célébrants depuis l'API
+  useEffect(() => {
+    const fetchCelebrants = async () => {
+      try {
+        const data = await celebrantService.getCelebrants();
+        setCelebrants(data); // Mettre à jour l'état avec les données récupérées
+      } catch (error) {
+        console.error("Erreur lors du chargement des célébrants:", error);
+      }
+    };
+
+    fetchCelebrants(); // Appel de la fonction pour récupérer les données
+  }, []);
+
   const handleSave = () => {
     console.log('Sauvegarde effectuée');
   };
 
   const handleDeleteHistory = () => {
     console.log('Historique supprimé');
-  };
-
-  const handleCelebrantManagement = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCelebrant({ ...celebrant, [e.target.name]: e.target.value });
   };
 
   const handlePasswordChange = () => {
@@ -63,38 +75,16 @@ const AdminPage = () => {
     setShowEmailDialog(false);
   };
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const term = e.target.value;
-    setSearchTerm(term);
-
-    // Filter celebrants based on the search term
-    if (term) {
-      const filtered = celebrantsList.filter(celebrant =>
-        celebrant.religious_name.toLowerCase().includes(term.toLowerCase())
-      );
-      setFilteredCelebrants(filtered);
-    } else {
-      setFilteredCelebrants([]);
-    }
-  };
-
-  const handleSelectCelebrant = (celebrant: any) => {
-    console.log('Célébrant sélectionné:', celebrant);
-    // Add logic for handling selected celebrant if needed
-  };
-
-  const handleAddCelebrantFormToggle = () => {
-    setShowAddForm(!showAddForm);
-  };
-
-  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewCelebrant({ ...newCelebrant, [e.target.name]: e.target.value });
-  };
-
+  // Fonction pour ajouter un célébrant
   const handleAddCelebrant = () => {
     console.log('Ajouter un célébrant:', newCelebrant);
-    // Add logic for saving the new celebrant
-    setShowAddForm(false); // Hide form after adding
+    // Logique d'envoi des données à l'API ici
+    setShowAddForm(false); // Cacher le formulaire après ajout
+  };
+
+  // Fonction pour gérer les changements dans le formulaire d'ajout
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewCelebrant({ ...newCelebrant, [e.target.name]: e.target.value });
   };
 
   return (
@@ -147,91 +137,168 @@ const AdminPage = () => {
             <AlertDialogTrigger asChild>
               <Button className="w-full justify-start" variant="outline">
                 <UserPlus className="mr-2 h-4 w-4" />
-                Ajouter ou supprimer un célébrant
+                Gestion des célébrants
               </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent>
+            <AlertDialogContent className="w-full max-w-lg mx-auto p-4 max-h-[95vh] overflow-y-auto">
               <AlertDialogHeader>
-                <AlertDialogTitle>Ajouter ou supprimer un célébrant</AlertDialogTitle>
+                <AlertDialogTitle>Ajouter, supprimer ou mettre à jour un célébrant</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Recherchez un célébrant ou ajoutez-en un nouveau.
+                  Sélectionnez un célébrant dans la liste ou ajoutez-en un nouveau.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <div className="space-y-3">
-                {/* Champ de recherche avec autocomplétion */}
-                <Input
-                  placeholder="Rechercher un célébrant"
-                  value={searchTerm}
-                  onChange={handleSearchChange}
-                  className="flex-1"
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Célébrant
+                </label>
                 
-                {/* Affichage des résultats seulement si on commence à écrire */}
-                {searchTerm && filteredCelebrants.length > 0 && (
-                  <div className="mt-2 space-y-2">
-                    {filteredCelebrants.map((celebrant) => (
-                      <div 
-                        key={celebrant.id} 
-                        className="p-2 bg-gray-100 rounded-md cursor-pointer"
-                        onClick={() => handleSelectCelebrant(celebrant)}
-                      >
-                        {celebrant.religious_name} {celebrant.civil_firstname}
-                      </div>
-                    ))}
-                  </div>
-                )}
+                {/* DropdownSearch (barre de recherche avec sélection) */}
+                <DropdownSearch
+                  options={celebrantOptions}
+                  value={selectedCelebrant}
+                  // Mise à jour de l'état selectedCelebrant
+                  onChange={(value) => {
+                    setSelectedCelebrant(value);
+                    const celebrant = celebrants.find(celebrant => celebrant.id === value);
+                    if (celebrant) {
+                      setSelectedCelebrantData(celebrant);
+                      setShowUpdateForm(true); // Afficher le formulaire de mise à jour
+                      setShowAddForm(false); // Cacher le formulaire d'ajout
+                    } else {
+                      setSelectedCelebrantData(null); // Si aucun célébrant n'est trouvé, on met à null
+                      setShowUpdateForm(false); // Cacher le formulaire de mise à jour si aucun célébrant sélectionné
+                    }
+                  }} 
+                  placeholder="Sélectionner un célébrant"
+                  defaultValue={UNASSIGNED_VALUE}  // Valeur par défaut (non assigné)
+                />
 
-                {/* Message si aucun résultat n'est trouvé */}
-                {searchTerm && filteredCelebrants.length === 0 && (
-                  <div className="p-2 text-gray-500">Aucun célébrant trouvé. Vous pouvez en ajouter un.</div>
-                )}
+                
 
-                {/* Bouton pour ajouter un célébrant */}
-                <Button 
-                  className="bg-black text-white mt-3 p-3 rounded-full w-full"
-                  onClick={handleAddCelebrantFormToggle}
-                >
-                  <Plus className="h-4 w-4" />
-                  Ajouter un célébrant
-                </Button>
+              </div>
+              {/* Bouton pour ajouter un célébrant */}
+              <Button 
+                className="bg-black text-white mt-3 p-3 rounded-full w-full"
+                onClick={() => { setShowAddForm(true); setShowUpdateForm(false);}}
+              >
+                <Plus className="h-4 w-4" />
+                Ajouter un célébrant
+              </Button>
 
-                {/* Formulaire d'ajout du célébrant (visible lorsque showAddForm est true) */}
-                {showAddForm && (
-                  <div className="mt-4 space-y-4">
+              {showUpdateForm && selectedCelebrantData && (
+                <div className="mt-6 space-y-4">
+                   <div>
+                   <label htmlFor="religious_name" className="block text-sm font-medium text-gray-700 mb-1">
+                      Nom religieux
+                    </label>
                     <Input
                       placeholder="Nom religieux"
                       name="religious_name"
-                      value={newCelebrant.religious_name}
-                      onChange={handleFormChange}
+                      value={selectedCelebrantData.religious_name}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        setSelectedCelebrantData({ ...selectedCelebrantData, religious_name: e.target.value })
+                      }
                     />
+                  </div>
+                  <div>
+                  <label htmlFor="civil_firstname" className="block text-sm font-medium text-gray-700 mb-1">
+                    Prénom civil
+                  </label>
                     <Input
                       placeholder="Prénom civil"
                       name="civil_firstname"
-                      value={newCelebrant.civil_firstname}
-                      onChange={handleFormChange}
+                      value={selectedCelebrantData.civil_first_name}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        setSelectedCelebrantData({ ...selectedCelebrantData, civil_first_name: e.target.value })
+                      }
                     />
+                  </div>
+                  <div>
+                    <label htmlFor="civil_lastname" className="block text-sm font-medium text-gray-700 mb-1">
+                      Nom civil
+                    </label>
                     <Input
-                      placeholder="Nom civil"
-                      name="civil_lastname"
-                      value={newCelebrant.civil_lastname}
-                      onChange={handleFormChange}
-                    />
+                    placeholder="Nom civil"
+                    name="civil_lastname"
+                    value={selectedCelebrantData.civil_last_name}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setSelectedCelebrantData({ ...selectedCelebrantData, civil_last_name: e.target.value })
+                    }
+                  />
+                  </div>
+                  <div>
+                    <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+                      Titre
+                    </label>
                     <Input
                       placeholder="Titre"
                       name="title"
-                      value={newCelebrant.title}
-                      onChange={handleFormChange}
+                      value={selectedCelebrantData.title}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        setSelectedCelebrantData({ ...selectedCelebrantData, title: e.target.value })
+                      }
                     />
+                  </div>
+                  <div>
+                    <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
+                      Rôle
+                    </label>
                     <Input
                       placeholder="Rôle"
                       name="role"
-                      value={newCelebrant.role}
-                      onChange={handleFormChange}
+                      value={selectedCelebrantData.role}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        setSelectedCelebrantData({ ...selectedCelebrantData, role: e.target.value })
+                      }
                     />
-                    <Button onClick={handleAddCelebrant}>Ajouter le célébrant</Button>
                   </div>
-                )}
-              </div>
+                  <Button className="w-full mt-3 bg-green-600 text-white">
+                    Mettre à jour les informations
+                  </Button>
+                  <Button className="w-full mt-3 bg-red-600 text-white">
+                    Supprimer le célébrant
+                  </Button>
+                </div>
+              )}
+
+              {/* Formulaire d'ajout du célébrant (affiché si showAddForm est true) */}
+              {showAddForm && (
+                <div className="mt-4 space-y-4">
+                  <div>Formulaire d'ajout</div>
+                  <Input
+                    placeholder="Nom religieux"
+                    name="religious_name"
+                    value={newCelebrant.religious_name}
+                    onChange={handleFormChange}
+                  />
+                  <Input
+                    placeholder="Prénom civil"
+                    name="civil_firstname"
+                    value={newCelebrant.civil_firstname}
+                    onChange={handleFormChange}
+                  />
+                  <Input
+                    placeholder="Nom civil"
+                    name="civil_lastname"
+                    value={newCelebrant.civil_lastname}
+                    onChange={handleFormChange}
+                  />
+                  <Input
+                    placeholder="Titre"
+                    name="title"
+                    value={newCelebrant.title}
+                    onChange={handleFormChange}
+                  />
+                  <Input
+                    placeholder="Rôle"
+                    name="role"
+                    value={newCelebrant.role}
+                    onChange={handleFormChange}
+                  />
+                  <Button onClick={handleAddCelebrant}>Ajouter</Button>
+                </div>
+              )}
+
               <AlertDialogFooter>
                 <AlertDialogCancel>Annuler</AlertDialogCancel>
               </AlertDialogFooter>
