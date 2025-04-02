@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { MassCalendar } from '../features/calendar/MassCalendar';
 import { MassList } from '../features/calendar/MassList';
 import { FilterBar } from '../features/calendar/FilterBar';
+import { DateFilterBar } from '../features/calendar/DateFilterBar';
 import { MassModal } from '../features/calendar/MassModal';
 import { DaySlider } from '../features/calendar/DaySlider';
 import { Mass, ViewMode } from '../features/calendar/types';
@@ -15,9 +16,10 @@ function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isSliderOpen, setIsSliderOpen] = useState(false);
   const [filters, setFilters] = useState({
-    type: 'all',
-    location: 'all',
     celebrant: 'all',
+    startDate: null as Date | null,
+    endDate: null as Date | null,
+    futureOnly: false,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -79,11 +81,20 @@ function CalendarPage() {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
 
+  const handleDateFilterChange = (startDate: Date | null, endDate: Date | null) => {
+    setFilters(prev => ({ ...prev, startDate, endDate }));
+  };
+
+  const handleFutureOnlyChange = (checked: boolean) => {
+    setFilters(prev => ({ ...prev, futureOnly: checked }));
+  };
+
   const handleResetFilters = () => {
     setFilters({
-      type: 'all',
-      location: 'all',
       celebrant: 'all',
+      startDate: null,
+      endDate: null,
+      futureOnly: false,
     });
   };
 
@@ -105,6 +116,16 @@ function CalendarPage() {
           onFilterChange={handleFilterChange}
           onResetFilters={handleResetFilters}
         />
+
+        {viewMode === 'list' && (
+          <DateFilterBar
+            onFilterChange={handleDateFilterChange}
+            onFutureOnlyChange={handleFutureOnlyChange}
+            futureOnly={filters.futureOnly}
+            startDate={filters.startDate}
+            endDate={filters.endDate}
+          />
+        )}
 
         <div className="mt-6">
           {viewMode === 'calendar' ? (

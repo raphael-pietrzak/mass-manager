@@ -24,7 +24,7 @@ exports.getMass = async (req, res) => {
 exports.createMass = async (req, res) => {
   try {
     const mass = {
-      date: new Date(req.body.date + ' ' + req.body.time),
+      date: req.body.date,
       type: req.body.type || 'basse',
       location: req.body.location,
       celebrant_id: req.body.celebrant,
@@ -59,7 +59,7 @@ exports.updateMass = async (req, res) => {
   try {
     const mass = {
       id: req.params.id,
-      date: new Date(req.body.date + ' ' + req.body.time),
+      date: req.body.date,
       celebrant_id: req.body.celebrant_id,
       intention: req.body.intention,
       location: req.body.location,
