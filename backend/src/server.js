@@ -8,8 +8,8 @@ const celebrantsRoutes = require('./routes/celebrants.routes');
 const intentionsRoutes = require('./routes/intentions.routes');
 const massesRoutes = require('./routes/masses.routes');
 const specialDaysRoutes = require('./routes/specialDays.routes');
-const paymentRoutes = require('./routes/payment.routes');
 const exportRoutes = require('./routes/export.routes');
+const authRoutes = require('./routes/auth.routes');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -32,8 +32,8 @@ app.use('/api/data/celebrants', celebrantsRoutes);
 app.use('/api/data/intentions', intentionsRoutes);
 app.use('/api/data/masses', massesRoutes);
 app.use('/api/data/special-days', specialDaysRoutes);
-app.use('/api', paymentRoutes);
 app.use('/api/export', exportRoutes); // Intégration des routes d'exportation
+app.use('/api/auth', authRoutes);
 
 // Lancement du serveur
 app.listen(PORT, () => {

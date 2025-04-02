@@ -1,6 +1,7 @@
 
 
 // seeds/xxxxxx_seed_data.js
+const bcrypt = require('bcrypt');
 
 exports.seed = function(knex) {
   // Supprimez toutes les entrées existantes
@@ -68,6 +69,11 @@ exports.seed = function(knex) {
       return knex('SpecialDays').insert([
         { date: new Date('2024-12-25'), note: 'Noël', number_of_masses: 3 },
       ]);
+    })
+    .then(function () {;
+      return knex('Users').insert([
+        {login_name: 'admin', password: bcrypt.hashSync('admin', 10), email: 'secretariat@lagrasse.org'}
+      ])
     });
     
 };
