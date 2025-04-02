@@ -7,6 +7,7 @@ import { MassModal } from '../features/calendar/MassModal';
 import { DaySlider } from '../features/calendar/DaySlider';
 import { Mass, ViewMode } from '../features/calendar/types';
 import { massService } from '../api/massService';
+import { exportService } from '../api/exportService';
 
 function CalendarPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('calendar');
@@ -103,6 +104,24 @@ function CalendarPage() {
     setIsModalOpen(true);
   };
 
+  const handleExport = async (format: 'word' | 'excel' | 'pdf') => {
+    try {
+      switch (format) {
+        case 'word':
+          await exportService.exportToWord();
+          break;
+        case 'excel':
+          await exportService.exportToExcel();
+          break;
+        case 'pdf':
+          await exportService.exportToPdf();
+          break;
+      }
+    } catch (err) {
+      setError(`Erreur lors de l'exportation au format ${format}`);
+    }
+  };
+
   if (loading) return <div>Chargement...</div>;
   if (error) return <div>Erreur: {error}</div>;
 
@@ -116,6 +135,28 @@ function CalendarPage() {
           onFilterChange={handleFilterChange}
           onResetFilters={handleResetFilters}
         />
+
+        {/* Boutons d'exportation */}
+        <div className="mt-4 flex space-x-2">
+          <button
+            onClick={() => handleExport('word')}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            Exporter en Word
+          </button>
+          <button
+            onClick={() => handleExport('excel')}
+            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+          >
+            Exporter en Excel
+          </button>
+          <button
+            onClick={() => handleExport('pdf')}
+            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+          >
+            Exporter en PDF
+          </button>
+        </div>
 
         {viewMode === 'list' && (
           <DateFilterBar
