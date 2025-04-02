@@ -2,7 +2,7 @@ import axios from 'axios';
 import { Mass } from '../features/calendar/types';
 import { formatDate, extractTimeOnly } from '../utils/dateUtils';
 
-const API_URL = 'http://localhost:3001/api/data';
+const API_URL = `${import.meta.env.VITE_API_URL}/api/data`;
 
 export const massService = {
   getMasses: async (): Promise<Mass[]> => {
