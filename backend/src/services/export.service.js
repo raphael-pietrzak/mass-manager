@@ -1,4 +1,4 @@
-const { Document, Paragraph, Table, TableRow, TableCell, HeadingLevel, AlignmentType } = require('docx');
+const { Document, Paragraph, Table, TableRow, TableCell, HeadingLevel, AlignmentType, Packer } = require('docx');
 const ExcelJS = require('exceljs');
 const PDFDocument = require('pdfkit-table');
 
