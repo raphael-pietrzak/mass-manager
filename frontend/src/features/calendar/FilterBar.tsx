@@ -1,12 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { List, Calendar as CalendarIcon, RotateCcw } from 'lucide-react';
+import { celebrantService, Celebrant } from '../../api/celebrantService';
 
 interface FilterBarProps {
   viewMode: 'calendar' | 'list';
   onViewModeChange: (mode: 'calendar' | 'list') => void;
   filters: {
-    type: string;
-    location: string;
     celebrant: string;
   };
   onFilterChange: (key: string, value: string) => void;
@@ -20,6 +19,25 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   onFilterChange,
   onResetFilters,
 }) => {
+  const [celebrants, setCelebrants] = useState<Celebrant[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const loadCelebrants = async () => {
+      setLoading(true);
+      try {
+        const data = await celebrantService.getCelebrants();
+        setCelebrants(data);
+      } catch (error) {
+        console.error("Erreur lors du chargement des célébrants:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCelebrants();
+  }, []);
+
   return (
     <div className="bg-white rounded-lg shadow p-4 mb-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -49,37 +67,19 @@ export const FilterBar: React.FC<FilterBarProps> = ({
 
           <div className="flex flex-wrap gap-4 items-center">
             <select
-              value={filters.type}
-              onChange={(e) => onFilterChange('type', e.target.value)}
-              className="rounded-lg border-gray-300 text-gray-700 px-3 py-2"
-            >
-              <option value="all">Tous types</option>
-              <option value="basse">Messe basse</option>
-              <option value="chantée">Messe chantée</option>
-            </select>
-
-            <select
-              value={filters.location}
-              onChange={(e) => onFilterChange('location', e.target.value)}
-              className="rounded-lg border-gray-300 text-gray-700 px-3 py-2"
-            >
-              <option value="all">Tous lieux</option>
-              <option value="Main Chapel">Chapelle principale</option>
-              <option value="Side Chapel">Chapelle latérale</option>
-              <option value="Cathedral">Cathédrale</option>
-            </select>
-
-            <select
               value={filters.celebrant}
               onChange={(e) => onFilterChange('celebrant', e.target.value)}
               className="rounded-lg border-gray-300 text-gray-700 px-3 py-2"
+              disabled={loading}
             >
               <option value="all">Tous célébrants</option>
-              <option value="Père Jean">Père Jean</option>
-              <option value="Père Pierre">Père Pierre</option>
-              <option value="Père Marc">Père Marc</option>
-              <option value="Père Antoine">Père Antoine</option>
+              {celebrants.map(celebrant => (
+                <option key={celebrant.id} value={celebrant.id}>
+                  {celebrant.title} {celebrant.religious_name || `${celebrant.civil_first_name} ${celebrant.civil_last_name}`}
+                </option>
+              ))}
             </select>
+            {loading && <span className="text-gray-500 text-sm">Chargement...</span>}
           </div>
         </div>
 
