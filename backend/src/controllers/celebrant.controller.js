@@ -10,6 +10,23 @@ exports.getCelebrants = async (req, res) => {
   }
 };
 
+exports.getAvailableCelebrants = async (req, res) => {
+  console.log('getAvailableCelebrants');
+  try {
+    const { date } = req.query;
+    
+    if (!date) {
+      return res.status(400).json({ message: 'La date est requise' });
+    }
+    
+    const data = await Celebrant.getAvailableByDate(date);
+    res.json(data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erreur lors de la récupération des célébrants disponibles' });
+  }
+};
+
 exports.getCelebrant = async (req, res) => {
   try {
     const id = req.params.id;

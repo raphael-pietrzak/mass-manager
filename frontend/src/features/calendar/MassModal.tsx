@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, AlertTriangle } from 'lucide-react';
+import { X, AlertTriangle, RotateCw } from 'lucide-react';
 import { Mass } from './types';
 import { DropdownSearch } from '../../components/DropdownSearch';
 import { celebrantService, Celebrant } from '../../api/celebrantService';
@@ -21,7 +21,8 @@ export const MassModal: React.FC<MassModalProps> = ({
 }) => {
   const [celebrants, setCelebrants] = useState<Celebrant[]>([]);
   const [selectedCelebrant, setSelectedCelebrant] = useState<string>('');
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false); // État pour la confirmation
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showRecurrenceModal, setShowRecurrenceModal] = useState(false);
   
   // Valeur par défaut pour le célébrant non assigné
   const UNASSIGNED_VALUE = "unassigned";
@@ -30,7 +31,7 @@ export const MassModal: React.FC<MassModalProps> = ({
   const defaultMass = mass || {
     id: '',
     date: new Date().toISOString().split('T')[0],
-    time: '08:00',
+    time: '08:00', // Conservé dans les données mais plus édité via l'interface
     celebrant: UNASSIGNED_VALUE,
     location: 'Main Chapel',
     type: 'basse',
@@ -46,6 +47,7 @@ export const MassModal: React.FC<MassModalProps> = ({
     }
     // Réinitialiser l'état de confirmation à chaque ouverture
     setShowDeleteConfirm(false);
+    setShowRecurrenceModal(false);
   }, [isOpen, mass]);
 
   useEffect(() => {
@@ -71,8 +73,8 @@ export const MassModal: React.FC<MassModalProps> = ({
     const updatedMass: Mass = {
       ...defaultMass,
       date: formData.get('date') as string,
-      time: formData.get('time') as string,
-      celebrant: selectedCelebrant, // Utilise l'état local au lieu du formulaire
+      time: defaultMass.time, // Utilise la valeur par défaut ou existante
+      celebrant: selectedCelebrant,
       location: formData.get('location') as string,
       type: formData.get('type') as 'basse' | 'chantée',
       intention: formData.get('intention') as string,
@@ -84,6 +86,10 @@ export const MassModal: React.FC<MassModalProps> = ({
     if (mass && onDelete) {
       onDelete(mass);
     }
+  };
+
+  const handleRecurrenceClick = () => {
+    setShowRecurrenceModal(true);
   };
 
   const celebrantOptions = [
@@ -139,10 +145,25 @@ export const MassModal: React.FC<MassModalProps> = ({
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
+          {/* Intention - Maintenant en premier et obligatoire */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Intention <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              name="intention"
+              defaultValue={defaultMass.intention}
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              rows={3}
+              required
+            />
+          </div>
+
+          {/* Date avec icône de récurrence */}
+          <div className="flex items-end gap-2">
+            <div className="flex-grow">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Date
+                Date <span className="text-red-500">*</span>
               </label>
               <input
                 type="date"
@@ -152,20 +173,17 @@ export const MassModal: React.FC<MassModalProps> = ({
                 required
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Heure
-              </label>
-              <input
-                type="time"
-                name="time"
-                defaultValue={defaultMass.time}
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                required
-              />
-            </div>
+            <button
+              type="button"
+              onClick={handleRecurrenceClick}
+              className="p-2 mb-0.5 hover:bg-gray-100 rounded-md border border-gray-300"
+              title="Programmer une récurrence"
+            >
+              <RotateCw className="w-5 h-5 text-blue-600" />
+            </button>
           </div>
 
+          {/* Célébrant */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Célébrant
@@ -176,18 +194,6 @@ export const MassModal: React.FC<MassModalProps> = ({
               onChange={(value) => setSelectedCelebrant(value)}
               placeholder="Sélectionner un célébrant"
               defaultValue={UNASSIGNED_VALUE}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Intention (optionnel)
-            </label>
-            <textarea
-              name="intention"
-              defaultValue={defaultMass.intention}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              rows={3}
             />
           </div>
 

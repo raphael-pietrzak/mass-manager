@@ -1,5 +1,5 @@
 export interface Mass {
-  _id: string;
+  id?: string;
   date: string; // format YYYY-MM-DD
   time: string; // format HH:MM
   type: 'basse' | 'chantée';
