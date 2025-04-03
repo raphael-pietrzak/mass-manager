@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, AlertTriangle, RotateCw, User } from 'lucide-react';
+import { X, AlertTriangle, RotateCw, User, CalendarIcon } from 'lucide-react';
 import { Mass } from './types';
 import { DropdownSearch } from '../../components/DropdownSearch';
 import { celebrantService, Celebrant } from '../../api/celebrantService';
@@ -9,6 +9,10 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import RegularityForm from '../../components/forms/RegularityForm';
 import DonorForm from '../../components/forms/DonorForm';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { fr } from 'date-fns/locale';
 
 interface MassModalProps {
   mass: Mass | null;
@@ -67,6 +71,11 @@ export const MassModal: React.FC<MassModalProps> = ({
     type: 'basse',
     intention: '',
   };
+
+  // État pour la date sélectionnée
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    mass?.date ? new Date(mass.date) : new Date()
+  );
   
   // Met à jour l'état du célébrant sélectionné quand le modal s'ouvre
   useEffect(() => {
@@ -77,8 +86,10 @@ export const MassModal: React.FC<MassModalProps> = ({
         intention: mass.intention || '',
         date: mass.date ? new Date(mass.date) : undefined,
       }));
+      setSelectedDate(mass.date ? new Date(mass.date) : new Date());
     } else if (isOpen) {
       setSelectedCelebrant(UNASSIGNED_VALUE);
+      setSelectedDate(new Date());
     }
     // Réinitialiser l'état de confirmation à chaque ouverture
     setShowDeleteConfirm(false);
@@ -105,14 +116,15 @@ export const MassModal: React.FC<MassModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const formData = new FormData(e.target as HTMLFormElement);
+    const formEl = e.target as HTMLFormElement;
+    const formData = new FormData(formEl);
     const updatedMass: Mass = {
       ...defaultMass,
-      date: formData.get('date') as string,
+      date: selectedDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
       time: defaultMass.time,
       celebrant: selectedCelebrant,
-      location: formData.get('location') as string,
-      type: formData.get('type') as 'basse' | 'chantée',
+      location: formData.get('location') as string || defaultMass.location,
+      type: formData.get('type') as 'basse' | 'chantée' || defaultMass.type,
       intention: formData.get('intention') as string,
     };
     onSave(updatedMass);
@@ -244,19 +256,37 @@ export const MassModal: React.FC<MassModalProps> = ({
                 />
               </div>
 
-              {/* Date avec icônes de récurrence et infos personnelles */}
+              {/* Date avec Popover/Calendar et icônes */}
               <div className="flex items-end gap-2">
                 <div className="flex-grow space-y-2">
                   <Label htmlFor="date">
                     Date <span className="text-red-500">*</span>
                   </Label>
-                  <Input
-                    type="date"
-                    id="date"
-                    name="date"
-                    defaultValue={defaultMass.date}
-                    required
-                  />
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        className="w-full justify-start text-left font-normal"
+                        id="date"
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {selectedDate ? (
+                          format(selectedDate, 'P', { locale: fr })
+                        ) : (
+                          <span>Sélectionner une date</span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={(date: Date | undefined) => setSelectedDate(date)}
+                        initialFocus
+                        locale={fr}
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <Button
                   type="button"
@@ -265,7 +295,7 @@ export const MassModal: React.FC<MassModalProps> = ({
                   onClick={handleRecurrenceClick}
                   title="Programmer une récurrence"
                 >
-                  <RotateCw className="w-5 h-5 text-blue-600" />
+                  <RotateCw className="w-5 h-5" />
                 </Button>
                 <Button
                   type="button"
@@ -274,7 +304,7 @@ export const MassModal: React.FC<MassModalProps> = ({
                   onClick={handleDonorClick}
                   title="Informations du donateur"
                 >
-                  <User className="w-5 h-5 text-blue-600" />
+                  <User className="w-5 h-5" />
                 </Button>
               </div>
 
