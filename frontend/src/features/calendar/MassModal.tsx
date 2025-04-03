@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { X, AlertTriangle, RotateCw } from 'lucide-react';
+import { X, AlertTriangle, RotateCw, User } from 'lucide-react';
 import { Mass } from './types';
 import { DropdownSearch } from '../../components/DropdownSearch';
 import { celebrantService, Celebrant } from '../../api/celebrantService';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import RegularityForm from '../../components/forms/RegularityForm';
+import DonorForm from '../../components/forms/DonorForm';
 
 interface MassModalProps {
   mass: Mass | null;
@@ -23,9 +29,33 @@ export const MassModal: React.FC<MassModalProps> = ({
   const [selectedCelebrant, setSelectedCelebrant] = useState<string>('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showRecurrenceModal, setShowRecurrenceModal] = useState(false);
+  const [showDonorModal, setShowDonorModal] = useState(false);
   
   // Valeur par défaut pour le célébrant non assigné
   const UNASSIGNED_VALUE = "unassigned";
+  
+  // Données de formulaire pour la récurrence et le donateur
+  const [formData, setFormData] = useState({
+    intention: '',
+    massCount: 1,
+    massType: 'unite',
+    dateType: 'indifferente',
+    date: undefined as Date | undefined,
+    celebrant: '',
+    amount: '20',
+    paymentMethod: 'card',
+    brotherName: '',
+    wantsCelebrationDate: false,
+    email: '',
+    phone: '',
+    address: '',
+    isRecurrent: false,
+    startDate: null as Date | null,
+    recurrenceType: 'weekly',
+    endType: 'occurrences' as 'occurrences' | 'date',
+    occurrences: 1,
+    endDate: null as Date | null
+  });
   
   // Initialise les données par défaut
   const defaultMass = mass || {
@@ -42,12 +72,18 @@ export const MassModal: React.FC<MassModalProps> = ({
   useEffect(() => {
     if (isOpen && mass) {
       setSelectedCelebrant(mass.celebrant || UNASSIGNED_VALUE);
+      setFormData(prev => ({
+        ...prev,
+        intention: mass.intention || '',
+        date: mass.date ? new Date(mass.date) : undefined,
+      }));
     } else if (isOpen) {
       setSelectedCelebrant(UNASSIGNED_VALUE);
     }
     // Réinitialiser l'état de confirmation à chaque ouverture
     setShowDeleteConfirm(false);
     setShowRecurrenceModal(false);
+    setShowDonorModal(false);
   }, [isOpen, mass]);
 
   useEffect(() => {
@@ -73,7 +109,7 @@ export const MassModal: React.FC<MassModalProps> = ({
     const updatedMass: Mass = {
       ...defaultMass,
       date: formData.get('date') as string,
-      time: defaultMass.time, // Utilise la valeur par défaut ou existante
+      time: defaultMass.time,
       celebrant: selectedCelebrant,
       location: formData.get('location') as string,
       type: formData.get('type') as 'basse' | 'chantée',
@@ -92,6 +128,14 @@ export const MassModal: React.FC<MassModalProps> = ({
     setShowRecurrenceModal(true);
   };
 
+  const handleDonorClick = () => {
+    setShowDonorModal(true);
+  };
+
+  const updateFormData = (data: Partial<typeof formData>) => {
+    setFormData(prev => ({ ...prev, ...data }));
+  };
+
   const celebrantOptions = [
     { value: UNASSIGNED_VALUE, label: "Aléatoire" },
     ...celebrants.map(c => ({
@@ -102,131 +146,181 @@ export const MassModal: React.FC<MassModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 max-w-lg w-full mx-4">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">
-            {mass ? 'Modifier la messe' : 'Ajouter une messe'}
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-1 hover:bg-gray-100 rounded-full"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-        
-        {/* Boîte de dialogue de confirmation de suppression */}
-        {showDeleteConfirm && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-300 rounded-md">
-            <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle className="w-5 h-5 text-red-500" />
-              <p className="text-red-700 font-medium">Confirmer la suppression</p>
-            </div>
-            <p className="text-sm text-red-600 mb-3">
-              Êtes-vous sûr de vouloir supprimer cette messe ? Cette action est irréversible.
-            </p>
-            <div className="flex justify-end space-x-2">
-              <button
-                type="button"
-                onClick={() => setShowDeleteConfirm(false)}
-                className="px-3 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-              >
-                Annuler
-              </button>
-              <button
-                type="button"
-                onClick={handleDelete}
-                className="px-3 py-1 text-xs font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
-              >
-                Supprimer
-              </button>
-            </div>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Intention - Maintenant en premier et obligatoire */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Intention <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              name="intention"
-              defaultValue={defaultMass.intention}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              rows={3}
-              required
-            />
-          </div>
-
-          {/* Date avec icône de récurrence */}
-          <div className="flex items-end gap-2">
-            <div className="flex-grow">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Date <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="date"
-                name="date"
-                defaultValue={defaultMass.date}
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                required
-              />
-            </div>
-            <button
-              type="button"
-              onClick={handleRecurrenceClick}
-              className="p-2 mb-0.5 hover:bg-gray-100 rounded-md border border-gray-300"
-              title="Programmer une récurrence"
+      {showRecurrenceModal ? (
+        <div className="bg-white rounded-lg max-w-md w-full mx-4">
+          <div className="p-4 flex justify-between items-center border-b">
+            <h3 className="font-medium">Configuration de la récurrence</h3>
+            <button 
+              onClick={() => setShowRecurrenceModal(false)} 
+              className="p-1 hover:bg-gray-100 rounded-full"
             >
-              <RotateCw className="w-5 h-5 text-blue-600" />
+              <X className="w-5 h-5" />
             </button>
           </div>
-
-          {/* Célébrant */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Célébrant
-            </label>
-            <DropdownSearch
-              options={celebrantOptions}
-              value={selectedCelebrant}
-              onChange={(value) => setSelectedCelebrant(value)}
-              placeholder="Sélectionner un célébrant"
-              defaultValue={UNASSIGNED_VALUE}
+          <div className="p-4">
+            <RegularityForm 
+              formData={formData}
+              updateFormData={updateFormData}
+              onValidate={() => setShowRecurrenceModal(false)}
             />
           </div>
-
-          <div className="flex justify-between space-x-3 pt-4">
-            {/* Bouton de suppression, visible uniquement lors de la modification d'une messe existante */}
-            {mass && mass.id && onDelete && (
+        </div>
+      ) : showDonorModal ? (
+        <div className="bg-white rounded-lg max-w-md w-full mx-4">
+          <div className="p-4 flex justify-between items-center border-b">
+            <h3 className="font-medium">Informations du donateur</h3>
+            <button 
+              onClick={() => setShowDonorModal(false)} 
+              className="p-1 hover:bg-gray-100 rounded-full"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="p-4">
+            <DonorForm 
+              formData={formData}
+              updateFormData={updateFormData}
+              onValidate={() => setShowDonorModal(false)}
+            />
+          </div>
+        </div>
+      ) : (
+        <Card className="max-w-lg w-full mx-4">
+          <CardHeader>
+            <div className="flex justify-between items-center">
+              <CardTitle>
+                {mass ? 'Modifier la messe' : 'Ajouter une messe'}
+              </CardTitle>
               <button
-                type="button"
-                onClick={() => setShowDeleteConfirm(true)}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
-              >
-                Supprimer
-              </button>
-            )}
-            
-            <div className="flex justify-end space-x-3 ml-auto">
-              <button
-                type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                className="p-1 hover:bg-gray-100 rounded-full"
               >
-                Annuler
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
-              >
-                Enregistrer
+                <X className="w-5 h-5" />
               </button>
             </div>
-          </div>
-        </form>
-      </div>
+          </CardHeader>
+          <CardContent>
+            {/* Boîte de dialogue de confirmation de suppression */}
+            {showDeleteConfirm && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-300 rounded-md">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertTriangle className="w-5 h-5 text-red-500" />
+                  <p className="text-red-700 font-medium">Confirmer la suppression</p>
+                </div>
+                <p className="text-sm text-red-600 mb-3">
+                  Êtes-vous sûr de vouloir supprimer cette messe ? Cette action est irréversible.
+                </p>
+                <div className="flex justify-end space-x-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowDeleteConfirm(false)}
+                    size="sm"
+                  >
+                    Annuler
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={handleDelete}
+                    size="sm"
+                  >
+                    Supprimer
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Intention */}
+              <div className="space-y-2">
+                <Label htmlFor="intention">
+                  Intention <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="intention"
+                  name="intention"
+                  defaultValue={defaultMass.intention}
+                  required
+                  placeholder="Votre intention..."
+                />
+              </div>
+
+              {/* Date avec icônes de récurrence et infos personnelles */}
+              <div className="flex items-end gap-2">
+                <div className="flex-grow space-y-2">
+                  <Label htmlFor="date">
+                    Date <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    type="date"
+                    id="date"
+                    name="date"
+                    defaultValue={defaultMass.date}
+                    required
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={handleRecurrenceClick}
+                  title="Programmer une récurrence"
+                >
+                  <RotateCw className="w-5 h-5 text-blue-600" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={handleDonorClick}
+                  title="Informations du donateur"
+                >
+                  <User className="w-5 h-5 text-blue-600" />
+                </Button>
+              </div>
+
+              {/* Célébrant */}
+              <div className="space-y-2">
+                <Label>Célébrant</Label>
+                <DropdownSearch
+                  options={celebrantOptions}
+                  value={selectedCelebrant}
+                  onChange={(value) => setSelectedCelebrant(value)}
+                  placeholder="Sélectionner un célébrant"
+                  defaultValue={UNASSIGNED_VALUE}
+                />
+              </div>
+
+              <div className="flex justify-between space-x-3 pt-4">
+                {/* Bouton de suppression */}
+                {mass && mass.id && onDelete && (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={() => setShowDeleteConfirm(true)}
+                  >
+                    Supprimer
+                  </Button>
+                )}
+                
+                <div className="flex justify-end space-x-3 ml-auto">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onClose}
+                  >
+                    Annuler
+                  </Button>
+                  <Button
+                    type="submit"
+                  >
+                    Enregistrer
+                  </Button>
+                </div>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
