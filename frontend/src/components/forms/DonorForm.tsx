@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from '@/components/ui/button';
 
-interface FormData {
+interface DonorFormData {
   wantsCelebrationDate: boolean;
   email: string;
   phone: string;
@@ -12,8 +12,8 @@ interface FormData {
 }
 
 interface DonorFormProps {
-  formData: FormData;
-  updateFormData: (data: Partial<FormData>) => void;
+  formData: DonorFormData;
+  updateFormData: (data: Partial<DonorFormData>) => void;
   onValidate: () => void;
 }
 
