@@ -1,6 +1,7 @@
 import axios from 'axios';
+import { API_BASE_URL } from '.';
 
-const EXPORT_URL = 'http://localhost:3001/api/export/masses';
+const EXPORT_URL = `${API_BASE_URL}/api/export/masses`;
 
 export const exportService = {
   exportToWord: async () => {

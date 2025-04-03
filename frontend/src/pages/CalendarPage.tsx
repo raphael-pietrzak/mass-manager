@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MassCalendar } from '../features/calendar/MassCalendar';
 import { MassList } from '../features/calendar/MassList';
 import { FilterBar } from '../features/calendar/FilterBar';
@@ -24,6 +24,8 @@ function CalendarPage() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+  const exportMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchMasses = async () => {
@@ -39,6 +41,18 @@ function CalendarPage() {
 
     fetchMasses();
   }, []);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(event.target as Node)) {
+        setIsExportMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [exportMenuRef]);
 
   const handleMassClick = (mass: Mass) => {
     setSelectedMass(mass);
@@ -136,26 +150,47 @@ function CalendarPage() {
           onResetFilters={handleResetFilters}
         />
 
-        {/* Boutons d'exportation */}
-        <div className="mt-4 flex space-x-2">
-          <button
-            onClick={() => handleExport('word')}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            Exporter en Word
-          </button>
-          <button
-            onClick={() => handleExport('excel')}
-            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
-          >
-            Exporter en Excel
-          </button>
-          <button
-            onClick={() => handleExport('pdf')}
-            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-          >
-            Exporter en PDF
-          </button>
+        {/* Menu d'exportation discret */}
+        <div className="mt-4 flex justify-end" ref={exportMenuRef}>
+          <div className="relative">
+            <button
+              onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
+              className="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none flex items-center gap-1"
+            >
+              <span>Exporter</span>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            
+            {isExportMenuOpen && (
+              <div className="absolute right-0 mt-1 w-36 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+                <ul className="py-1">
+                  <li 
+                    className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer flex items-center"
+                    onClick={() => { handleExport('word'); setIsExportMenuOpen(false); }}
+                  >
+                    <span className="w-3 h-3 bg-blue-600 rounded-sm mr-2"></span>
+                    Format Word
+                  </li>
+                  <li 
+                    className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer flex items-center"
+                    onClick={() => { handleExport('excel'); setIsExportMenuOpen(false); }}
+                  >
+                    <span className="w-3 h-3 bg-green-600 rounded-sm mr-2"></span>
+                    Format Excel
+                  </li>
+                  <li 
+                    className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer flex items-center"
+                    onClick={() => { handleExport('pdf'); setIsExportMenuOpen(false); }}
+                  >
+                    <span className="w-3 h-3 bg-red-600 rounded-sm mr-2"></span>
+                    Format PDF
+                  </li>
+                </ul>
+              </div>
+            )}
+          </div>
         </div>
 
         {viewMode === 'list' && (
@@ -201,25 +236,27 @@ function CalendarPage() {
         />
 
         {/* Bouton flottant pour ajouter une messe */}
-        <button
-          onClick={handleAddMass}
-          className="fixed bottom-6 right-6 p-4 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 z-50"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+        {!isModalOpen && (
+          <button
+            onClick={handleAddMass}
+            className="fixed bottom-6 right-6 p-4 bg-gray-900 text-white rounded-full shadow-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 z-50"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-            />
-          </svg>
-        </button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+              />
+            </svg>
+          </button>
+        )}
       </main>
     </div>
   );
