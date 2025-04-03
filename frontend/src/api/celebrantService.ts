@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { API_BASE_URL } from '.';
 
 export interface Celebrant {
   id: string;
@@ -9,7 +10,7 @@ export interface Celebrant {
   role: string;
 }
 
-const API_URL = `${import.meta.env.VITE_API_URL}/api/data`;
+const API_URL = `${API_BASE_URL}/api/data`;
 
 class CelebrantService {
   async getCelebrants(): Promise<Celebrant[]> {
