@@ -7,12 +7,8 @@ import AdminPage from '../pages/AdminPage';
 import HomePage from '../pages/HomePage';
 import DatabaseTabs from '../pages/Database';
 import { Intention } from '../pages/Intention';
-import ProtectedRoute from './ProtectedRoutes';
+import ProtectedRoute from './ProtectedRoute';
 import LoginPage from '../pages/LoginPage';
-
-
-
-
 
 const AppRouter: React.FC = () => (
   <Router>
@@ -21,20 +17,11 @@ const AppRouter: React.FC = () => (
       <Route path="/about" element={<AboutPage />} />
       <Route path="/intention" element={<Intention />} />
       <Route path="/calendar" element={<CalendarPage />} />
-      <Route path="/database" element={<DatabaseTabs/> } />
+      <Route path="/database" element={<ProtectedRoute><DatabaseTabs/> </ProtectedRoute>} />
       <Route path="/login" element={<LoginPage />} />
-       {/* Route protégée */}
-       <Route
-        path="/admin"
-        element={
-          <ProtectedRoute>
-            <AdminPage />
-          </ProtectedRoute>
-        }
-      />
+      <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>}/>
     </Routes>
   </Router>
 );
-
 
 export default AppRouter;
