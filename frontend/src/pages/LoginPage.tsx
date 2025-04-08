@@ -1,6 +1,6 @@
 // LoginPage.tsx
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
@@ -9,18 +9,15 @@ import { useAuth } from '../features/calendar/AuthContext';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate(); // Utiliser useNavigate pour la redirection
+  const location = useLocation();
   const [loginName, setLoginName] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const { isAuthenticated, loading } = useAuth();
+  //const { isAuthenticated, loading } = useAuth();
   const { setIsAuthenticated } = useAuth();
 
-
-  useEffect(() => {
-    if (!loading && isAuthenticated) {
-      navigate('/admin');
-    }
-  }, [isAuthenticated, loading, navigate]);
+  // Récupérer la route d'origine avant la redirection vers /login
+  const from = location.state?.from?.pathname || '/admin';  // Si aucun 'from', rediriger vers /admin par défaut
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +37,7 @@ const LoginPage: React.FC = () => {
 
       if (response.status === 200) {
         setIsAuthenticated(true); // update le contexte global
-        navigate('/admin');
+        navigate(from);
       }
     } catch (error: any) {
       if (error.response?.data?.error) {

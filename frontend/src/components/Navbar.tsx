@@ -31,7 +31,6 @@ const Navbar: React.FC = () => {
 
   const handleLogout = async () => {
     await logout(); // attend bien la réponse
-    setTimeout(() => window.location.href = "/login", 200); // petite pause
   };
 
   return (

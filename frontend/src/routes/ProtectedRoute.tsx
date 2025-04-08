@@ -1,6 +1,6 @@
 // src/components/ProtectedRoute.tsx
-import React from 'react';
-import { Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../features/calendar/AuthContext';
 
 interface ProtectedRouteProps {
@@ -9,14 +9,18 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
+  const location = useLocation();
+
+  useEffect(() => {
+  }, [location]);
 
   if (loading) {
-    // Tu peux personnaliser ce loader si tu veux
     return <div className="flex justify-center items-center h-screen">Chargement...</div>;
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    // Si l'utilisateur n'est pas authentifié, on le redirige vers /login
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   return <>{children}</>;

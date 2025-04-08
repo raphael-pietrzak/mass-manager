@@ -51,7 +51,7 @@ const logoutUser = (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "None",
+    sameSite: "Strict",
     path: "/",       
   });
   res.status(200).json({ message: 'Déconnexion réussie' });
