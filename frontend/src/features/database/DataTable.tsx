@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Edit, Trash } from 'lucide-react';
-import { tabs } from '../api/tabs';
+import { tabs } from './tabs';
 
 interface DataTableProps {
   data: any[];

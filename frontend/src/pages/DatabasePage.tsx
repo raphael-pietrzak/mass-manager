@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { EditRowDialog } from '../components/dialogs/EditRowDialog';
 import { useFetchData } from '../hooks/useFetchData';
-import { TabsNavigation } from '../components/TabsNavigation';
-import { DataTable } from '../components/DataTable';
-import { tabs } from '../api/tabs';
+import { TabsNavigation } from '../features/database/TabsNavigation';
+import { DataTable } from '../features/database/DataTable';
+import { tabs } from '../features/database/tabs';
 import { useDeleteData } from '../hooks/useDeleteData';
 import { useUpdateData } from '../hooks/useUpdateData';
 import { DeleteConfirmationDialog } from '../components/dialogs/DeleteConfirmationDialog';

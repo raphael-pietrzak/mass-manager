@@ -1,6 +1,6 @@
 
 import axios from 'axios';
-import { tabs } from '../api/tabs';
+import { tabs } from '../features/database/tabs';
 
 export const useUpdateData = (activeTab: string, setData: React.Dispatch<React.SetStateAction<any[]>>) => {
   const handleUpdate = async (updatedData: any) => {

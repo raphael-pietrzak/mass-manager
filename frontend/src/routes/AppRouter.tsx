@@ -5,7 +5,7 @@ import AboutPage from '../pages/AboutPage';
 import CalendarPage from '../pages/CalendarPage';
 import AdminPage from '../pages/AdminPage';
 import HomePage from '../pages/HomePage';
-import DatabaseTabs from '../pages/Database';
+import DatabaseTabs from '../pages/DatabasePage';
 import { Intention } from '../pages/Intention';
 import ProtectedRoute from './ProtectedRoutes';
 import LoginPage from '../pages/LoginPage';

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { tabs } from '../api/tabs';
+import { tabs } from './tabs';
 
 interface TabsNavigationProps {
   activeTab: string;
