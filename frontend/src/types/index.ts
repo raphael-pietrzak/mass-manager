@@ -1,4 +1,6 @@
 
+
+
 export interface Donor {
     id: string;
     name: string;
@@ -7,6 +9,8 @@ export interface Donor {
     address: string;
     wants_notification: boolean;
 }
+
+
 
 export interface Celebrant {
     id: string;

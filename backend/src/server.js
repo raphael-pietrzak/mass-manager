@@ -14,15 +14,6 @@ const authRoutes = require('./routes/auth.routes');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  console.error('=======================================================');
-  console.error('|   !!! Attention: STRIPE_SECRET_KEY non définie. !!! |');
-  console.error('|   Veuillez créer les fichier .env dans les dossiers |');
-  console.error('|   backend et frontend et ajouter la clé secrète de  |');
-  console.error('|   votre compte Stripe.                              |');
-  console.error('=======================================================\n');
-}
-
 app.use(cors());
 app.use(express.json());
 
@@ -32,7 +23,7 @@ app.use('/api/data/celebrants', celebrantsRoutes);
 app.use('/api/data/intentions', intentionsRoutes);
 app.use('/api/data/masses', massesRoutes);
 app.use('/api/data/special-days', specialDaysRoutes);
-app.use('/api/export', exportRoutes); // Intégration des routes d'exportation
+app.use('/api/export', exportRoutes);
 app.use('/api/auth', authRoutes);
 
 // Lancement du serveur
