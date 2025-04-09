@@ -85,3 +85,5 @@ exports.deleteMass = async (req, res) => {
     res.status(500).send('Erreur lors de la suppression de la messe');
   }
 };
+
+// Les méthodes d'exportation ont été déplacées vers export.controller.js

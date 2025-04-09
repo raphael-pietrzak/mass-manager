@@ -17,7 +17,6 @@ interface NavLink {
 
 const NAV_LINKS: NavLink[] = [
   { label: "Database", href: "/database" },
-  { label: "Intention", href: "/intention" },
   { label: "Calendar", href: "/calendar" },
   { label: "Admin", href: "/admin" },
 

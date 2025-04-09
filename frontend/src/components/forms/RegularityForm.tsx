@@ -1,5 +1,4 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -25,15 +24,13 @@ interface FormData {
 interface RegularityFormProps {
   formData: FormData;
   updateFormData: (data: Partial<FormData>) => void;
-  nextStep: () => void;
-  prevStep: () => void;
+  onValidate: () => void;
 }
 
 const RegularityForm: React.FC<RegularityFormProps> = ({
   formData,
   updateFormData,
-  nextStep,
-  prevStep
+  onValidate
 }) => {
   const recurrenceOptions = [
     { value: 'daily', label: 'Quotidien' },
@@ -60,150 +57,118 @@ const RegularityForm: React.FC<RegularityFormProps> = ({
     return explanation;
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    nextStep();
-  };
-
   return (
-    <Card className="w-full max-w-md mx-auto min-h-[600px] flex flex-col">
-      <CardHeader>
-        <div className="flex justify-between items-center">
-          <CardTitle className="text-2xl">Récurrence</CardTitle>
-          <span className="text-sm text-muted-foreground">
-            Étape 3 sur 4
-          </span>
-        </div>
-        <div className="w-full bg-muted h-2 rounded-full mt-4">
-          <div 
-            className="bg-primary h-2 rounded-full" 
-            style={{ width: '75%' }}
-          />
-        </div>
-      </CardHeader>
-      <CardContent className="flex-1 flex flex-col">
-        <div className="flex-1 space-y-6">
-          <form onSubmit={handleSubmit} className="h-full flex flex-col space-y-6">
-            <div className="flex-1 space-y-6">
-              <div className="space-y-2">
-                <Label>Date de début</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start text-left font-normal">
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {formData.startDate ? (
-                        format(formData.startDate, 'P', { locale: fr })
-                      ) : (
-                        <span>Sélectionner une date</span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={formData.startDate}
-                      onSelect={(date) => updateFormData({ startDate: date })}
-                      initialFocus
-                      locale={fr}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Type de récurrence</Label>
-                <Select
-                  value={formData.recurrenceType}
-                  onValueChange={(value) => updateFormData({ recurrenceType: value })}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Sélectionner la récurrence" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {recurrenceOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Fin de la récurrence</Label>
-                <RadioGroup
-                  value={formData.endType}
-                  onValueChange={(value: 'occurrences' | 'date') => 
-                    updateFormData({ endType: value })}
-                  className="space-y-2"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="occurrences" id="occurrences" />
-                    <Label htmlFor="occurrences">Après</Label>
-                    <Input
-                      type="number"
-                      min="1"
-                      value={formData.occurrences}
-                      onChange={(e) => updateFormData({ 
-                        occurrences: parseInt(e.target.value) || 1 
-                      })}
-                      className="w-20"
-                    />
-                    <Label>occurrences</Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="date" id="date" />
-                    <Label htmlFor="date">À une date spécifique</Label>
-                  </div>
-                </RadioGroup>
-
-                {formData.endType === 'date' && (
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full justify-start text-left font-normal">
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {formData.endDate ? (
-                          format(formData.endDate, 'P', { locale: fr })
-                        ) : (
-                          <span>Sélectionner une date de fin</span>
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={formData.endDate}
-                        onSelect={(date: Date | null) => updateFormData({ endDate: date })}
-                        initialFocus
-                        locale={fr}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                )}
-              </div>
-
-              <Alert>
-                <AlertDescription>
-                  {getExplanation()}
-                </AlertDescription>
-              </Alert>
-            </div>
-          </form>
-        </div>
-
-        <div className="mt-auto pt-6">
-          <div className="flex space-x-4">
-            <Button variant="outline" type="button" className="w-full" onClick={prevStep}>
-              Précédent
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <Label>Date de début</Label>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className="w-full justify-start text-left font-normal">
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {formData.startDate ? (
+                format(formData.startDate, 'P', { locale: fr })
+              ) : (
+                <span>Sélectionner une date</span>
+              )}
             </Button>
-            <Button type="button" className="w-full" onClick={nextStep}>
-              Suivant
-            </Button>
+          </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={formData.startDate}
+              onSelect={(date: Date | null) => updateFormData({ startDate: date })}
+              initialFocus
+              locale={fr}
+            />
+            </PopoverContent>
+        </Popover>
+      </div>
+
+      <div className="space-y-2">
+        <Label>Type de récurrence</Label>
+        <Select
+          value={formData.recurrenceType}
+          onValueChange={(value: string) => updateFormData({ recurrenceType: value })}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Sélectionner la récurrence" />
+          </SelectTrigger>
+          <SelectContent>
+            {recurrenceOptions.map((option: { value: string; label: string }) => (
+              <SelectItem key={option.value} value={option.value}>
+          {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label>Fin de la récurrence</Label>
+        <RadioGroup
+          value={formData.endType}
+          onValueChange={(value: 'occurrences' | 'date') => 
+            updateFormData({ endType: value })}
+          className="space-y-2"
+        >
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="occurrences" id="occurrences" />
+            <Label htmlFor="occurrences">Après</Label>
+            <Input
+              type="number"
+              min="1"
+              value={formData.occurrences}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ 
+              occurrences: parseInt(e.target.value) || 1 
+              })}
+              className="w-20"
+            />
+            <Label>occurrences</Label>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="date" id="date" />
+            <Label htmlFor="date">À une date spécifique</Label>
+          </div>
+        </RadioGroup>
+
+        {formData.endType === 'date' && (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-full justify-start text-left font-normal">
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {formData.endDate ? (
+                  format(formData.endDate, 'P', { locale: fr })
+                ) : (
+                  <span>Sélectionner une date de fin</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={formData.endDate}
+                onSelect={(date: Date | null) => updateFormData({ endDate: date })}
+                initialFocus
+                locale={fr}
+              />
+            </PopoverContent>
+          </Popover>
+        )}
+      </div>
+
+      <Alert>
+        <AlertDescription>
+          {getExplanation()}
+        </AlertDescription>
+      </Alert>
+
+      <div className="pt-4">
+        <Button type="button" className="w-full" onClick={onValidate}>
+          Valider
+        </Button>
+      </div>
+    </div>
   );
 };
 
