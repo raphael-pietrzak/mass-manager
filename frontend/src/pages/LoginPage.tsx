@@ -1,61 +1,55 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+// LoginPage.tsx
+import React, { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
+import axios from 'axios';
+import { useAuth } from '../features/calendar/AuthContext';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate(); // Utiliser useNavigate pour la redirection
+  const location = useLocation();
   const [loginName, setLoginName] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  //const { isAuthenticated, loading } = useAuth();
+  const { setIsAuthenticated } = useAuth();
 
-  // Vérifier si l'utilisateur est déjà authentifié
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      navigate('/admin'); // Si un token existe, rediriger vers la page d'accueil
-    }
-  }, [navigate]);
+  // Récupérer la route d'origine avant la redirection vers /login
+  const from = location.state?.from?.pathname || '/admin';  // Si aucun 'from', rediriger vers /admin par défaut
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMessage(''); // Réinitialiser les messages d'erreur
-  
+    setErrorMessage('');
+
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ login_name: loginName, password: password }),
-      });
-  
-      const data = await response.json(); // Parse directement la réponse JSON
-      if (!response.ok) {
-        setErrorMessage(data.error);
-        return;
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/auth/login`,
+        {
+          login_name: loginName,
+          password: password,
+        },
+        {
+          withCredentials: true,
+        }
+      );
+
+      if (response.status === 200) {
+        setIsAuthenticated(true); // update le contexte global
+        navigate(from);
       }
-  
-      // Si la réponse est OK, rediriger
-      localStorage.setItem('token', data.token);
-      window.location.href = '/admin';
-  
-    } catch (error) {
-      console.error('Erreur de connexion:', error);
-      setErrorMessage('Une erreur est survenue, veuillez réessayer.'); // Erreur générale en cas d'exception
-    }
-  };
-  
-     
-  // Fonction pour détecter l'appui sur la touche "Entrée"
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleLogin(e); // Appeler la fonction de connexion lorsqu'Entrée est pressée
+    } catch (error: any) {
+      if (error.response?.data?.error) {
+        setErrorMessage(error.response.data.error);
+      } else {
+        setErrorMessage('Une erreur est survenue, veuillez réessayer.');
+      }
     }
   };
 
   return (
     <div className="flex items-center justify-center p-12">
-    
       <Card className="w-full max-w-md p-6 shadow-lg">
         <CardHeader>
           <CardTitle>Connexion</CardTitle>
@@ -70,7 +64,6 @@ const LoginPage: React.FC = () => {
               placeholder="Votre nom d'utilisateur"
               value={loginName}
               onChange={(e) => setLoginName(e.target.value)}
-              onKeyDown={handleKeyDown}
               required
             />
           </div>
@@ -81,7 +74,6 @@ const LoginPage: React.FC = () => {
               placeholder="Votre mot de passe"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={handleKeyDown}
               required
             />
           </div>
