@@ -14,7 +14,7 @@ exports.getIntentions = async (req, res) => {
 exports.getIntention = async (req, res) => {
   try {
     const id = req.params.id;
-    const data = await Intention.getById(id);
+    const data = await Intention.findById(id);
     res.json(data);
   } catch (error) {
     console.error(error);

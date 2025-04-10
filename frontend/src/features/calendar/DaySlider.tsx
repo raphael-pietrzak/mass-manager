@@ -63,23 +63,11 @@ export const DaySlider: React.FC<DaySliderProps> = ({
                         <Clock className="w-4 h-4 text-gray-500" />
                         <span className="font-medium">{mass.time}</span>
                       </div>
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs ${
-                          mass.type === 'basse'
-                            ? 'bg-red-100 text-red-800'
-                            : 'bg-blue-100 text-blue-800'
-                        }`}
-                      >
-                        {mass.type === 'basse' ? 'Basse' : 'Chantée'}
-                      </span>
                     </div>
 
                     <div className="space-y-1">
                       <p className="text-sm text-gray-600">
                         Célébrant: {mass.celebrant}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        Lieu: {mass.location}
                       </p>
                       {mass.intention && (
                         <p className="text-sm text-gray-600 italic">

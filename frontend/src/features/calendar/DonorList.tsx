@@ -2,7 +2,7 @@ import React from 'react';
 import { Mass } from './types';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Calendar, Clock, MapPin, User } from 'lucide-react';
+import { Calendar, Clock, User } from 'lucide-react';
 
 interface MassListProps {
   masses: Mass[];
