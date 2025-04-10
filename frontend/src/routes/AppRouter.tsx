@@ -19,6 +19,7 @@ const AppRouter: React.FC = () => (
       <Route path="/calendar" element={<CalendarPage />} />
       <Route path="/database" element={<ProtectedRoute><DatabaseTabs/> </ProtectedRoute>} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/donors" element={<DonorsPage/>} />
       <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>}/>
     </Routes>
   </Router>

@@ -16,10 +16,10 @@ interface NavLink {
 // intention regularity calendar admin
 
 const NAV_LINKS: NavLink[] = [
-  { label: "Database", href: "/database" },
-  { label: "Calendar", href: "/calendar" },
-  { label: "Admin", href: "/admin" },
-
+  { label: "Calendrier", href: "/calendar" },
+  { label: "Donateurs", href: "/donors" },
+  { label: "Base de données", href: "/database" },
+  { label: "Administrateur", href: "/admin" },
 ];
 
 const Navbar: React.FC = () => {
@@ -29,7 +29,7 @@ const Navbar: React.FC = () => {
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
   const handleLogout = async () => {
-    await logout(); // attend bien la réponse
+    await logout();
   };
 
   return (
@@ -40,16 +40,19 @@ const Navbar: React.FC = () => {
           Lagrasse.org
         </a>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex space-x-6">
+         {/* Desktop Navigation */}
+         <nav className="hidden md:flex space-x-6">
           {NAV_LINKS.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              className="text-gray-700 hover:text-primary transition-colors"
-            >
-              {link.label}
-            </a>
+            // Ajouter une condition pour "Database"
+            (link.label === "Base de données" && isAuthenticated) || link.label !== "Base de données" ? (
+              <a
+                key={link.href}
+                href={link.href}
+                className="text-gray-700 hover:text-primary transition-colors"
+              >
+                {link.label}
+              </a>
+            ) : null
           ))}
 
           {/* Bouton "Se déconnecter" si l'utilisateur est authentifié */}
