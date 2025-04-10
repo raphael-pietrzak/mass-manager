@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { tabs } from '../api/tabs';
+import { tabs } from '../features/database/tabs';
 
 export const useFetchData = (activeTab: string) => {
   const [data, setData] = useState<any[]>([]);

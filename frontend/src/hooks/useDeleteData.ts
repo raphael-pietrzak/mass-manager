@@ -1,6 +1,6 @@
 
 import axios from 'axios';
-import { tabs } from '../api/tabs';
+import { tabs } from '../features/database/tabs';
 
 export const useDeleteData = (activeTab: string, setData: React.Dispatch<React.SetStateAction<any[]>>) => {
   const handleDelete = async (id: number) => {
