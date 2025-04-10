@@ -3,9 +3,10 @@
 
 // Navbar.tsx
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MenuIcon } from "lucide-react";
+import { useAuth } from "../features/calendar/AuthContext";
 
 interface NavLink {
   label: string;
@@ -23,26 +24,13 @@ const NAV_LINKS: NavLink[] = [
 
 const Navbar: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false); // Authentification de l'utilisateur
+  const { isAuthenticated, logout } = useAuth();
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
-  const handleLogout = () => {
-    // Supprimer le token du localStorage
-    localStorage.removeItem("token");
-    setIsAuthenticated(false); // Mettre à jour l'état pour cacher le bouton de déconnexion
-    window.location.href = "/login"; // Redirection vers la page de connexion
+  const handleLogout = async () => {
+    await logout(); // attend bien la réponse
   };
-
-  useEffect(() => {
-    // Vérifie l'existence du token dans le localStorage à chaque fois que la page se charge
-    const token = localStorage.getItem("token");
-    if (token) {
-      setIsAuthenticated(true); // Si un token existe, l'utilisateur est authentifié
-    } else {
-      setIsAuthenticated(false); // Sinon, l'utilisateur n'est pas authentifié
-    }
-  }, []);
 
   return (
     <header className="w-full bg-white shadow-md">
@@ -64,7 +52,7 @@ const Navbar: React.FC = () => {
             </a>
           ))}
 
-          {/* Afficher le bouton "Se déconnecter" si l'utilisateur est authentifié */}
+          {/* Bouton "Se déconnecter" si l'utilisateur est authentifié */}
           {isAuthenticated && (
             <Button
               variant="outline"

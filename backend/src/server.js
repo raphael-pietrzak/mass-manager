@@ -13,8 +13,14 @@ const authRoutes = require('./routes/auth.routes');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
 
-app.use(cors());
+app.use(cors({
+  origin: process.env.VITE_FRONT_URL || 'http://localhost:5173',
+  credentials: true,          // permet d'envoyer/recevoir les cookies
+}));
+
 app.use(express.json());
 
 // Utilisation des routes
