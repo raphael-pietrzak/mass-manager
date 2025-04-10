@@ -5,7 +5,8 @@ import { FilterBar } from '../features/calendar/FilterBar';
 import { DateFilterBar } from '../features/calendar/DateFilterBar';
 import { MassModal } from '../features/calendar/MassModal';
 import { DaySlider } from '../features/calendar/DaySlider';
-import { Mass, ViewMode } from '../features/calendar/types';
+import { ViewMode } from '../features/calendar/types';
+import { Mass } from '../api/massService';
 import { massService } from '../api/massService';
 import { exportService } from '../api/exportService';
 
