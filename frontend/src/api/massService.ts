@@ -1,7 +1,17 @@
 import axios from 'axios';
-import { Mass } from '../features/calendar/types';
 import { formatDate, extractTimeOnly } from '../utils/dateUtils';
 import { API_BASE_URL } from '.';
+
+export interface Mass {
+  id?: string;
+  date: string; // format YYYY-MM-DD
+  time: string; // format HH:MM
+  type: 'basse' | 'chantée';
+  intention?: string;
+  celebrant: string;
+  location: string;
+  status?: 'scheduled' | 'cancelled';
+}
 
 const API_URL = `${API_BASE_URL}/api/data`;
 

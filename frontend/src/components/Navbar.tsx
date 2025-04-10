@@ -16,9 +16,9 @@ interface NavLink {
 // intention regularity calendar admin
 
 const NAV_LINKS: NavLink[] = [
-  { label: "Database", href: "/database" },
-  { label: "Calendar", href: "/calendar" },
-  { label: "Admin", href: "/admin" },
+  { label: "Base de donnée", href: "/database" },
+  { label: "Calendrier", href: "/calendar" },
+  { label: "Page Administrateur", href: "/admin" },
 
 ];
 
