@@ -8,6 +8,7 @@ interface EditRowDialogProps {
   data: any;
   columns: string[];
   formatters?: Record<string, (value: any) => any>;
+  title?: string;
 }
 
 export const EditRowDialog: React.FC<EditRowDialogProps> = ({
@@ -16,7 +17,8 @@ export const EditRowDialog: React.FC<EditRowDialogProps> = ({
   onSave,
   data,
   columns,
-  formatters = {}
+  formatters = {},
+  title = 'Modifier la ligne'
 }) => {
   const [formData, setFormData] = useState<any>({});
 
@@ -47,7 +49,9 @@ export const EditRowDialog: React.FC<EditRowDialogProps> = ({
       
       <div className="flex items-center justify-center min-h-screen">
         <div className="relative bg-white rounded-lg w-full max-w-md p-6 mx-4">
-          <h3 className="text-lg font-medium mb-4">Modifier la ligne</h3>
+          <h3 className="text-lg font-medium mb-4">
+            {title}
+          </h3>
           
           <form onSubmit={handleSubmit}>
             {editableColumns.map(column => (

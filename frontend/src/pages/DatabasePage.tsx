@@ -7,6 +7,7 @@ import { tabs } from '../features/database/tabs';
 import { useDeleteData } from '../hooks/useDeleteData';
 import { useUpdateData } from '../hooks/useUpdateData';
 import { DeleteConfirmationDialog } from '../components/dialogs/DeleteConfirmationDialog';
+import { Plus } from 'lucide-react';
 
 const DatabaseTabs: React.FC = () => {
   const [activeTab, setActiveTab] = useState(tabs[0].key);
@@ -14,6 +15,7 @@ const DatabaseTabs: React.FC = () => {
   const [editRowData, setEditRowData] = useState<any>(null);
   const [editColumns, setEditColumns] = useState<string[]>([]);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
 
   // Utiliser le hook personnalisé pour gérer les données
   const { data, loading, error, setData } = useFetchData(activeTab);
@@ -43,16 +45,59 @@ const DatabaseTabs: React.FC = () => {
     
     setEditRowData(row);
     setEditColumns(columns);
+    setIsCreating(false);
     setIsEditDialogOpen(true);
   };
 
   const handleSave = (updatedData: any) => {
-    handleUpdate(updatedData);
+    if (isCreating) {
+      // Logique pour créer un nouveau champ
+      console.log("Créer un nouveau champ:", updatedData);
+      // Vous pourriez implémenter un hook useCreateData similaire à useUpdateData
+    } else {
+      handleUpdate(updatedData);
+    }
+  };
+
+  const handleAddField = () => {
+    const selectedTab = tabs.find(tab => tab.key === activeTab);
+    if (!selectedTab) return;
+    
+    // Récupérer les colonnes pour le tab actif
+    const columns = selectedTab.columns || 
+      (data.length > 0 ? Object.keys(data[0]) : []);
+    
+    // Créer un objet vide initial avec les colonnes du tableau
+    const emptyRow: { [key: string]: any } = {};
+    columns.forEach(col => {
+      emptyRow[col] = '';
+    });
+    
+    setEditRowData(emptyRow);
+    setEditColumns(columns);
+    setIsCreating(true);
+    setIsEditDialogOpen(true);
   };
 
   return (
-    <div className="w-full bg-white shadow-xl rounded-lg p-6">
-      <TabsNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
+    <div className="w-full bg-white shadow-xl rounded-lg p-6 relative">
+      <TabsNavigation 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+      />
+      
+      {/* Option 1: Bouton en dessous des onglets */}
+      <div className="flex justify-end mb-2">
+        <button 
+          onClick={handleAddField}
+          className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+          title={`Ajouter un champ à ${activeTab}`}
+        >
+          <Plus className="h-5 w-5 mr-1" />
+          <span>Ajouter un champ</span>
+        </button>
+      </div>
+      
       <div className="p-4">
         {loading ? (
           <div className="text-center text-gray-500">Loading...</div>
@@ -79,8 +124,9 @@ const DatabaseTabs: React.FC = () => {
         onClose={() => setIsEditDialogOpen(false)}
         onSave={handleSave}
         data={editRowData}
-        columns={editColumns} // Colonnes obtenues dynamiquement
+        columns={editColumns} 
         formatters={tabs.find(tab => tab.key === activeTab)?.formatters}
+        title={isCreating ? "Ajouter une ligne" : "Modifier la ligne"}
       />
 
       <DeleteConfirmationDialog

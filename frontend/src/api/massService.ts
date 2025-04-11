@@ -6,7 +6,7 @@ export interface Mass {
   id?: string;
   date: string; // format YYYY-MM-DD
   time: string; // format HH:MM
-  type: 'basse' | 'chantée';
+  type: 'defunts' | 'vivants';
   intention?: string;
   celebrant: string;
   location: string;

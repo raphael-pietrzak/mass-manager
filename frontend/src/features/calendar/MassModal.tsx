@@ -124,7 +124,7 @@ export const MassModal: React.FC<MassModalProps> = ({
       time: defaultMass.time,
       celebrant: selectedCelebrant,
       location: formData.get('location') as string || defaultMass.location,
-      type: formData.get('type') as 'basse' | 'chantée' || defaultMass.type,
+      type: formData.get('type') as 'defunts' | 'vivants' || defaultMass.type,
       intention: formData.get('intention') as string,
     };
     onSave(updatedMass);

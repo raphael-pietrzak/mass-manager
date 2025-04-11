@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -8,6 +8,7 @@ interface DateFilterBarProps {
   futureOnly: boolean;
   startDate: Date | null;
   endDate: Date | null;
+  onExport?: (format: 'word' | 'excel' | 'pdf') => Promise<void>;
 }
 
 export const DateFilterBar: React.FC<DateFilterBarProps> = ({
@@ -15,11 +16,26 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
   onFutureOnlyChange,
   futureOnly,
   startDate: currentStartDate,
-  endDate: currentEndDate
+  endDate: currentEndDate,
+  onExport
 }) => {
   const [showDatePickers, setShowDatePickers] = useState(false);
   const [startDate, setStartDate] = useState<Date | null>(currentStartDate);
   const [endDate, setEndDate] = useState<Date | null>(currentEndDate);
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+  const exportMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(event.target as Node)) {
+        setIsExportMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [exportMenuRef]);
 
   const handleTodayClick = () => {
     const today = new Date();
@@ -52,17 +68,17 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
     }`;
   };
 
-  const isTodayActive = currentStartDate && currentEndDate && 
+  const isTodayActive = !!(currentStartDate && currentEndDate && 
     format(currentStartDate, 'yyyy-MM-dd') === format(startOfDay(new Date()), 'yyyy-MM-dd') &&
-    format(currentEndDate, 'yyyy-MM-dd') === format(endOfDay(new Date()), 'yyyy-MM-dd');
+    format(currentEndDate, 'yyyy-MM-dd') === format(endOfDay(new Date()), 'yyyy-MM-dd'));
 
-  const isThisWeekActive = currentStartDate && currentEndDate && 
+  const isThisWeekActive = !!(currentStartDate && currentEndDate && 
     format(currentStartDate, 'yyyy-MM-dd') === format(startOfWeek(new Date(), { locale: fr }), 'yyyy-MM-dd') &&
-    format(currentEndDate, 'yyyy-MM-dd') === format(endOfWeek(new Date(), { locale: fr }), 'yyyy-MM-dd');
+    format(currentEndDate, 'yyyy-MM-dd') === format(endOfWeek(new Date(), { locale: fr }), 'yyyy-MM-dd'));
 
-  const isThisMonthActive = currentStartDate && currentEndDate && 
+  const isThisMonthActive = !!(currentStartDate && currentEndDate && 
     format(currentStartDate, 'yyyy-MM-dd') === format(startOfMonth(new Date()), 'yyyy-MM-dd') &&
-    format(currentEndDate, 'yyyy-MM-dd') === format(endOfMonth(new Date()), 'yyyy-MM-dd');
+    format(currentEndDate, 'yyyy-MM-dd') === format(endOfMonth(new Date()), 'yyyy-MM-dd'));
 
   const isAllActive = !currentStartDate && !currentEndDate;
 
@@ -94,6 +110,48 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
           >
             Tous
           </button>
+          
+          {onExport && (
+            <div className="relative ml-auto" ref={exportMenuRef}>
+              <button
+                onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
+                className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none flex items-center gap-1"
+              >
+                <span>Exporter</span>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              
+              {isExportMenuOpen && (
+                <div className="absolute right-0 mt-1 w-36 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+                  <ul className="py-1">
+                    <li 
+                      className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer flex items-center"
+                      onClick={() => { onExport('word'); setIsExportMenuOpen(false); }}
+                    >
+                      <span className="w-3 h-3 bg-blue-600 rounded-sm mr-2"></span>
+                      Format Word
+                    </li>
+                    <li 
+                      className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer flex items-center"
+                      onClick={() => { onExport('excel'); setIsExportMenuOpen(false); }}
+                    >
+                      <span className="w-3 h-3 bg-green-600 rounded-sm mr-2"></span>
+                      Format Excel
+                    </li>
+                    <li 
+                      className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer flex items-center"
+                      onClick={() => { onExport('pdf'); setIsExportMenuOpen(false); }}
+                    >
+                      <span className="w-3 h-3 bg-red-600 rounded-sm mr-2"></span>
+                      Format PDF
+                    </li>
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
         </div>
         
         <div className="flex items-center justify-between flex-wrap gap-2">
