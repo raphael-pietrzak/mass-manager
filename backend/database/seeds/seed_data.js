@@ -1,10 +1,7 @@
-
-
-// seeds/xxxxxx_seed_data.js
 const bcrypt = require('bcrypt');
 
 exports.seed = function(knex) {
-  // Supprimez toutes les entrées existantes
+  // Supprimer les entrées existantes
   return knex('Masses').del()
     .then(function () {
       return knex('SpecialDays').del();
@@ -19,10 +16,22 @@ exports.seed = function(knex) {
       return knex('Celebrants').del();
     })
     .then(function () {
-      // Insérer des données fictives
+      return knex('Users').del();
+    })
+    .then(function () {
+      // Réinitialiser les séquences d'auto-incrémentation
+      return knex.raw("DELETE FROM sqlite_sequence WHERE name IN ('Masses', 'SpecialDays', 'Intentions', 'Donors', 'Celebrants', 'Users')");
+    })
+    .then(function () {
+      // Insérer des données fictives dans les tables
       return knex('Donors').insert([
-        { name: 'Jean Dupont', email: 'jean.dupont@example.com', phone: '0123456789', address: '1 rue de Paris', wants_notification: true },
-        { name: 'Marie Curie', email: 'marie.curie@example.com', phone: '9876543210', address: '2 rue de Lyon', wants_notification: false },
+        { firstname: 'Jean', lastname: 'Dupont', email: 'jean.dupont@example.com', phone: '0123456789', address: '1 rue de Paris', city: 'Paris', zip_code: '75001' },
+        { firstname: 'Marie', lastname: 'Curie', email: 'marie.curie@example.com', phone: '9876543210', address: '2 rue de Lyon', city: 'Lyon', zip_code: '69002' },
+        { firstname: 'John', lastname: 'Doe', email: 'john.doet@example.com', phone: '0123456789', address: '1 rue de Paris', city: 'Paris', zip_code: '75001' },
+        { firstname: 'Jane', lastname: 'Smith', email: 'janesmith@example.com', address: '1 rue de Paris', city: 'Lyon', zip_code: '69001' },
+        { firstname: 'Alice', lastname: 'Johnson', phone: '0123456789', address: '1 rue de Paris', city: 'Marseille', zip_code: '13001' },
+        { firstname: 'Bob', lastname: 'Brown', email: 'bob.brown@example.com', phone: '0123456789', address: '1 rue de Paris', city: 'Nice', zip_code: '06000' },
+        { firstname: 'Jacques', lastname: 'Michel', email: 'jaques.michelexample.com', phone: '0123456789', address: '1 rue de Paris', city: 'Montpellier', zip_code: '34000' },
       ]);
     })
     .then(function () {
@@ -61,8 +70,13 @@ exports.seed = function(knex) {
     })
     .then(function () {
       return knex('Masses').insert([
-        { date: '2025-03-28', celebrant_id: 1, intention: "Messe pour les défunts", status: 'scheduled' },
-        { date: '2025-04-30', celebrant_id: 2, intention: "Messe pour les malades", status: 'scheduled' },
+        { date: '2025-03-28', celebrant_id: 1, intention: "Messe pour les défunts", status: 'scheduled', wants_notification: true },
+        { date: '2025-04-30', celebrant_id: 2, intention: "Messe pour les malades", status: 'pending', wants_notification: true },
+        { date: '2025-05-01', celebrant_id: 3, intention: "Messe pour les vivants", status: 'scheduled', wants_notification: false },
+        { date: '2025-05-02', celebrant_id: 4, intention: "Messe pour les défunts", status: 'scheduled', wants_notification: true },
+        { date: '2025-06-15', celebrant_id: 5, intention: "Messe pour les malades", status: 'pending', wants_notification: false },
+        { date: '2025-07-20', celebrant_id: 6, intention: "Messe pour les vivants", status: 'cancelled', wants_notification: false }
+
       ]);
     })
     .then(function () {
@@ -70,21 +84,9 @@ exports.seed = function(knex) {
         { date: new Date('2024-12-25'), note: 'Noël', number_of_masses: 3 },
       ]);
     })
-    .then(function () {;
+    .then(function () {
       return knex('Users').insert([
-        {login_name: 'admin', password: bcrypt.hashSync('admin', 10), email: 'secretariat@lagrasse.org'}
-      ])
+        { login_name: 'admin', password: bcrypt.hashSync('admin', 10), email: 'secretariat@lagrasse.org' }
+      ]);
     });
-    
 };
-
-
-// CREATE TABLE religious_members (
-//   id INTEGER PRIMARY KEY AUTOINCREMENT,
-//   religious_name VARCHAR(50) NOT NULL,
-//   civil_first_name VARCHAR(50) NOT NULL,
-//   civil_last_name VARCHAR(50) NOT NULL,
-//   title VARCHAR(10),
-//   role VARCHAR(50)
-// );
-

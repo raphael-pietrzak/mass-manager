@@ -123,8 +123,6 @@ export const MassModal: React.FC<MassModalProps> = ({
       date: selectedDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
       time: defaultMass.time,
       celebrant: selectedCelebrant,
-      location: formData.get('location') as string || defaultMass.location,
-      type: formData.get('type') as 'basse' | 'chantée' || defaultMass.type,
       intention: formData.get('intention') as string,
     };
     onSave(updatedMass);
