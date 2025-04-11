@@ -6,11 +6,10 @@ export interface Mass {
   id?: string;
   date: string; // format YYYY-MM-DD
   time: string; // format HH:MM
-  type: 'basse' | 'chantée';
   intention?: string;
   celebrant: string;
   location: string;
-  status?: 'scheduled' | 'cancelled';
+  status?: 'scheduled' | 'cancelled' | 'pending';
 }
 
 const API_URL = `${API_BASE_URL}/api/data`;
