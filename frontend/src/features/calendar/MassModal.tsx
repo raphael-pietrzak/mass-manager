@@ -13,7 +13,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { fr } from 'date-fns/locale';
-import { motion, AnimatePresence } from 'framer-motion';
 import OfferingForm from '../../components/forms/OfferingForm';
 
 interface MassModalProps {
@@ -165,91 +164,86 @@ export const MassModal: React.FC<MassModalProps> = ({
 
   // Formulaire de l'étape 1: Intention
   const IntentionForm = () => (
-    <>
-      {/* Intention */}
-      <div className="space-y-2">
-        <Label htmlFor="intention">
-          Intention <span className="text-red-500">*</span>
-        </Label>
-        <Input
-          id="intention"
-          name="intention"
-          value={formData.intention}
-          onChange={(e) => updateFormData({ intention: e.target.value })}
-          required
-          placeholder="Votre intention..."
-        />
-      </div>
-
-      {/* Date avec Popover/Calendar et icônes */}
-      <div className="flex items-end gap-2">
-        <div className="flex-grow space-y-2">
-          <Label htmlFor="date">
-            Date <span className="text-red-500">*</span>
+    <div className="flex flex-col flex-1 h-full min-h-[300px]">
+      <div className="flex-grow space-y-6">
+        {/* Intention */}
+        <div className="space-y-2">
+          <Label htmlFor="intention">
+            Intention <span className="text-red-500">*</span>
           </Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button 
-                variant="outline" 
-                className="w-full justify-start text-left font-normal"
-                id="date"
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {selectedDate ? (
-                  format(selectedDate, 'P', { locale: fr })
-                ) : (
-                  <span>Sélectionner une date</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={(date: Date | undefined) => {
-                  setSelectedDate(date);
-                  updateFormData({ date: date });
-                }}
-                initialFocus
-                locale={fr}
-              />
-            </PopoverContent>
-          </Popover>
+          <Input
+            id="intention"
+            name="intention"
+            value={formData.intention}
+            onChange={(e) => updateFormData({ intention: e.target.value })}
+            required
+            placeholder="Votre intention..."
+          />
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          onClick={handleRecurrenceClick}
-          title="Programmer une récurrence"
-        >
-          <RotateCw className="w-5 h-5" />
-        </Button>
+
+        {/* Date avec Popover/Calendar et icônes */}
+        <div className="flex items-end gap-2">
+          <div className="flex-grow space-y-2">
+            <Label htmlFor="date">
+              Date <span className="text-red-500">*</span>
+            </Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start text-left font-normal"
+                  id="date"
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {selectedDate ? (
+                    format(selectedDate, 'P', { locale: fr })
+                  ) : (
+                    <span>Sélectionner une date</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={(date: Date | undefined) => {
+                    setSelectedDate(date);
+                    updateFormData({ date: date });
+                  }}
+                  initialFocus
+                  locale={fr}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={handleRecurrenceClick}
+            title="Programmer une récurrence"
+          >
+            <RotateCw className="w-5 h-5" />
+          </Button>
+        </div>
+
+        {/* Célébrant */}
+        <div className="space-y-2">
+          <Label>Célébrant</Label>
+          <DropdownSearch
+            options={celebrantOptions}
+            value={selectedCelebrant}
+            onChange={(value) => {
+              setSelectedCelebrant(value);
+              updateFormData({ celebrant: value });
+            }}
+            placeholder="Sélectionner un célébrant"
+            defaultValue={UNASSIGNED_VALUE}
+          />
+        </div>
       </div>
 
-      {/* Célébrant */}
-      <div className="space-y-2">
-        <Label>Célébrant</Label>
-        <DropdownSearch
-          options={celebrantOptions}
-          value={selectedCelebrant}
-          onChange={(value) => {
-            setSelectedCelebrant(value);
-            updateFormData({ celebrant: value });
-          }}
-          placeholder="Sélectionner un célébrant"
-          defaultValue={UNASSIGNED_VALUE}
-        />
-      </div>
-
-      <div className="flex justify-end space-x-3 pt-4">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onClose}
-        >
-          Annuler
-        </Button>
+      <div className="mt-auto pt-6 flex justify-end">
         <Button
           type="button"
           onClick={nextStep}
@@ -257,7 +251,7 @@ export const MassModal: React.FC<MassModalProps> = ({
           Suivant
         </Button>
       </div>
-    </>
+    </div>
   );
 
   const getStepTitle = () => {
@@ -360,63 +354,43 @@ export const MassModal: React.FC<MassModalProps> = ({
               </div>
             )}
 
-            <AnimatePresence mode="wait">
-              {step === 1 && (
-                <motion.div
-                  key="step1"
-                  initial={{ x: 100, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  exit={{ x: -100, opacity: 0 }}
-                  className="space-y-4 flex-1 flex flex-col"
-                >
-                  <IntentionForm />
-                </motion.div>
-              )}
+            {step === 1 && (
+              <div className="space-y-4 flex-1 flex flex-col">
+                <IntentionForm />
+              </div>
+            )}
 
-              {step === 2 && (
-                <motion.div
-                  key="step2"
-                  initial={{ x: 100, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  exit={{ x: -100, opacity: 0 }}
-                  className="space-y-4 flex-1 flex flex-col"
-                >
-                  <OfferingForm
-                    formData={formData}
-                    updateFormData={updateFormData}
-                    nextStep={nextStep}
-                    prevStep={prevStep}
-                  />
-                </motion.div>
-              )}
+            {step === 2 && (
+              <div className="space-y-4 flex-1 flex flex-col">
+                <OfferingForm
+                  formData={formData}
+                  updateFormData={updateFormData}
+                  nextStep={nextStep}
+                  prevStep={prevStep}
+                />
+              </div>
+            )}
 
-              {step === 3 && (
-                <motion.div
-                  key="step3"
-                  initial={{ x: 100, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  exit={{ x: -100, opacity: 0 }}
-                  className="space-y-4 flex-1 flex flex-col"
-                >
-                  <DonorForm
-                    formData={formData}
-                    updateFormData={updateFormData}
-                    onValidate={() => {
-                      const updatedMass: Mass = {
-                        ...defaultMass,
-                        date: selectedDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
-                        time: defaultMass.time,
-                        celebrant: selectedCelebrant,
-                        intention: formData.intention,
-                      };
-                      onSave(updatedMass);
-                      onClose();
-                    }}
-                    prevStep={prevStep}
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {step === 3 && (
+              <div className="space-y-4 flex-1 flex flex-col">
+                <DonorForm
+                  formData={formData}
+                  updateFormData={updateFormData}
+                  onValidate={() => {
+                    const updatedMass: Mass = {
+                      ...defaultMass,
+                      date: selectedDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
+                      time: defaultMass.time,
+                      celebrant: selectedCelebrant,
+                      intention: formData.intention,
+                    };
+                    onSave(updatedMass);
+                    onClose();
+                  }}
+                  prevStep={prevStep}
+                />
+              </div>
+            )}
             
             {/* Bouton de suppression en bas si masse existante */}
             {mass && mass.id && onDelete && step === 1 && (
