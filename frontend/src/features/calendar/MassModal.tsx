@@ -1,19 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { X, AlertTriangle, RotateCw, User, CalendarIcon } from 'lucide-react';
+import { X, AlertTriangle } from 'lucide-react';
 import { Mass } from '../../api/massService';
-import { DropdownSearch } from '../../components/DropdownSearch';
 import { celebrantService, Celebrant } from '../../api/celebrantService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import RegularityForm from '../../components/forms/RegularityForm';
 import DonorForm from '../../components/forms/DonorForm';
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
-import { fr } from 'date-fns/locale';
 import OfferingForm from '../../components/forms/OfferingForm';
+import IntentionForm from '../../components/forms/IntentionForm';
 
 interface MassModalProps {
   mass: Mass | null;
@@ -34,7 +28,6 @@ export const MassModal: React.FC<MassModalProps> = ({
   const [selectedCelebrant, setSelectedCelebrant] = useState<string>('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showRecurrenceModal, setShowRecurrenceModal] = useState(false);
-  const [showDonorModal, setShowDonorModal] = useState(false);
   const [step, setStep] = useState(1); // État pour suivre l'étape actuelle
   
   // Valeur par défaut pour le célébrant non assigné
@@ -96,7 +89,6 @@ export const MassModal: React.FC<MassModalProps> = ({
     // Réinitialiser l'état de confirmation à chaque ouverture
     setShowDeleteConfirm(false);
     setShowRecurrenceModal(false);
-    setShowDonorModal(false);
     setStep(1); // Réinitialiser l'étape à 1 à chaque ouverture
   }, [isOpen, mass]);
 
@@ -143,10 +135,6 @@ export const MassModal: React.FC<MassModalProps> = ({
     setShowRecurrenceModal(true);
   };
 
-  const handleDonorClick = () => {
-    setShowDonorModal(true);
-  };
-
   const updateFormData = (data: Partial<typeof formData>) => {
     setFormData(prev => ({ ...prev, ...data }));
   };
@@ -161,98 +149,6 @@ export const MassModal: React.FC<MassModalProps> = ({
       label: c.religious_name || `${c.civil_first_name} ${c.civil_last_name}`
     }))
   ];
-
-  // Formulaire de l'étape 1: Intention
-  const IntentionForm = () => (
-    <div className="flex flex-col flex-1 h-full min-h-[300px]">
-      <div className="flex-grow space-y-6">
-        {/* Intention */}
-        <div className="space-y-2">
-          <Label htmlFor="intention">
-            Intention <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="intention"
-            name="intention"
-            value={formData.intention}
-            onChange={(e) => updateFormData({ intention: e.target.value })}
-            required
-            placeholder="Votre intention..."
-          />
-        </div>
-
-        {/* Date avec Popover/Calendar et icônes */}
-        <div className="flex items-end gap-2">
-          <div className="flex-grow space-y-2">
-            <Label htmlFor="date">
-              Date <span className="text-red-500">*</span>
-            </Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  className="w-full justify-start text-left font-normal"
-                  id="date"
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {selectedDate ? (
-                    format(selectedDate, 'P', { locale: fr })
-                  ) : (
-                    <span>Sélectionner une date</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={(date: Date | undefined) => {
-                    setSelectedDate(date);
-                    updateFormData({ date: date });
-                  }}
-                  initialFocus
-                  locale={fr}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            onClick={handleRecurrenceClick}
-            title="Programmer une récurrence"
-          >
-            <RotateCw className="w-5 h-5" />
-          </Button>
-        </div>
-
-        {/* Célébrant */}
-        <div className="space-y-2">
-          <Label>Célébrant</Label>
-          <DropdownSearch
-            options={celebrantOptions}
-            value={selectedCelebrant}
-            onChange={(value) => {
-              setSelectedCelebrant(value);
-              updateFormData({ celebrant: value });
-            }}
-            placeholder="Sélectionner un célébrant"
-            defaultValue={UNASSIGNED_VALUE}
-          />
-        </div>
-      </div>
-
-      <div className="mt-auto pt-6 flex justify-end">
-        <Button
-          type="button"
-          onClick={nextStep}
-        >
-          Suivant
-        </Button>
-      </div>
-    </div>
-  );
 
   const getStepTitle = () => {
     switch (step) {
@@ -281,25 +177,6 @@ export const MassModal: React.FC<MassModalProps> = ({
               formData={formData}
               updateFormData={updateFormData}
               onValidate={() => setShowRecurrenceModal(false)}
-            />
-          </div>
-        </div>
-      ) : showDonorModal ? (
-        <div className="bg-white rounded-lg max-w-md w-full mx-4">
-          <div className="p-4 flex justify-between items-center border-b">
-            <h3 className="font-medium">Informations du donateur</h3>
-            <button 
-              onClick={() => setShowDonorModal(false)} 
-              className="p-1 hover:bg-gray-100 rounded-full"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-          <div className="p-4">
-            <DonorForm 
-              formData={formData}
-              updateFormData={updateFormData}
-              onValidate={() => setShowDonorModal(false)}
             />
           </div>
         </div>
@@ -356,7 +233,23 @@ export const MassModal: React.FC<MassModalProps> = ({
 
             {step === 1 && (
               <div className="space-y-4 flex-1 flex flex-col">
-                <IntentionForm />
+                <IntentionForm
+                  intention={formData.intention}
+                  selectedDate={selectedDate}
+                  selectedCelebrant={selectedCelebrant}
+                  celebrantOptions={celebrantOptions}
+                  onIntentionChange={(value) => updateFormData({ intention: value })}
+                  onDateChange={(date) => {
+                    setSelectedDate(date);
+                    updateFormData({ date });
+                  }}
+                  onCelebrantChange={(value) => {
+                    setSelectedCelebrant(value);
+                    updateFormData({ celebrant: value });
+                  }}
+                  onRecurrenceClick={handleRecurrenceClick}
+                  nextStep={nextStep}
+                />
               </div>
             )}
 
