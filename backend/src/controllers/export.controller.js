@@ -28,6 +28,8 @@ exports.exportToExcel = async (req, res) => {
     const { startDate, endDate } = req.query;
     
     // Récupérer les masses selon les filtres de date fournis
+    console.log('startDate', startDate);
+    console.log('endDate', endDate);
     const masses = startDate || endDate 
       ? await Mass.getMassesByDateRange(startDate, endDate)
       : await Mass.getUpcomingMonth();

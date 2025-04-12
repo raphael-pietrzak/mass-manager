@@ -135,11 +135,15 @@ const Mass = {
             .orderBy('Masses.date');
         
         if (startDate) {
-            query = query.where('Masses.date', '>=', new Date(startDate));
+            // Extraire la partie YYYY-MM-DD de la date ISO
+            const formattedStartDate = startDate.substring(0, 10);
+            query = query.where(db.raw('DATE(Masses.date)'), '>=', formattedStartDate);
         }
         
         if (endDate) {
-            query = query.where('Masses.date', '<=', new Date(endDate));
+            // Extraire la partie YYYY-MM-DD de la date ISO
+            const formattedEndDate = endDate.substring(0, 10);
+            query = query.where(db.raw('DATE(Masses.date)'), '<=', formattedEndDate);
         }
         
         return query;
