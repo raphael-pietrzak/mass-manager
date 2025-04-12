@@ -330,7 +330,7 @@ export const MassModal: React.FC<MassModalProps> = ({
               />
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="min-h-[400px] flex flex-col">
             {/* Boîte de dialogue de confirmation de suppression */}
             {showDeleteConfirm && (
               <div className="mb-4 p-3 bg-red-50 border border-red-300 rounded-md">
@@ -367,7 +367,7 @@ export const MassModal: React.FC<MassModalProps> = ({
                   initial={{ x: 100, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   exit={{ x: -100, opacity: 0 }}
-                  className="space-y-4"
+                  className="space-y-4 flex-1 flex flex-col"
                 >
                   <IntentionForm />
                 </motion.div>
@@ -379,7 +379,7 @@ export const MassModal: React.FC<MassModalProps> = ({
                   initial={{ x: 100, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   exit={{ x: -100, opacity: 0 }}
-                  className="space-y-4"
+                  className="space-y-4 flex-1 flex flex-col"
                 >
                   <OfferingForm
                     formData={formData}
@@ -396,35 +396,24 @@ export const MassModal: React.FC<MassModalProps> = ({
                   initial={{ x: 100, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   exit={{ x: -100, opacity: 0 }}
-                  className="space-y-4"
+                  className="space-y-4 flex-1 flex flex-col"
                 >
-                  <div className="space-y-6">
-                    <DonorForm
-                      formData={formData}
-                      updateFormData={updateFormData}
-                      onValidate={() => {
-                        const updatedMass: Mass = {
-                          ...defaultMass,
-                          date: selectedDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
-                          time: defaultMass.time,
-                          celebrant: selectedCelebrant,
-                          intention: formData.intention,
-                        };
-                        onSave(updatedMass);
-                        onClose();
-                      }}
-                    />
-
-                    <div className="flex justify-end space-x-3">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={prevStep}
-                      >
-                        Précédent
-                      </Button>
-                    </div>
-                  </div>
+                  <DonorForm
+                    formData={formData}
+                    updateFormData={updateFormData}
+                    onValidate={() => {
+                      const updatedMass: Mass = {
+                        ...defaultMass,
+                        date: selectedDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
+                        time: defaultMass.time,
+                        celebrant: selectedCelebrant,
+                        intention: formData.intention,
+                      };
+                      onSave(updatedMass);
+                      onClose();
+                    }}
+                    prevStep={prevStep}
+                  />
                 </motion.div>
               )}
             </AnimatePresence>
