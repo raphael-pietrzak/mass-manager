@@ -131,6 +131,7 @@ const FormWizard = () => {
               updateFormData={updateFormData}
               nextStep={nextStep} 
               prevStep={prevStep}
+              onValidate={submitForm}
             />
           </motion.div>
         )}
@@ -145,6 +146,7 @@ const FormWizard = () => {
             updateFormData={updateFormData}
             prevStep={prevStep}
             handleFinalSubmit={handleFinalSubmit}
+            onValidate={submitForm}
             />
           </motion.div>
         )}

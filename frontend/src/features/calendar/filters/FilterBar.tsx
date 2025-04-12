@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { List, Calendar as CalendarIcon, RotateCcw } from 'lucide-react';
-import { celebrantService, Celebrant } from '../../api/celebrantService';
+import { celebrantService, Celebrant } from '../../../api/celebrantService';
 
 interface FilterBarProps {
   viewMode: 'calendar' | 'list';

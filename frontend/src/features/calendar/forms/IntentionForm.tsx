@@ -2,7 +2,7 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { DropdownSearch } from '../../components/DropdownSearch';
+import { DropdownSearch } from '../../../components/DropdownSearch';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
@@ -49,7 +49,7 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
             id="intention"
             name="intention"
             value={intention}
-            onChange={(e) => onIntentionChange(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => onIntentionChange(e.target.value)}
             required
             placeholder="Votre intention..."
           />

@@ -6,7 +6,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MenuIcon } from "lucide-react";
-import { useAuth } from "../features/calendar/AuthContext";
+import { useAuth } from "../auth/AuthContext";
 
 interface NavLink {
   label: string;
@@ -17,7 +17,6 @@ interface NavLink {
 
 const NAV_LINKS: NavLink[] = [
   { label: "Base de donnée", href: "/database" },
-  { label: "Intentions", href: "/intentions" },
   { label: "Calendrier", href: "/calendar" },
   { label: "Page Administrateur", href: "/admin" },
 

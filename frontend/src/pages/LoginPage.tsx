@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import axios from 'axios';
-import { useAuth } from '../features/calendar/AuthContext';
+import { useAuth } from '../auth/AuthContext';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate(); // Utiliser useNavigate pour la redirection

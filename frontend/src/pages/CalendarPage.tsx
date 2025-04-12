@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
-import { MassCalendar } from '../features/calendar/MassCalendar';
-import { MassList } from '../features/calendar/MassList';
-import { FilterBar } from '../features/calendar/FilterBar';
-import { DateFilterBar } from '../features/calendar/DateFilterBar';
+import { MassCalendar } from '../features/calendar/views/MassCalendar';
+import { MassList } from '../features/calendar/views/MassList';
+import { FilterBar } from '../features/calendar/filters/FilterBar';
+import { DateFilterBar } from '../features/calendar/filters/DateFilterBar';
 import { MassModal } from '../features/calendar/MassModal';
 import { DaySlider } from '../features/calendar/DaySlider';
-import { ViewMode } from '../features/calendar/types';
 import { Mass } from '../api/massService';
 import { massService } from '../api/massService';
 import { exportService } from '../api/exportService';
+
+export type ViewMode = 'calendar' | 'list';
+
 
 function CalendarPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('list');

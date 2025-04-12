@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mass } from '../../api/massService';
+import { Mass } from '../../../api/massService';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Calendar, User } from 'lucide-react';

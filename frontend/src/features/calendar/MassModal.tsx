@@ -4,10 +4,10 @@ import { Mass } from '../../api/massService';
 import { celebrantService, Celebrant } from '../../api/celebrantService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import RegularityForm from '../../components/forms/RegularityForm';
-import DonorForm from '../../components/forms/DonorForm';
-import OfferingForm from '../../components/forms/OfferingForm';
-import IntentionForm from '../../components/forms/IntentionForm';
+import RegularityForm from './forms/RegularityForm';
+import DonorForm from './forms/DonorForm';
+import OfferingForm from './forms/OfferingForm';
+import IntentionForm from './forms/IntentionForm';
 
 interface MassModalProps {
   mass: Mass | null;
@@ -63,7 +63,7 @@ export const MassModal: React.FC<MassModalProps> = ({
     time: '08:00', // Conservé dans les données mais plus édité via l'interface
     celebrant: UNASSIGNED_VALUE,
     location: 'Main Chapel',
-    type: 'basse',
+    type: 'vivants',
     intention: '',
   };
 
