@@ -118,6 +118,31 @@ const Mass = {
             .leftJoin('Celebrants', 'Masses.celebrant_id', 'Celebrants.id')
             .select('Masses.*', 'Celebrants.religious_name as celebrant_name')
             .orderBy('date');
+    },
+
+    getMassesByDateRange: async (startDate, endDate) => {
+        let query = db('Masses')
+            .leftJoin('Celebrants', 'Masses.celebrant_id', 'Celebrants.id')
+            .select(
+                'Masses.id',
+                'Masses.date',
+                'Celebrants.religious_name as celebrant',
+                'Masses.intention',
+                'Masses.status',
+                db.raw("COALESCE(Masses.status, 'basse') as type"),
+                db.raw("'Chapelle principale' as location")
+            )
+            .orderBy('Masses.date');
+        
+        if (startDate) {
+            query = query.where('Masses.date', '>=', new Date(startDate));
+        }
+        
+        if (endDate) {
+            query = query.where('Masses.date', '<=', new Date(endDate));
+        }
+        
+        return query;
     }
 };
 

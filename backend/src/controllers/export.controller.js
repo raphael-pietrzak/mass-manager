@@ -3,8 +3,12 @@ const exportService = require('../services/export.service');
 
 exports.exportToWord = async (req, res) => {
   try {
-    // Récupérer les intentions de messe du mois à venir
-    const masses = await Mass.getUpcomingMonth();
+    const { startDate, endDate } = req.query;
+    
+    // Récupérer les masses selon les filtres de date fournis
+    const masses = startDate || endDate 
+      ? await Mass.getMassesByDateRange(startDate, endDate)
+      : await Mass.getUpcomingMonth();
     
     // Générer le document Word
     const buffer = await exportService.generateWordDoc(masses);
@@ -21,8 +25,12 @@ exports.exportToWord = async (req, res) => {
 
 exports.exportToExcel = async (req, res) => {
   try {
-    // Récupérer les intentions de messe du mois à venir
-    const masses = await Mass.getUpcomingMonth();
+    const { startDate, endDate } = req.query;
+    
+    // Récupérer les masses selon les filtres de date fournis
+    const masses = startDate || endDate 
+      ? await Mass.getMassesByDateRange(startDate, endDate)
+      : await Mass.getUpcomingMonth();
     
     // Générer le fichier Excel
     const buffer = await exportService.generateExcel(masses);
@@ -39,8 +47,12 @@ exports.exportToExcel = async (req, res) => {
 
 exports.exportToPdf = async (req, res) => {
   try {
-    // Récupérer les intentions de messe du mois à venir
-    const masses = await Mass.getUpcomingMonth();
+    const { startDate, endDate } = req.query;
+    
+    // Récupérer les masses selon les filtres de date fournis
+    const masses = startDate || endDate 
+      ? await Mass.getMassesByDateRange(startDate, endDate)
+      : await Mass.getUpcomingMonth();
     
     // Générer le PDF
     const buffer = await exportService.generatePDF(masses);

@@ -109,13 +109,13 @@ function CalendarPage() {
     try {
       switch (format) {
         case 'word':
-          await exportService.exportToWord();
+          await exportService.exportToWord(filters.startDate, filters.endDate);
           break;
         case 'excel':
-          await exportService.exportToExcel();
+          await exportService.exportToExcel(filters.startDate, filters.endDate);
           break;
         case 'pdf':
-          await exportService.exportToPdf();
+          await exportService.exportToPdf(filters.startDate, filters.endDate);
           break;
       }
     } catch (err) {
