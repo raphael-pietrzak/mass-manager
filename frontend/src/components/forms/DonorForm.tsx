@@ -15,9 +15,22 @@ interface DonorFormProps {
   formData: DonorFormData;
   updateFormData: (data: Partial<DonorFormData>) => void;
   onValidate: () => void;
+  prevStep?: () => void;
+  handleFinalSubmit?: () => void;
 }
 
-const DonorForm: React.FC<DonorFormProps> = ({ formData, updateFormData, onValidate }) => {
+const DonorForm: React.FC<DonorFormProps> = ({ 
+  formData, 
+  updateFormData, 
+  onValidate,
+  prevStep,
+  handleFinalSubmit
+}) => {
+  const handleValidate = () => {
+    if (handleFinalSubmit) handleFinalSubmit();
+    onValidate();
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-2">
@@ -64,9 +77,18 @@ const DonorForm: React.FC<DonorFormProps> = ({ formData, updateFormData, onValid
         />
       </div>
 
-      <div className="pt-4">
-        <Button type="button" className="w-full" onClick={onValidate}>
-          Valider
+      <div className="flex justify-between space-x-4 pt-6">
+        {prevStep && (
+          <Button type="button" variant="outline" onClick={prevStep}>
+            Précédent
+          </Button>
+        )}
+        <Button 
+          type="button" 
+          onClick={handleValidate}
+          className={prevStep ? "" : "w-full"}
+        >
+          Enregistrer
         </Button>
       </div>
     </div>
