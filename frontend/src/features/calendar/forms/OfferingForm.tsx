@@ -4,20 +4,20 @@ import { Label } from '@/components/ui/label';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 
-interface FormData {
+interface OfferingFormData {
   amount: string;
   paymentMethod: string;
   brotherName: string;
 }
 
-interface FormProps {
-  formData: FormData;
-  updateFormData: (data: Partial<FormProps["formData"]>) => void;
+interface OfferingFormProps {
+  formData: OfferingFormData;
+  updateFormData: (data: Partial<OfferingFormData>) => void;
   nextStep: () => void;
   prevStep: () => void;
 }
 
-const OfferingForm: React.FC<FormProps> = ({ prevStep, nextStep, formData, updateFormData }) => {
+const OfferingForm: React.FC<OfferingFormProps> = ({ prevStep, nextStep, formData, updateFormData }) => {
   return (
     <div className="flex flex-col flex-1 h-full min-h-[300px]">
       <div className="flex-grow space-y-6">

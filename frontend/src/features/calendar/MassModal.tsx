@@ -109,22 +109,6 @@ export const MassModal: React.FC<MassModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const formEl = e.target as HTMLFormElement;
-    const formData = new FormData(formEl);
-    const updatedMass: Mass = {
-      ...defaultMass,
-      date: selectedDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
-      time: defaultMass.time,
-      celebrant: selectedCelebrant,
-      location: formData.get('location') as string || defaultMass.location,
-      type: formData.get('type') as 'defunts' | 'vivants' || defaultMass.type,
-      intention: formData.get('intention') as string,
-    };
-    onSave(updatedMass);
-  };
-
   const handleDelete = () => {
     if (mass && onDelete) {
       onDelete(mass);
@@ -174,7 +158,13 @@ export const MassModal: React.FC<MassModalProps> = ({
           </div>
           <div className="p-4">
             <RegularityForm 
-              formData={formData}
+              formData={{
+                startDate: formData.startDate,
+                recurrenceType: formData.recurrenceType,
+                endType: formData.endType,
+                occurrences: formData.occurrences,
+                endDate: formData.endDate
+              }}
               updateFormData={updateFormData}
               onValidate={() => setShowRecurrenceModal(false)}
             />
@@ -256,8 +246,12 @@ export const MassModal: React.FC<MassModalProps> = ({
             {step === 2 && (
               <div className="space-y-4 flex-1 flex flex-col">
                 <OfferingForm
-                  formData={formData}
-                  updateFormData={updateFormData}
+                  formData={{
+                    amount: formData.amount,
+                    paymentMethod: formData.paymentMethod,
+                    brotherName: formData.brotherName
+                  }}
+                  updateFormData={(data) => updateFormData(data)}
                   nextStep={nextStep}
                   prevStep={prevStep}
                 />
@@ -267,7 +261,12 @@ export const MassModal: React.FC<MassModalProps> = ({
             {step === 3 && (
               <div className="space-y-4 flex-1 flex flex-col">
                 <DonorForm
-                  formData={formData}
+                  formData={{
+                    wantsCelebrationDate: formData.wantsCelebrationDate,
+                    email: formData.email,
+                    phone: formData.phone,
+                    address: formData.address
+                  }}
                   updateFormData={updateFormData}
                   onValidate={() => {
                     const updatedMass: Mass = {

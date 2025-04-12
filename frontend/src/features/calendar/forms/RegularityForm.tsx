@@ -25,16 +25,12 @@ interface RegularityFormProps {
   formData: FormData;
   updateFormData: (data: Partial<FormData>) => void;
   onValidate: () => void;
-  nextStep?: () => void;
-  prevStep?: () => void;
 }
 
 const RegularityForm: React.FC<RegularityFormProps> = ({
   formData,
   updateFormData,
-  onValidate,
-  nextStep,
-  prevStep
+  onValidate
 }) => {
   const recurrenceOptions = [
     { value: 'daily', label: 'Quotidien' },
@@ -59,11 +55,6 @@ const RegularityForm: React.FC<RegularityFormProps> = ({
     }
 
     return explanation;
-  };
-
-  const handleValidate = () => {
-    if (onValidate) onValidate();
-    if (nextStep) nextStep();
   };
 
   return (
@@ -172,14 +163,9 @@ const RegularityForm: React.FC<RegularityFormProps> = ({
         </AlertDescription>
       </Alert>
 
-      <div className="pt-4 flex justify-between">
-        {prevStep && (
-          <Button type="button" variant="outline" onClick={prevStep}>
-            Précédent
-          </Button>
-        )}
-        <Button type="button" className={prevStep ? "" : "w-full"} onClick={handleValidate}>
-          {nextStep ? "Suivant" : "Valider"}
+      <div className="pt-4">
+        <Button type="button" className="w-full" onClick={onValidate}>
+          Valider
         </Button>
       </div>
     </div>
