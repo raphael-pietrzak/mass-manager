@@ -22,10 +22,11 @@ exports.getMass = async (req, res) => {
 };
 
 exports.createMass = async (req, res) => {
+  console.log(req.body);
   try {
     const mass = {
       date: req.body.date,
-      type: req.body.type || 'basse',
+      type: req.body.type || 'vivants',
       location: req.body.location,
       celebrant_id: req.body.celebrant,
       intention: req.body.intention,
