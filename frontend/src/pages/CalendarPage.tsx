@@ -9,12 +9,13 @@ import { ViewMode } from '../features/calendar/types';
 import { Mass } from '../api/massService';
 import { massService } from '../api/massService';
 import { exportService } from '../api/exportService';
+import { SpecialDaysModal } from '../features/special_days/SpecialDaysModal';
 
 function CalendarPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('calendar');
   const [masses, setMasses] = useState<Mass[]>([]);
   const [selectedMass, setSelectedMass] = useState<Mass | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isMassModalOpen, setIsMassModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isSliderOpen, setIsSliderOpen] = useState(false);
   const [filters, setFilters] = useState({
@@ -27,6 +28,7 @@ function CalendarPage() {
   const [error, setError] = useState<string | null>(null);
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   const exportMenuRef = useRef<HTMLDivElement>(null);
+  const [isSpecialDayModalOpen, setIsSpecialDayModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchMasses = async () => {
@@ -57,7 +59,7 @@ function CalendarPage() {
 
   const handleMassClick = (mass: Mass) => {
     setSelectedMass(mass);
-    setIsModalOpen(true);
+    setIsMassModalOpen(true);
   };
 
   const handleDateClick = (date: string) => {
@@ -74,7 +76,7 @@ function CalendarPage() {
       }
       const newMasses = await massService.getMasses();
       setMasses(newMasses);
-      setIsModalOpen(false);
+      setIsMassModalOpen(false);
     } catch (err) {
       setError('Erreur lors de la sauvegarde de la messe');
     }
@@ -87,7 +89,7 @@ function CalendarPage() {
         const newMasses = await massService.getMasses();
         setMasses(newMasses);
       }
-      setIsModalOpen(false);
+      setIsMassModalOpen(false);
     } catch (err) {
       setError('Erreur lors de la suppression de la messe');
     }
@@ -116,8 +118,13 @@ function CalendarPage() {
 
   const handleAddMass = () => {
     setSelectedMass(null);
-    setIsModalOpen(true);
+    setIsMassModalOpen(true);
   };
+
+  const handleAddSpecialDay = () => {
+    setIsSpecialDayModalOpen(true);
+  };
+     
 
   const handleExport = async (format: 'word' | 'excel' | 'pdf') => {
     try {
@@ -204,6 +211,17 @@ function CalendarPage() {
           />
         )}
 
+        {/* Bouton pour ajouter un jour spécial */}
+        {!isMassModalOpen && !isSpecialDayModalOpen && (
+        <div className="mt-4">
+          <button
+            onClick={handleAddSpecialDay}
+            className="px-4 py-2 bg-yellow-500 text-white rounded-md shadow hover:bg-yellow-600 transition">
+            + Jours Particuliers
+          </button>
+        </div>
+        )}
+
         <div className="mt-6">
           {viewMode === 'calendar' ? (
             <MassCalendar
@@ -222,8 +240,8 @@ function CalendarPage() {
 
         <MassModal
           mass={selectedMass}
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+          isOpen={isMassModalOpen}
+          onClose={() => setIsMassModalOpen(false)}
           onSave={handleSaveMass}
           onDelete={handleDeleteMass}
         />
@@ -236,8 +254,14 @@ function CalendarPage() {
           onMassClick={handleMassClick}
         />
 
+        {/* Modal pour les jours spéciaux */}
+        <SpecialDaysModal
+          isOpen={isSpecialDayModalOpen}
+          onClose={() => setIsSpecialDayModalOpen(false)}
+        />
+
         {/* Bouton flottant pour ajouter une messe */}
-        {!isModalOpen && (
+        {!isMassModalOpen && !isSpecialDayModalOpen && (
           <button
             onClick={handleAddMass}
             className="fixed bottom-6 right-6 p-4 bg-gray-900 text-white rounded-full shadow-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 z-50"

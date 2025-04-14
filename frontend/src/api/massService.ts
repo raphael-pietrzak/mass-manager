@@ -18,10 +18,6 @@ export const massService = {
   getMasses: async (): Promise<Mass[]> => {
     const response = await axios.get(`${API_URL}/masses`);
     const data = response.data;
-    console.log("Date formated:", data.map((mass: any) => ({
-        date: formatDate(mass.date),
-        time: extractTimeOnly(mass.date)
-    })));
     return data.map((mass: any) => ({
       ...mass,
       date: formatDate(mass.date), // Convertir le timestamp en format YYYY-MM-DD

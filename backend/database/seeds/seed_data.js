@@ -81,7 +81,8 @@ exports.seed = function(knex) {
     })
     .then(function () {
       return knex('SpecialDays').insert([
-        { date: new Date('2024-12-25'), note: 'Noël', number_of_masses: 3 },
+        { date: new Date('2024-12-25'), note: 'Noël', number_of_masses: 3, is_recurrent: true },
+        { date: new Date('2025-04-17'), note: 'Jeudi Saint', number_of_masses: 0,  is_recurrent: false },
       ]);
     })
     .then(function () {
