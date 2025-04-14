@@ -25,10 +25,12 @@ exports.createSpecialDay = async (req, res) => {
   try {
     const specialDay = {
       date: req.body.date,
-      description: req.body.description
+      note: req.body.note,
+      number_of_masses: req.body.number_of_masses,
+      is_recurrent: req.body.is_recurrent,
     };
 
-    const specialDayId = await SpecialDay.create(specialDay);
+    await SpecialDay.create(specialDay);
     res.status(201).send('Journée spéciale enregistrée');
   } catch (error) {
     console.error(error);
@@ -41,7 +43,9 @@ exports.updateSpecialDay = async (req, res) => {
     const specialDay = {
       id: req.params.id,
       date: req.body.date,
-      description: req.body.description
+      note: req.body.note,
+      number_of_masses: req.body.number_of_masses,
+      is_recurrent: req.body.is_recurrent,
     };
 
     await SpecialDay.update(specialDay);

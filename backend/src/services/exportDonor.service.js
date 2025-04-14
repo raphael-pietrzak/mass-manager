@@ -26,7 +26,7 @@ class ExportDonorService {
         firstname: donor.firstname,
         email: donor.email,
         phone: donor.phone,
-        address: donor.address,
+        address: `${donor.address} ${donor.zip_code} ${donor.city}`, 
       });
     });
     
@@ -53,18 +53,18 @@ class ExportDonorService {
       // Définir le tableau des données
       const tableData = {
         headers: [
-          { label: 'Nom' },
-          { label: 'Prénom' },
-          { label: 'Email' },
-          { label: 'Tél' },
-          { label: 'Adresse' }
+            { label: 'Nom', width: 80 },  // Plus de place pour le Nom
+            { label: 'Prénom', width: 80 },  // Moins de place pour Prénom
+            { label: 'Email', width: 180 },  // Plus de place pour Email
+            { label: 'Tél', width: 80 },  // Ajuster la taille du Tél
+            { label: 'Adresse', width: 130 },  // Ajuster la taille de l'Adresse
         ],
         rows: donors.map(donor => [
           donor.lastname,
           donor.firstname,
           donor.email || '',
           donor.phone || '',
-          donor.address || '',
+          `${donor.address || ''}\n${donor.zip_code || ''} ${donor.city || ''}`
         ])
       };
       
