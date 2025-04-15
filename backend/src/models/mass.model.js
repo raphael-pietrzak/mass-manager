@@ -9,6 +9,9 @@ const Mass = {
                 'Celebrants.religious_name as celebrant',
                 'Masses.intention',
                 'Masses.status',
+                'Masses.deceased',
+                'Masses.amount',
+                'Masses.wants_notification',
             )
             .leftJoin('Celebrants', 'Masses.celebrant_id', 'Celebrants.id')
 

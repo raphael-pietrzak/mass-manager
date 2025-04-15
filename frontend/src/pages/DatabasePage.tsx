@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { EditRowDialog } from '../components/dialogs/EditRowDialog';
+import { FormatterConfig } from '../components/dialogs/EditRowDialog';
 import { useFetchData } from '../hooks/useFetchData';
 import { TabsNavigation } from '../features/database/TabsNavigation';
 import { DataTable } from '../features/database/DataTable';
@@ -12,13 +13,25 @@ const DatabaseTabs: React.FC = () => {
   const [activeTab, setActiveTab] = useState(tabs[0].key);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editRowData, setEditRowData] = useState<any>(null);
-  const [editColumns, setEditColumns] = useState<string[]>([]);
+  const [editColumns, setEditColumns] = useState<Array<{ key: string; label: string }>>([]);
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
-  // Utiliser le hook personnalisé pour gérer les données
   const { data, loading, error, setData } = useFetchData(activeTab);
   const { handleDelete } = useDeleteData(activeTab, setData);
   const { handleUpdate } = useUpdateData(activeTab, setData);
+
+  const selectedTab = tabs.find(tab => tab.key === activeTab);
+  const formatters = selectedTab?.formatters || {};
+
+  const sanitizedFormatters: Record<string, FormatterConfig> = Object.fromEntries(
+    Object.entries(formatters).map(([key, value]) => {
+      // Si la valeur est une fonction (FormatterFunction), transforme-la en FormatterConfig
+      if (typeof value === 'function') {
+        return [key, { type: 'enum', options: [], display: value }];
+      }
+      return [key, value];
+    })
+  );
 
   const handleDeleteClick = (id: number) => {
     setDeleteId(id);
@@ -35,12 +48,13 @@ const DatabaseTabs: React.FC = () => {
   };
 
   const handleEdit = (row: any) => {
-    const selectedTab = tabs.find(tab => tab.key === activeTab);
     if (!selectedTab) return;
-    
-    // Obtenir les colonnes soit depuis la définition du tab, soit depuis les clés de la première ligne
-    const columns = selectedTab.columns || Object.keys(row);
-    
+
+    const columns = selectedTab.columns || Object.keys(row).map(key => ({
+      key,
+      label: key.replace(/_/g, ' '),
+    }));
+
     setEditRowData(row);
     setEditColumns(columns);
     setIsEditDialogOpen(true);
@@ -50,9 +64,69 @@ const DatabaseTabs: React.FC = () => {
     handleUpdate(updatedData);
   };
 
+  // Pagination State
+  const [itemsPerPage, setItemsPerPage] = useState(10);  // Nombre d'éléments par page
+  const [currentPage, setCurrentPage] = useState(1);  // Page active
+
+  // Calcul des pages
+  const totalItems = data.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+  // Données paginées
+  const paginatedData = data.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  // Gérer la sélection du nombre d'éléments par page
+  const handleItemsPerPageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setItemsPerPage(Number(event.target.value));
+    setCurrentPage(1);  // Réinitialiser la page à 1 lorsqu'on change le nombre d'éléments par page
+  };
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
   return (
     <div className="w-full bg-white shadow-xl rounded-lg p-6">
+      
       <TabsNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
+        {/* Sélecteur pour le nombre d'éléments par page */}
+        <div className="flex justify-between p-4">
+          <div>
+            <label>Lignes par page :</label>
+            <select
+              value={itemsPerPage}
+              onChange={handleItemsPerPageChange}
+              className="ml-2 p-1 border border-gray-300 rounded"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={15}>15</option>
+              <option value={20}>20</option>
+              <option value={25}>25</option>
+            </select>
+          </div>
+
+          {/* Contrôles de pagination */}
+          <div>
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-3 py-1 border rounded mx-1"
+            >
+              &lt;
+            </button>
+            <span className="mx-1">Page {currentPage} sur {totalPages}</span>
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 border rounded mx-1"
+            >
+              &gt;
+            </button>
+          </div>
+        </div>
       <div className="p-4">
         {loading ? (
           <div className="text-center text-gray-500">Loading...</div>
@@ -60,28 +134,30 @@ const DatabaseTabs: React.FC = () => {
           <div className="text-red-500">{error}</div>
         ) : (
           <div className="overflow-x-auto">
-            {data.length > 0 ? (
+            {paginatedData.length > 0 ? (
               <DataTable
-                data={data}
+                data={paginatedData}
                 activeTab={activeTab}
                 handleEdit={handleEdit}
                 handleDeleteClick={handleDeleteClick}
               />
             ) : (
-              <div className="text-center text-gray-500">No data available</div>
+              <div className="text-center text-gray-500">Pas de données disponibles</div>
             )}
           </div>
         )}
       </div>
 
-      <EditRowDialog
-        isOpen={isEditDialogOpen}
-        onClose={() => setIsEditDialogOpen(false)}
-        onSave={handleSave}
-        data={editRowData}
-        columns={editColumns} // Colonnes obtenues dynamiquement
-        formatters={tabs.find(tab => tab.key === activeTab)?.formatters}
-      />
+      {selectedTab && (
+        <EditRowDialog
+          isOpen={isEditDialogOpen}
+          onClose={() => setIsEditDialogOpen(false)}
+          onSave={handleSave}
+          data={editRowData}
+          columns={editColumns}
+          formatters={sanitizedFormatters}
+        />
+      )}
 
       <DeleteConfirmationDialog
         open={deleteId !== null}

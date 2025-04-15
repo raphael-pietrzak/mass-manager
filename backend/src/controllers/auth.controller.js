@@ -24,7 +24,7 @@ const loginUser = async (req, res) => {
     const token = jwt.sign(
       { userId: user.id, login_name: user.login_name },
       process.env.JWT_SECRET_KEY,
-      { expiresIn: '1h' }
+      { expiresIn: '1d' }
     );
 
     // Envoyer le token dans un cookie HttpOnly
