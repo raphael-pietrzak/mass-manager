@@ -50,7 +50,7 @@ export const tabs: TabColumn[] = [
       { key: "celebrant", label: "Célébrant" },
       { key: "intention", label: "Intention" },
       { key: "amount", label: "Montant" },
-      { key: "deceased", label: "Pour défunt" },
+      { key: "deceased", label: "Pour un défunt" },
       { key: "status", label: "Statut" },
     ],
     formatters: {
