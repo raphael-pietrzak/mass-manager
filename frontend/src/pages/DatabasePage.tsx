@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { EditRowDialog } from '../components/dialogs/EditRowDialog';
+import { FormatterConfig } from '../components/dialogs/EditRowDialog';
 import { useFetchData } from '../hooks/useFetchData';
 import { TabsNavigation } from '../features/database/TabsNavigation';
 import { DataTable } from '../features/database/DataTable';
@@ -12,13 +13,25 @@ const DatabaseTabs: React.FC = () => {
   const [activeTab, setActiveTab] = useState(tabs[0].key);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editRowData, setEditRowData] = useState<any>(null);
-  const [editColumns, setEditColumns] = useState<string[]>([]);
+  const [editColumns, setEditColumns] = useState<Array<{ key: string; label: string }>>([]);
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
-  // Utiliser le hook personnalisé pour gérer les données
   const { data, loading, error, setData } = useFetchData(activeTab);
   const { handleDelete } = useDeleteData(activeTab, setData);
   const { handleUpdate } = useUpdateData(activeTab, setData);
+
+  const selectedTab = tabs.find(tab => tab.key === activeTab);
+  const formatters = selectedTab?.formatters || {};
+
+  const sanitizedFormatters: Record<string, FormatterConfig> = Object.fromEntries(
+    Object.entries(formatters).map(([key, value]) => {
+      // Si la valeur est une fonction (FormatterFunction), transforme-la en FormatterConfig
+      if (typeof value === 'function') {
+        return [key, { type: 'enum', options: [], display: value }];
+      }
+      return [key, value];
+    })
+  );
 
   const handleDeleteClick = (id: number) => {
     setDeleteId(id);
@@ -35,12 +48,13 @@ const DatabaseTabs: React.FC = () => {
   };
 
   const handleEdit = (row: any) => {
-    const selectedTab = tabs.find(tab => tab.key === activeTab);
     if (!selectedTab) return;
-    
-    // Obtenir les colonnes soit depuis la définition du tab, soit depuis les clés de la première ligne
-    const columns = selectedTab.columns || Object.keys(row);
-    
+
+    const columns = selectedTab.columns || Object.keys(row).map(key => ({
+      key,
+      label: key.replace(/_/g, ' '),
+    }));
+
     setEditRowData(row);
     setEditColumns(columns);
     setIsEditDialogOpen(true);
@@ -74,14 +88,16 @@ const DatabaseTabs: React.FC = () => {
         )}
       </div>
 
-      <EditRowDialog
-        isOpen={isEditDialogOpen}
-        onClose={() => setIsEditDialogOpen(false)}
-        onSave={handleSave}
-        data={editRowData}
-        columns={editColumns} // Colonnes obtenues dynamiquement
-        formatters={tabs.find(tab => tab.key === activeTab)?.formatters}
-      />
+      {selectedTab && (
+        <EditRowDialog
+          isOpen={isEditDialogOpen}
+          onClose={() => setIsEditDialogOpen(false)}
+          onSave={handleSave}
+          data={editRowData}
+          columns={editColumns}
+          formatters={sanitizedFormatters}
+        />
+      )}
 
       <DeleteConfirmationDialog
         open={deleteId !== null}

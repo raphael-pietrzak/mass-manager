@@ -20,6 +20,7 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
   const [isDeleting, setIsDeleting] = useState<string | null>(null); // To track which day is being deleted
   const [showSpecialDays, setShowSpecialDays] = useState(false); // For toggle show special days
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false); // For confirmation of deletion
+  const [successMessage, setSuccessMessage] = useState<string>();
 
   useEffect(() => {
     if (isOpen) {
@@ -53,14 +54,14 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
   const handleSave = async () => {
     try {
       if (editingDay?.id) {
-        await specialDayService.updateSpecialDay(editingDay.id, newDay);
+        const response = await specialDayService.updateSpecialDay(editingDay.id, newDay);
+        setSuccessMessage(response);
       } else {
         await specialDayService.createSpecialDays(newDay);
+        setSuccessMessage('Jour spécial ajouté avec succès.');
       }
       await loadSpecialDays();
       resetForm(); // Reset the form after saving
-      // Remove this line to prevent closing the modal after save
-      // onClose();
     } catch (error) {
       console.error("Erreur lors de l'enregistrement du jour spécial", error);
     }
@@ -78,6 +79,7 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
         await loadSpecialDays(); // Recharge sans toucher au form
         resetForm(); // Réinitialise le formulaire après la suppression
         setIsDeleting(null);
+        setSuccessMessage('Jour spécial supprimé avec succès.');
       } catch (error) {
         console.error('Erreur lors de la suppression du jour spécial', error);
       }
@@ -92,6 +94,7 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
   const handleEdit = (day: SpecialDays) => {
     setEditingDay(day);
     setNewDay({ ...day });
+    
   };
 
   const formatDateWithoutYear = (date: string) => {
@@ -114,9 +117,8 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
       <div className="bg-white w-full max-w-2xl p-6 rounded shadow-lg relative h-[95vh] overflow-y-auto">
         <div className="sticky top-0 bg-white z-10 pb-4">
             <button onClick={onClose} className="absolute top-2 right-2 text-gray-500 hover:text-gray-700">✕</button>
-            
             <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">Jours Particuliers</h2>
+              <h2 className="text-xl font-semibold">Jours Particuliers</h2>
             </div>
             <div className="flex items-center justify-between mb-4">
                 {/* Le bouton "+ Ajouter un jour" s'affiche uniquement si on est en mode édition (c'est-à-dire après avoir sélectionné un jour) */}
@@ -214,6 +216,14 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
                 </div>
                 </form>
 
+
+            {/* Success Message */}
+            {successMessage && (
+              <div className="mb-4 mt-8 p-3 bg-green-50 border border-green-300 text-green-700 rounded-md">
+                {successMessage}
+              </div>
+            )}
+
             {/* Deletion Confirmation */}
             {isConfirmingDelete && (
             <div className="mb-4 mt-8 p-3 bg-red-50 border border-red-300 rounded-md">
@@ -247,7 +257,7 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
         {/* Show special days based on the checkbox */}
         {showSpecialDays && (
-          <div className="space-y-3 border-t pt-8 mt-8 max-h-[300px] overflow-y-auto">
+          <div className="space-y-3 border-t pt-8 max-h-[300px] overflow-y-auto">
             {specialDays.map(day => (
               <div
                 key={day.id}

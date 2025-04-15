@@ -40,9 +40,10 @@ export const specialDayService = {
     },
   
     // Mettre à jour un jour spécial
-    updateSpecialDay: async (id: string, specialDay: SpecialDays): Promise<SpecialDays> => {
+    updateSpecialDay: async (id: string, specialDay: SpecialDays): Promise<string> => {
       try {
         const response = await axios.put(`${API_URL}/special-days/${id}`, specialDay);
+        console.log(response.data);
         return response.data;
       } catch (error) {
         console.error('Erreur lors de la mise à jour du jour spécial:', error);

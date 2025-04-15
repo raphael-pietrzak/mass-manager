@@ -25,9 +25,13 @@ exports.createMass = async (req, res) => {
   try {
     const mass = {
       date: req.body.date,
-      celebrant_id: req.body.celebrant,
+      date: req.body.date,
+      celebrant_id: req.body.celebrant_id,
       intention: req.body.intention,
-      status: 'scheduled'
+      status: req.body.status,
+      deceased: req.body.deceased,
+      amount: req.body.amount,
+      wants_notification: req.body.wants_notification,
     };
 
     const massId = await Mass.create(mass);
@@ -60,7 +64,10 @@ exports.updateMass = async (req, res) => {
       date: req.body.date,
       celebrant_id: req.body.celebrant_id,
       intention: req.body.intention,
-      status: req.body.status
+      status: req.body.status,
+      deceased: req.body.deceased,
+      amount: req.body.amount,
+      wants_notification: req.body.wants_notification,
     };
 
     await Mass.update(mass);
