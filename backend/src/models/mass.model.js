@@ -137,14 +137,13 @@ const Mass = {
         
         if (startDate) {
             // Extraire la partie YYYY-MM-DD de la date ISO
-            const formattedStartDate = startDate.substring(0, 10);
+            const formattedStartDate = new Date(startDate).toISOString().split('T')[0];
             query = query.where(db.raw('DATE(Masses.date)'), '>=', formattedStartDate);
         }
         
         if (endDate) {
             // Extraire la partie YYYY-MM-DD de la date ISO
-            const formattedEndDate = endDate.substring(0, 10);
-            query = query.where(db.raw('DATE(Masses.date)'), '<=', formattedEndDate);
+            const formattedEndDate = new Date(endDate).toISOString().split('T')[0];
         }
         
         return query;
