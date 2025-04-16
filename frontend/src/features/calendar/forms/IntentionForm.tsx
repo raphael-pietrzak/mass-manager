@@ -3,14 +3,13 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { DropdownSearch } from '../../../components/DropdownSearch';
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { fr } from 'date-fns/locale';
 import { CalendarIcon, RotateCw } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface DropdownOption {
   value: string;
@@ -22,9 +21,17 @@ interface IntentionFormProps {
   selectedDate?: Date;
   selectedCelebrant: string;
   celebrantOptions: DropdownOption[];
+  massType: string;
+  massCount: number;
+  dateType: string;
+  isForDeceased: boolean;
   onIntentionChange: (value: string) => void;
   onDateChange: (date: Date | undefined) => void;
   onCelebrantChange: (value: string) => void;
+  onMassTypeChange: (value: string) => void;
+  onMassCountChange: (value: number) => void;
+  onDateTypeChange: (value: string) => void;
+  onIsForDeceasedChange: (value: boolean) => void;
   onRecurrenceClick: () => void;
   nextStep: () => void;
 }
@@ -34,15 +41,20 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
   selectedDate,
   selectedCelebrant,
   celebrantOptions,
+  massType,
+  massCount,
+  dateType,
+  isForDeceased,
   onIntentionChange,
   onDateChange,
   onCelebrantChange,
+  onMassTypeChange,
+  onMassCountChange,
+  onDateTypeChange,
+  onIsForDeceasedChange,
   onRecurrenceClick,
   nextStep
 }) => {
-  const [massType, setMassType] = useState("unite");
-  const [massCount, setMassCount] = useState(1);
-  const [dateType, setDateType] = useState("indifferente");
   const [showCalendar, setShowCalendar] = useState(false);
 
   const massTypes = [
@@ -54,6 +66,18 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
   return (
     <div className="flex flex-col flex-1 h-full min-h-[300px]">
       <div className="flex-grow space-y-6">
+        {/* Type d'intention (défunt/vivant) */}
+        <div className="flex items-center space-x-2">
+          <Checkbox 
+            id="isForDeceased"
+            checked={isForDeceased}
+            onCheckedChange={(checked) => onIsForDeceasedChange(checked as boolean)}
+          />
+          <Label htmlFor="isForDeceased">
+            Intention pour un défunt
+          </Label>
+        </div>
+
         {/* Intention */}
         <div className="space-y-2">
           <Label htmlFor="intention">
@@ -79,10 +103,10 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
               min="1" 
               className="w-24"
               value={massCount}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMassCount(parseInt(e.target.value))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onMassCountChange(parseInt(e.target.value))}
             />
             <Select 
-              onValueChange={(value: string) => setMassType(value)}
+              onValueChange={(value: string) => onMassTypeChange(value)}
               value={massType}
             >
               <SelectTrigger className="w-[180px]">
@@ -103,9 +127,8 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
         <div className="space-y-4">
           <Label>Type de date</Label>
           <RadioGroup 
-            defaultValue="indifferente" 
             value={dateType}
-            onValueChange={(value: string) => setDateType(value)}
+            onValueChange={(value: string) => onDateTypeChange(value)}
             className="flex flex-col space-y-2"
           >
             <div className="flex items-center space-x-2">

@@ -22,7 +22,36 @@ exports.getMass = async (req, res) => {
 };
 
 exports.createMass = async (req, res) => {
-  console.log(req.body);
+
+
+  // Data example : 
+  // {
+  //   id: '',
+  //   date: '2025-04-16',
+  //   celebrant: 3,
+  //   type: 'vivants',
+  //   intention: 'mon intention',
+  //   firstName: 'Bob',
+  //   lastName: 'Steve',
+  //   email: 'exemple@email.com',
+  //   phone: '123456789',
+  //   address: '123 rue du lilas',
+  //   postalCode: '34000',
+  //   city: 'Montpellier',
+  //   wantsCelebrationDate: false,
+  //   amount: '30',
+  //   paymentMethod: 'cash',
+  //   brotherName: 'Basile',
+  //   massCount: 1,
+  //   massType: 'unite',
+  //   dateType: 'indifferente',
+  //   isRecurrent: true,
+  //   recurrenceType: 'daily',
+  //   occurrences: 3,
+  //   startDate: '2025-04-02',
+  //   endType: 'occurrences'
+  // }
+  
   try {
     const mass = {
       date: req.body.date,

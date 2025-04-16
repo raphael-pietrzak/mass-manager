@@ -57,7 +57,8 @@ export const MassModal: React.FC<MassModalProps> = ({
     recurrenceType: 'weekly',
     endType: 'occurrences' as 'occurrences' | 'date',
     occurrences: 1,
-    endDate: null as Date | null
+    endDate: null as Date | null,
+    isForDeceased: true, // Par défaut, l'intention est pour un défunt
   });
   
   // Initialise les données par défaut
@@ -65,7 +66,7 @@ export const MassModal: React.FC<MassModalProps> = ({
     id: '',
     date: new Date().toISOString().split('T')[0],
     celebrant: UNASSIGNED_VALUE,
-    type: 'vivants',
+    type: 'defunts', // Par défaut défunt
     intention: '',
   };
 
@@ -82,11 +83,26 @@ export const MassModal: React.FC<MassModalProps> = ({
         ...prev,
         intention: mass.intention || '',
         date: mass.date ? new Date(mass.date) : undefined,
+        isForDeceased: mass.type === 'defunts',
+        // Si ces valeurs existent dans mass, les utiliser, sinon garder les valeurs par défaut
+        massCount: mass.massCount || prev.massCount,
+        massType: mass.massType || prev.massType,
+        dateType: mass.dateType || prev.dateType,
       }));
       setSelectedDate(mass.date ? new Date(mass.date) : new Date());
     } else if (isOpen) {
       setSelectedCelebrant(UNASSIGNED_VALUE);
       setSelectedDate(new Date());
+      // Réinitialiser avec les valeurs par défaut
+      setFormData(prev => ({
+        ...prev,
+        intention: '',
+        date: undefined,
+        isForDeceased: true,
+        massCount: 1,
+        massType: 'unite',
+        dateType: 'indifferente',
+      }));
     }
     // Réinitialiser l'état de confirmation à chaque ouverture
     setShowDeleteConfirm(false);
@@ -230,6 +246,10 @@ export const MassModal: React.FC<MassModalProps> = ({
                   selectedDate={selectedDate}
                   selectedCelebrant={selectedCelebrant}
                   celebrantOptions={celebrantOptions}
+                  massType={formData.massType}
+                  massCount={formData.massCount}
+                  dateType={formData.dateType}
+                  isForDeceased={formData.isForDeceased}
                   onIntentionChange={(value) => updateFormData({ intention: value })}
                   onDateChange={(date) => {
                     setSelectedDate(date);
@@ -239,6 +259,10 @@ export const MassModal: React.FC<MassModalProps> = ({
                     setSelectedCelebrant(value);
                     updateFormData({ celebrant: value });
                   }}
+                  onMassTypeChange={(value) => updateFormData({ massType: value })}
+                  onMassCountChange={(value) => updateFormData({ massCount: value })}
+                  onDateTypeChange={(value) => updateFormData({ dateType: value })}
+                  onIsForDeceasedChange={(value) => updateFormData({ isForDeceased: value })}
                   onRecurrenceClick={handleRecurrenceClick}
                   nextStep={nextStep}
                 />
@@ -280,6 +304,7 @@ export const MassModal: React.FC<MassModalProps> = ({
                       date: selectedDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
                       celebrant: selectedCelebrant,
                       intention: formData.intention,
+                      type: formData.isForDeceased ? 'defunts' : 'vivants',
                       // Informations du donateur
                       firstName: formData.firstName,
                       lastName: formData.lastName,
