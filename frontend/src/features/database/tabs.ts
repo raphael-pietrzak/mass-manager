@@ -48,12 +48,27 @@ export const tabs: TabColumn[] = [
     columns: [
       { key: "date", label: "Date" },
       { key: "celebrant", label: "Célébrant" },
+      { key: "donor", label: "Donateur" },
       { key: "intention", label: "Intention" },
       { key: "amount", label: "Montant" },
       { key: "deceased", label: "Pour un défunt" },
-      { key: "status", label: "Statut" },
+      { key: "status", label: "Statut" },   
     ],
     formatters: {
+      donor: {
+        type: 'string' as 'enum',
+        display: (value) => {
+          // Si 'value' est un objet avec des propriétés 'firstname' et 'lastname'
+          if (value && value.firstname && value.lastname) {
+            return `${value.firstname} ${value.lastname}`;  // Retourne le nom complet du donateur
+          }
+          // Si 'value' est une simple chaîne (par exemple un ID ou un nom)
+          if (typeof value === 'string') {
+            return value;  // Retourne la chaîne telle quelle
+          }
+          return 'Donateur inconnu';  // Si les données sont manquantes ou invalides
+        }
+      },
       date: {
         type: 'date',
         display: (value: string) => new Date(value).toLocaleDateString("fr-FR")

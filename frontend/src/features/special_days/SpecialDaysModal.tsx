@@ -13,23 +13,33 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
   const [editingDay, setEditingDay] = useState<SpecialDays | null>(null);
   const [newDay, setNewDay] = useState<SpecialDays>({
     date: '',
-    note: '',
+    description: '',
     number_of_masses: 0,
     is_recurrent: false,
   });
   const [isDeleting, setIsDeleting] = useState<string | null>(null); // To track which day is being deleted
   const [showSpecialDays, setShowSpecialDays] = useState(false); // For toggle show special days
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false); // For confirmation of deletion
-  const [successMessage, setSuccessMessage] = useState<string>();
+  const [successMessage, setSuccessMessage] = useState<string | undefined>();
 
   useEffect(() => {
     if (isOpen) {
       loadSpecialDays();
     } else {
-      // Reset state when modal is closed
       resetForm();
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => {
+        setSuccessMessage(undefined);
+      }, 4000);
+  
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
+  
 
   const loadSpecialDays = async () => {
     const data = await specialDayService.getSpecialDays();
@@ -37,7 +47,7 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
     const sanitizedData = data.map((day) => ({
       ...day,
       date: day.date || '',  // Si `date` est vide, on le remplace par une chaîne vide.
-      note: day.note || '',  // Même chose pour la note.
+      description: day.description || '',  // Même chose pour la description.
       number_of_masses: day.number_of_masses || 0,  // Si `number_of_masses` est vide ou nul, on le remplace par 0.
       is_recurrent: day.is_recurrent ?? false,  // Si `is_recurrent` est nul, on le remplace par `false`.
     }));
@@ -57,11 +67,10 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
         const response = await specialDayService.updateSpecialDay(editingDay.id, newDay);
         setSuccessMessage(response);
       } else {
-        await specialDayService.createSpecialDays(newDay);
-        setSuccessMessage('Jour spécial ajouté avec succès.');
+        const response = await specialDayService.createSpecialDays(newDay);
+        setSuccessMessage(response);
       }
       await loadSpecialDays();
-      resetForm(); // Reset the form after saving
     } catch (error) {
       console.error("Erreur lors de l'enregistrement du jour spécial", error);
     }
@@ -75,11 +84,11 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
   const handleConfirmDelete = async () => {
     if (isDeleting) {
       try {
-        await specialDayService.deleteSpecialDay(isDeleting);
+        const response = await specialDayService.deleteSpecialDay(isDeleting);
         await loadSpecialDays(); // Recharge sans toucher au form
         resetForm(); // Réinitialise le formulaire après la suppression
         setIsDeleting(null);
-        setSuccessMessage('Jour spécial supprimé avec succès.');
+        setSuccessMessage(response);
       } catch (error) {
         console.error('Erreur lors de la suppression du jour spécial', error);
       }
@@ -105,7 +114,7 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
   const resetForm = () => {
     setEditingDay(null);
-    setNewDay({ date: '', note: '', number_of_masses: 0, is_recurrent: false });
+    setNewDay({ date: '', description: '', number_of_masses: 0, is_recurrent: false });
     setIsDeleting(null);
     setIsConfirmingDelete(false);
   };
@@ -114,7 +123,7 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white w-full max-w-2xl p-6 rounded shadow-lg relative h-[95vh] overflow-y-auto">
+      <div className="bg-white w-full max-w-2xl p-6 rounded shadow-lg relative max-h-[95vh] overflow-hidden flex flex-col">
         <div className="sticky top-0 bg-white z-10 pb-4">
             <button onClick={onClose} className="absolute top-2 right-2 text-gray-500 hover:text-gray-700">✕</button>
             <div className="flex items-center justify-between mb-4">
@@ -173,8 +182,8 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
                         type="text"
                         required
                         placeholder="ex : Noël ou Jeudi Saint"
-                        value={newDay.note}
-                        onChange={e => handleChange('note', e.target.value)}
+                        value={newDay.description}
+                        onChange={e => handleChange('description', e.target.value)}
                         className="w-full border p-2 rounded"
                     />
                 </label>
@@ -217,12 +226,17 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
                 </form>
 
 
-            {/* Success Message */}
-            {successMessage && (
-              <div className="mb-4 mt-8 p-3 bg-green-50 border border-green-300 text-green-700 rounded-md">
-                {successMessage}
-              </div>
-            )}
+                {successMessage && (
+                <div className="relative mb-4 mt-8 p-3 bg-green-50 border border-green-300 text-green-700 rounded-md">
+                  <button
+                    onClick={() => setSuccessMessage(undefined)}
+                    className="absolute top-1 right-2 text-green-700 hover:text-green-900"
+                  >
+                    ✕
+                  </button>
+                  {successMessage}
+                </div>
+              )}
 
             {/* Deletion Confirmation */}
             {isConfirmingDelete && (
@@ -257,7 +271,7 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
         {/* Show special days based on the checkbox */}
         {showSpecialDays && (
-          <div className="space-y-3 border-t pt-8 max-h-[300px] overflow-y-auto">
+          <div className="space-y-3 border-t pt-8 overflow-y-auto flex-1 min-h-0">
             {specialDays.map(day => (
               <div
                 key={day.id}
@@ -269,7 +283,7 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
                     {day.is_recurrent 
                       ? formatDateWithoutYear(day.date) // No year if recurrent
                       : formatDisplayDate(new Date(day.date).getTime()) // Normal date format with year
-                    } - {day.note}
+                    } - {day.description}
                   </p>
                   <p className="text-sm text-gray-500">
                     {day.number_of_masses} messe(s) — {day.is_recurrent ? 'Récurrent' : 'Unique'}

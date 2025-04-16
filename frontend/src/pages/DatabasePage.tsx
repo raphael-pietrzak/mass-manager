@@ -119,43 +119,43 @@ const DatabaseTabs: React.FC = () => {
   return (
     <div className="w-full bg-white shadow-xl rounded-lg p-6">
       
-      <TabsNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
-        {/* Sélecteur pour le nombre d'éléments par page */}
-        <div className="flex justify-between p-4">
-          <div>
-            <label>Lignes par page :</label>
-            <select
-              value={itemsPerPage}
-              onChange={handleItemsPerPageChange}
-              className="ml-2 p-1 border border-gray-300 rounded"
-            >
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={15}>15</option>
-              <option value={20}>20</option>
-              <option value={25}>25</option>
-            </select>
-          </div>
-
-          {/* Contrôles de pagination */}
-          <div>
-            <button
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="px-3 py-1 border rounded mx-1"
-            >
-              &lt;
-            </button>
-            <span className="mx-1">Page {currentPage} sur {totalPages}</span>
-            <button
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="px-3 py-1 border rounded mx-1"
-            >
-              &gt;
-            </button>
-          </div>
+      <TabsNavigation activeTab={activeTab} setActiveTab={setActiveTab} />     
+      {/* Sélecteur pour le nombre d'éléments par page */}
+      <div className="flex justify-between p-4">
+        <div>
+          <label>Lignes par page :</label>
+          <select
+            value={itemsPerPage}
+            onChange={handleItemsPerPageChange}
+            className="ml-2 p-1 border border-gray-300 rounded"
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={15}>15</option>
+            <option value={20}>20</option>
+            <option value={25}>25</option>
+          </select>
         </div>
+
+        {/* Contrôles de pagination */}
+        <div>
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="px-3 py-1 border rounded mx-1"
+          >
+            &lt;
+          </button>
+          <span className="mx-1">Page {currentPage} sur {totalPages}</span>
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="px-3 py-1 border rounded mx-1"
+          >
+            &gt;
+          </button>
+        </div>
+      </div>
       <div className="p-4">
         {loading ? (
           <div className="text-center text-gray-500">Loading...</div>
