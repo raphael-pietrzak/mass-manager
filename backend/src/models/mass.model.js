@@ -2,11 +2,13 @@ const db = require('../../config/database');
 
 const Mass = {
     getAll: async () => {
-        return db('Masses')
+        const results = await db('Masses')
             .select(
                 'Masses.id',
                 'Masses.date',
                 'Celebrants.religious_name as celebrant',
+                'Donors.firstname as donor_firstname',
+                'Donors.lastname as donor_lastname',
                 'Masses.intention',
                 'Masses.status',
                 'Masses.deceased',
@@ -14,9 +16,19 @@ const Mass = {
                 'Masses.wants_notification',
             )
             .leftJoin('Celebrants', 'Masses.celebrant_id', 'Celebrants.id')
-
+            .leftJoin('Donors', 'Masses.donor_id', 'Donors.id')
             .orderBy('Masses.date');
+    
+        // On transforme chaque ligne pour y inclure un objet "donor"
+        return results.map(({ donor_firstname, donor_lastname, ...rest }) => ({
+            ...rest,
+            donor: {
+                firstname: donor_firstname,
+                lastname: donor_lastname
+            }
+        }));
     },
+    
 
     create: async (mass) => {
         return db('Masses').insert(mass);

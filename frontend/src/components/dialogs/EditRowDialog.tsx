@@ -50,13 +50,10 @@ export const EditRowDialog: React.FC<EditRowDialogProps> = ({
 
   const formatDateForInput = (value: any): string => {
     const date = new Date(value);
-  
-    // Vérifiez si la date est valide avant de la formater
     if (isNaN(date.getTime())) {
-      return ''; // Retourne une chaîne vide si la date n'est pas valide
+      return '';
     }
-  
-    return date.toISOString().split('T')[0]; // Formate la date en "YYYY-MM-DD"
+    return date.toISOString().split('T')[0];
   };
 
   if (!isOpen) return null;
