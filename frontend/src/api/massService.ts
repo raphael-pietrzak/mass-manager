@@ -35,6 +35,13 @@ export interface Mass {
   endType?: string;
 }
 
+// Type pour la réponse de prévisualisation
+export interface MassPreview {
+  masses: Mass[];
+  totalAmount: string;
+  massCount: number;
+}
+
 const API_URL = `${API_BASE_URL}/api/data`;
 
 export const massService = {
@@ -58,5 +65,11 @@ export const massService = {
 
   deleteMass: async (id: string) => {
     await axios.delete(`${API_URL}/masses/${id}`);
+  },
+
+  // Nouvelle fonction pour prévisualiser les messes sans les créer
+  previewMass: async (mass: Mass): Promise<MassPreview> => {
+    const response = await axios.post(`${API_URL}/masses/preview`, mass);
+    return response.data;
   }
 };
