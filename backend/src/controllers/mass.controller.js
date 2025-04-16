@@ -51,15 +51,17 @@ exports.createMass = async (req, res) => {
   //   startDate: '2025-04-02',
   //   endType: 'occurrences'
   // }
-  
+
   try {
     const mass = {
       date: req.body.date,
-      type: req.body.type || 'vivants',
-      location: req.body.location,
-      celebrant_id: req.body.celebrant,
+      date: req.body.date,
+      celebrant_id: req.body.celebrant_id,
       intention: req.body.intention,
-      status: 'scheduled'
+      status: req.body.status,
+      deceased: req.body.deceased,
+      amount: req.body.amount,
+      wants_notification: req.body.wants_notification,
     };
 
     const massId = await Mass.create(mass);
@@ -92,9 +94,10 @@ exports.updateMass = async (req, res) => {
       date: req.body.date,
       celebrant_id: req.body.celebrant_id,
       intention: req.body.intention,
-      location: req.body.location,
-      type: req.body.type,
-      status: req.body.status
+      status: req.body.status,
+      deceased: req.body.deceased,
+      amount: req.body.amount,
+      wants_notification: req.body.wants_notification,
     };
 
     await Mass.update(mass);

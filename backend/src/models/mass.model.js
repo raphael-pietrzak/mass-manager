@@ -9,8 +9,9 @@ const Mass = {
                 'Celebrants.religious_name as celebrant',
                 'Masses.intention',
                 'Masses.status',
-                db.raw("COALESCE(Masses.status, 'basse') as type"),
-                db.raw("'Chapelle principale' as location"),
+                'Masses.deceased',
+                'Masses.amount',
+                'Masses.wants_notification',
             )
             .leftJoin('Celebrants', 'Masses.celebrant_id', 'Celebrants.id')
 

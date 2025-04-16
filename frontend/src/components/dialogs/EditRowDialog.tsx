@@ -1,14 +1,24 @@
-// EditRowDialog.tsx
 import React, { useState, useEffect } from 'react';
+
+type FormatterOption = {
+  label: string;
+  value: any;
+};
+
+export type FormatterConfig = {
+  type: 'enum' | 'boolean' | 'date';
+  options?: FormatterOption[];
+  display?: (value: any) => string;
+};
+
 
 interface EditRowDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (updatedData: any) => void;
   data: any;
-  columns: string[];
-  formatters?: Record<string, (value: any) => any>;
-  title?: string;
+  columns: Array<{ key: string; label: string }>;
+  formatters?: Record<string, FormatterConfig>;
 }
 
 export const EditRowDialog: React.FC<EditRowDialogProps> = ({
@@ -18,59 +28,105 @@ export const EditRowDialog: React.FC<EditRowDialogProps> = ({
   data,
   columns,
   formatters = {},
-  title = 'Modifier la ligne'
 }) => {
   const [formData, setFormData] = useState<any>({});
 
   useEffect(() => {
     if (data) {
-      setFormData({...data});
+      setFormData({ ...data });
     }
+    //console.log('Data updated:', data);
   }, [data]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const updatedData = {
-      ...data,
-      ...formData
-    };
-    onSave(updatedData);
+    onSave(formData);
     onClose();
   };
 
-  // Filtrer les colonnes pour exclure l'ID
-  const editableColumns = columns.filter(column => column.toLowerCase() !== 'id');
+  const editableColumns = columns.filter(
+    (column) => column.label.toLowerCase() !== 'id'
+  );
+
+  const formatDateForInput = (value: any): string => {
+    const date = new Date(value);
+  
+    // Vérifiez si la date est valide avant de la formater
+    if (isNaN(date.getTime())) {
+      return ''; // Retourne une chaîne vide si la date n'est pas valide
+    }
+  
+    return date.toISOString().split('T')[0]; // Formate la date en "YYYY-MM-DD"
+  };
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity "></div>
-      
+      <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+
       <div className="flex items-center justify-center min-h-screen">
         <div className="relative bg-white rounded-lg w-full max-w-md p-6 mx-4">
-          <h3 className="text-lg font-medium mb-4">
-            {title}
-          </h3>
-          
+          <h3 className="text-lg font-medium mb-4">Modifier la ligne</h3>
+
           <form onSubmit={handleSubmit}>
-            {editableColumns.map(column => (
-              <div key={column} className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {column.replace(/_/g, ' ')}
-                </label>
-                <input
-                  type="text"
-                  className="w-full border border-gray-300 rounded-md p-2"
-                  value={formData[column] || ''}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    [column]: e.target.value
-                  })}
-                />
-              </div>
-            ))}
-            
+            {editableColumns.map((column) => {
+              const formatter = formatters[column.key];
+              const value = formData[column.key] ?? '';
+
+              return (
+                <div key={column.key} className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {column.label.replace(/_/g, ' ')}
+                  </label>
+
+                  {formatter?.type === 'date' || column.key.toLowerCase().includes('date') ? (
+                    <input
+                      type="date"
+                      className="w-full border border-gray-300 rounded-md p-2"
+                      value={formatDateForInput(value)}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          [column.key]: e.target.value,
+                        })
+                      }
+                    />
+                  ) : formatter?.type === 'enum' || formatter?.type === 'boolean' ? (
+                    <select
+                      className="w-full border border-gray-300 rounded-md p-2"
+                      value={value}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          [column.key]: formatter?.type === 'boolean' ? parseInt(e.target.value) : e.target.value,
+                        })
+                      }
+                    >
+                      
+                      {formatter.options?.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      className="w-full border border-gray-300 rounded-md p-2"
+                      value={value}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          [column.key]: e.target.value,
+                        })
+                      }
+                    />
+                  )}
+                </div>
+              );
+            })}
+
             <div className="flex justify-end gap-2 mt-4">
               <button
                 type="button"

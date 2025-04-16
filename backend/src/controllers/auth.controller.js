@@ -24,15 +24,15 @@ const loginUser = async (req, res) => {
     const token = jwt.sign(
       { userId: user.id, login_name: user.login_name },
       process.env.JWT_SECRET_KEY,
-      { expiresIn: '1h' }
+      { expiresIn: '1d' }
     );
 
     // Envoyer le token dans un cookie HttpOnly
     res.cookie('token', token, {
       httpOnly: true,
-      secure: false,
+      secure: process.env.NODE_ENV === "production",
       sameSite: 'Lax',
-      maxAge: 3600000, // 1 jour
+      maxAge: 86400000, // 3600000 = 1h , pour 1 jour -> maxAge: 86400000
     });
 
     res.status(200).json({

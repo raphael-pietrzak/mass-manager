@@ -8,7 +8,7 @@ export interface Mass {
   type: 'defunts' | 'vivants';
   intention?: string;
   celebrant: string;
-  status?: 'scheduled' | 'cancelled';
+  status?: 'scheduled' | 'cancelled' | 'pending';
   // Données du donateur
   firstName?: string;
   lastName?: string;
@@ -41,9 +41,6 @@ export const massService = {
   getMasses: async (): Promise<Mass[]> => {
     const response = await axios.get(`${API_URL}/masses`);
     const data = response.data;
-    console.log("Date formated:", data.map((mass: any) => ({
-        date: formatDate(mass.date)
-    })));
     return data.map((mass: any) => ({
       ...mass,
       date: formatDate(mass.date) // Convertir le timestamp en format YYYY-MM-DD

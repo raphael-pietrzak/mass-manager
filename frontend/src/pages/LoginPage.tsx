@@ -1,4 +1,3 @@
-// LoginPage.tsx
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
@@ -13,7 +12,6 @@ const LoginPage: React.FC = () => {
   const [loginName, setLoginName] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  //const { isAuthenticated, loading } = useAuth();
   const { setIsAuthenticated } = useAuth();
 
   // Récupérer la route d'origine avant la redirection vers /login
@@ -36,7 +34,7 @@ const LoginPage: React.FC = () => {
       );
 
       if (response.status === 200) {
-        setIsAuthenticated(true); // update le contexte global
+        setIsAuthenticated(true);
         navigate(from);
       }
     } catch (error: any) {
@@ -45,6 +43,13 @@ const LoginPage: React.FC = () => {
       } else {
         setErrorMessage('Une erreur est survenue, veuillez réessayer.');
       }
+    }
+  };
+
+  // Fonction pour gérer la soumission du formulaire quand "Entrée" est pressée
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleLogin(e);  // Appeler handleLogin si la touche "Enter" est pressée
     }
   };
 
@@ -65,6 +70,7 @@ const LoginPage: React.FC = () => {
               value={loginName}
               onChange={(e) => setLoginName(e.target.value)}
               required
+              onKeyDown={handleKeyDown}  // Ajouter l'écouteur d'événements pour "Enter"
             />
           </div>
           <div>
@@ -75,6 +81,7 @@ const LoginPage: React.FC = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              onKeyDown={handleKeyDown}  // Ajouter l'écouteur d'événements pour "Enter"
             />
           </div>
           <div className="text-right">
