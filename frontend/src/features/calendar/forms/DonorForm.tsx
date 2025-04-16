@@ -35,7 +35,7 @@ const DonorForm: React.FC<DonorFormProps> = ({
           <Checkbox
             id="wantsCelebrationDate"
             checked={formData.wantsCelebrationDate}
-            onCheckedChange={(checked) => updateFormData({ wantsCelebrationDate: checked as boolean })}
+            onCheckedChange={(checked: boolean | 'indeterminate') => updateFormData({ wantsCelebrationDate: checked as boolean })}
           />
           <Label htmlFor="wantsCelebrationDate">
             Souhaite connaître la date de la célébration

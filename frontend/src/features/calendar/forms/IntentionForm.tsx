@@ -71,7 +71,7 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
           <Checkbox 
             id="isForDeceased"
             checked={isForDeceased}
-            onCheckedChange={(checked) => onIsForDeceasedChange(checked as boolean)}
+            onCheckedChange={(checked: boolean | "indeterminate") => onIsForDeceasedChange(checked as boolean)}
           />
           <Label htmlFor="isForDeceased">
             Intention pour un défunt
