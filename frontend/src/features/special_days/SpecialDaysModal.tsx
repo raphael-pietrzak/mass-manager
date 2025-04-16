@@ -236,7 +236,7 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
                 <div className="flex justify-end space-x-2">
                   <Button 
                     variant="outline" 
-                    onClick={handleCancelDelete}
+                    // onClick={handleCancelDelete}
                   >
                     Annuler
                   </Button>
