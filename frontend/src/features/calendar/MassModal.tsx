@@ -45,9 +45,13 @@ export const MassModal: React.FC<MassModalProps> = ({
     paymentMethod: 'card',
     brotherName: '',
     wantsCelebrationDate: false,
+    firstName: '',
+    lastName: '',
     email: '',
     phone: '',
     address: '',
+    postalCode: '',
+    city: '',
     isRecurrent: false,
     startDate: null as Date | null,
     recurrenceType: 'weekly',
@@ -60,9 +64,7 @@ export const MassModal: React.FC<MassModalProps> = ({
   const defaultMass = mass || {
     id: '',
     date: new Date().toISOString().split('T')[0],
-    time: '08:00', // Conservé dans les données mais plus édité via l'interface
     celebrant: UNASSIGNED_VALUE,
-    location: 'Main Chapel',
     type: 'vivants',
     intention: '',
   };
@@ -263,18 +265,45 @@ export const MassModal: React.FC<MassModalProps> = ({
                 <DonorForm
                   formData={{
                     wantsCelebrationDate: formData.wantsCelebrationDate,
+                    firstName: formData.firstName,
+                    lastName: formData.lastName,
                     email: formData.email,
                     phone: formData.phone,
-                    address: formData.address
+                    address: formData.address,
+                    postalCode: formData.postalCode,
+                    city: formData.city
                   }}
                   updateFormData={updateFormData}
                   onValidate={() => {
                     const updatedMass: Mass = {
                       ...defaultMass,
                       date: selectedDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
-                      time: defaultMass.time,
                       celebrant: selectedCelebrant,
                       intention: formData.intention,
+                      // Informations du donateur
+                      firstName: formData.firstName,
+                      lastName: formData.lastName,
+                      email: formData.email,
+                      phone: formData.phone,
+                      address: formData.address,
+                      postalCode: formData.postalCode,
+                      city: formData.city,
+                      wantsCelebrationDate: formData.wantsCelebrationDate,
+                      // Informations de l'offrande
+                      amount: formData.amount,
+                      paymentMethod: formData.paymentMethod,
+                      brotherName: formData.brotherName,
+                      // Informations de la masse
+                      massCount: formData.massCount,
+                      massType: formData.massType,
+                      dateType: formData.dateType,
+                      // Informations de récurrence
+                      isRecurrent: formData.startDate !== null,
+                      recurrenceType: formData.recurrenceType,
+                      occurrences: formData.occurrences,
+                      startDate: formData.startDate?.toISOString().split('T')[0],
+                      endDate: formData.endDate?.toISOString().split('T')[0],
+                      endType: formData.endType
                     };
                     onSave(updatedMass);
                     onClose();
