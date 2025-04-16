@@ -44,29 +44,42 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
       if (endCalendarRef.current && !endCalendarRef.current.contains(event.target as Node)) {
         setShowEndCalendar(false);
       }
+      if (datePickerRef.current && !datePickerRef.current.contains(event.target as Node) &&
+          !startCalendarRef.current?.contains(event.target as Node) &&
+          !endCalendarRef.current?.contains(event.target as Node)) {
+        setShowDatePickers(false);
+      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [exportMenuRef, startCalendarRef, endCalendarRef]);
+  }, [exportMenuRef, startCalendarRef, endCalendarRef, datePickerRef]);
 
   const handleTodayClick = () => {
     const today = new Date();
+    setStartDate(startOfDay(today));
+    setEndDate(endOfDay(today));
     onFilterChange(startOfDay(today), endOfDay(today));
   };
 
   const handleThisWeekClick = () => {
     const today = new Date();
+    setStartDate(startOfWeek(today, { locale: fr }));
+    setEndDate(endOfWeek(today, { locale: fr }));
     onFilterChange(startOfWeek(today, { locale: fr }), endOfWeek(today, { locale: fr }));
   };
 
   const handleThisMonthClick = () => {
     const today = new Date();
+    setStartDate(startOfMonth(today));
+    setEndDate(endOfMonth(today));
     onFilterChange(startOfMonth(today), endOfMonth(today));
   };
 
   const handleAllClick = () => {
+    setStartDate(null);
+    setEndDate(null);
     onFilterChange(null, null);
   };
 
@@ -98,7 +111,7 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
   const isAllActive = !currentStartDate && !currentEndDate;
 
   return (
-    <div className="bg-card rounded-lg shadow-md p-5 mb-6">
+    <div className="bg-card rounded-lg shadow-md p-5 mb-6 relative">
       <div className="flex flex-col space-y-4">
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex space-x-1 rounded-lg bg-muted/50 p-1">
@@ -170,7 +183,7 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
               </button>
               
               {isExportMenuOpen && (
-                <div className="absolute right-0 mt-1 w-48 bg-card rounded-md shadow-lg z-10 border border-border animate-in fade-in scale-in-95 origin-top-right">
+                <div className="absolute right-0 mt-1 w-48 bg-card rounded-md shadow-lg z-10 border border-border">
                   <div className="py-1.5">
                     <button 
                       className="w-full px-4 py-2 text-sm text-card-foreground hover:bg-muted transition-colors duration-150 flex items-center"
@@ -193,11 +206,11 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
           )}
         </div>
         
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between min-h-[40px]">
           <div className="relative" ref={datePickerRef}>
             <button 
               onClick={() => setShowDatePickers(!showDatePickers)}
-              className={`transition-all duration-200 px-4 py-2 text-sm font-medium rounded-md flex items-center gap-2
+              className={`transition-colors duration-200 px-4 py-2 text-sm font-medium rounded-md flex items-center gap-2
                         ${showDatePickers 
                           ? 'bg-primary text-primary-foreground' 
                           : 'bg-background text-foreground border border-border hover:bg-muted'}`}
@@ -210,16 +223,20 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
             
             {showDatePickers && (
               <div className="absolute mt-2 p-4 bg-card border border-border rounded-md shadow-lg z-10 
-                             animate-in fade-in-50 slide-in-from-top-5">
+                             animate-in fade-in-50 slide-in-from-top-5 w-[420px]">
                 <div className="flex flex-col space-y-4">
                   <div className="flex flex-wrap items-end gap-4">
                     <div className="space-y-1.5">
                       <label className="text-xs font-medium text-muted-foreground">Date de début</label>
                       <div className="relative" ref={startCalendarRef}>
                         <button
-                          className="w-full px-3 py-1.5 bg-background border border-input rounded-md text-sm text-left font-normal
+                          className="w-full min-w-[180px] px-3 py-1.5 bg-background border border-input rounded-md text-sm text-left font-normal
                                     focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary flex items-center"
-                          onClick={() => setShowStartCalendar(!showStartCalendar)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowStartCalendar(!showStartCalendar);
+                            setShowEndCalendar(false);
+                          }}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" />
                           {startDate ? (
@@ -229,7 +246,7 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
                           )}
                         </button>
                         {showStartCalendar && (
-                          <div className="absolute mt-1 p-2 bg-white border rounded-md shadow-lg z-20">
+                          <div className="absolute left-0 mt-1 p-2 bg-white border rounded-md shadow-lg z-20">
                             <Calendar
                               mode="single"
                               selected={startDate || undefined}
@@ -247,9 +264,13 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
                       <label className="text-xs font-medium text-muted-foreground">Date de fin</label>
                       <div className="relative" ref={endCalendarRef}>
                         <button
-                          className="w-full px-3 py-1.5 bg-background border border-input rounded-md text-sm text-left font-normal
+                          className="w-full min-w-[180px] px-3 py-1.5 bg-background border border-input rounded-md text-sm text-left font-normal
                                     focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary flex items-center"
-                          onClick={() => setShowEndCalendar(!showEndCalendar)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowEndCalendar(!showEndCalendar);
+                            setShowStartCalendar(false);
+                          }}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" />
                           {endDate ? (
@@ -259,7 +280,7 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
                           )}
                         </button>
                         {showEndCalendar && (
-                          <div className="absolute mt-1 p-2 bg-white border rounded-md shadow-lg z-20">
+                          <div className="absolute left-0 mt-1 p-2 bg-white border rounded-md shadow-lg z-20">
                             <Calendar
                               mode="single"
                               selected={endDate || undefined}
