@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, AlertTriangle } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Mass } from '../../api/massService';
 import { celebrantService, Celebrant } from '../../api/celebrantService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,7 +14,6 @@ interface MassModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (mass: Mass) => void;
-  onDelete?: (mass: Mass) => void;
 }
 
 export const MassModal: React.FC<MassModalProps> = ({
@@ -22,11 +21,9 @@ export const MassModal: React.FC<MassModalProps> = ({
   isOpen,
   onClose,
   onSave,
-  onDelete,
 }) => {
   const [celebrants, setCelebrants] = useState<Celebrant[]>([]);
   const [selectedCelebrant, setSelectedCelebrant] = useState<string>('');
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showRecurrenceModal, setShowRecurrenceModal] = useState(false);
   const [step, setStep] = useState(1); // État pour suivre l'étape actuelle
   
@@ -104,8 +101,7 @@ export const MassModal: React.FC<MassModalProps> = ({
         dateType: 'indifferente',
       }));
     }
-    // Réinitialiser l'état de confirmation à chaque ouverture
-    setShowDeleteConfirm(false);
+    // Réinitialiser l'état à chaque ouverture
     setShowRecurrenceModal(false);
     setStep(1); // Réinitialiser l'étape à 1 à chaque ouverture
   }, [isOpen, mass]);
@@ -126,12 +122,6 @@ export const MassModal: React.FC<MassModalProps> = ({
   }, [isOpen]);
 
   if (!isOpen) return null;
-
-  const handleDelete = () => {
-    if (mass && onDelete) {
-      onDelete(mass);
-    }
-  };
 
   const handleRecurrenceClick = () => {
     setShowRecurrenceModal(true);
@@ -210,35 +200,6 @@ export const MassModal: React.FC<MassModalProps> = ({
             </div>
           </CardHeader>
           <CardContent className="h-[600px] flex flex-col">
-            {/* Boîte de dialogue de confirmation de suppression */}
-            {showDeleteConfirm && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-300 rounded-md">
-                <div className="flex items-center gap-2 mb-2">
-                  <AlertTriangle className="w-5 h-5 text-red-500" />
-                  <p className="text-red-700 font-medium">Confirmer la suppression</p>
-                </div>
-                <p className="text-sm text-red-600 mb-3">
-                  Êtes-vous sûr de vouloir supprimer cette messe ? Cette action est irréversible.
-                </p>
-                <div className="flex justify-end space-x-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowDeleteConfirm(false)}
-                    size="sm"
-                  >
-                    Annuler
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    onClick={handleDelete}
-                    size="sm"
-                  >
-                    Supprimer
-                  </Button>
-                </div>
-              </div>
-            )}
-
             {step === 1 && (
               <div className="space-y-4 flex-1 flex flex-col">
                 <IntentionForm
@@ -335,20 +296,6 @@ export const MassModal: React.FC<MassModalProps> = ({
                   }}
                   prevStep={prevStep}
                 />
-              </div>
-            )}
-            
-            {/* Bouton de suppression en bas si masse existante */}
-            {mass && mass.id && onDelete && step === 1 && (
-              <div className="mt-4">
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={() => setShowDeleteConfirm(true)}
-                  className="w-full"
-                >
-                  Supprimer cette messe
-                </Button>
               </div>
             )}
           </CardContent>

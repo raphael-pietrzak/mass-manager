@@ -162,6 +162,7 @@ function CalendarPage() {
               masses={masses}
               onMassClick={handleMassClick}
               filters={filters}
+              onDeleteMass={handleDeleteMass}
             />
           )}
         </div>
@@ -171,7 +172,6 @@ function CalendarPage() {
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           onSave={handleSaveMass}
-          onDelete={handleDeleteMass}
         />
 
         <DaySlider
