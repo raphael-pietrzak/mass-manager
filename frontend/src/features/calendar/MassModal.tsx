@@ -209,7 +209,7 @@ export const MassModal: React.FC<MassModalProps> = ({
               />
             </div>
           </CardHeader>
-          <CardContent className="min-h-[400px] flex flex-col">
+          <CardContent className="h-[600px] flex flex-col">
             {/* Boîte de dialogue de confirmation de suppression */}
             {showDeleteConfirm && (
               <div className="mb-4 p-3 bg-red-50 border border-red-300 rounded-md">

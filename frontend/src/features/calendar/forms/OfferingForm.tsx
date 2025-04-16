@@ -19,8 +19,8 @@ interface OfferingFormProps {
 
 const OfferingForm: React.FC<OfferingFormProps> = ({ prevStep, nextStep, formData, updateFormData }) => {
   return (
-    <div className="flex flex-col flex-1 h-full min-h-[300px]">
-      <div className="flex-grow space-y-6">
+    <div className="flex flex-col flex-1 h-[550px]">
+      <div className="flex-grow space-y-6 overflow-y-auto">
         <div className="space-y-2">
           <Label htmlFor="amount">Montant versé</Label>
           <Input
@@ -64,7 +64,7 @@ const OfferingForm: React.FC<OfferingFormProps> = ({ prevStep, nextStep, formDat
         )}
       </div>
 
-      <div className="mt-auto pt-6 flex justify-between space-x-4">
+      <div className="pt-6 flex justify-between space-x-4">
         <Button variant="outline" type="button" onClick={prevStep}>
           Précédent
         </Button>

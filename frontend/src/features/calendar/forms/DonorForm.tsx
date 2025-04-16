@@ -29,8 +29,8 @@ const DonorForm: React.FC<DonorFormProps> = ({
   prevStep
 }) => {
   return (
-    <div className="flex flex-col flex-1 h-full min-h-[300px]">
-      <div className="flex-grow space-y-6">
+    <div className="flex flex-col flex-1 h-[550px]">
+      <div className="flex-grow space-y-6 overflow-y-auto">
         <div className="flex items-center space-x-2">
           <Checkbox
             id="wantsCelebrationDate"
@@ -124,7 +124,7 @@ const DonorForm: React.FC<DonorFormProps> = ({
         </div>
       </div>
 
-      <div className="mt-auto pt-6 flex justify-between space-x-4">
+      <div className="pt-6 flex justify-between space-x-4">
         <Button type="button" variant="outline" onClick={prevStep}>
           Précédent
         </Button>

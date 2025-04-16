@@ -64,8 +64,8 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
   ];
 
   return (
-    <div className="flex flex-col flex-1 h-full min-h-[300px]">
-      <div className="flex-grow space-y-6">
+    <div className="flex flex-col flex-1 h-[550px]">
+      <div className="flex-grow space-y-6 overflow-y-auto">
         {/* Type d'intention (défunt/vivant) */}
         <div className="flex items-center space-x-2">
           <Checkbox 
@@ -204,7 +204,7 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
         </div>
       </div>
 
-      <div className="mt-auto pt-6 flex justify-end">
+      <div className="pt-6 flex justify-end">
         <Button
           type="button"
           onClick={nextStep}
