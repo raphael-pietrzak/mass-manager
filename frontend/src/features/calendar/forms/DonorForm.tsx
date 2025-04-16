@@ -6,9 +6,13 @@ import { Button } from '@/components/ui/button';
 
 interface DonorFormData {
   wantsCelebrationDate: boolean;
+  firstName: string;
+  lastName: string;
   email: string;
   phone: string;
   address: string;
+  postalCode: string;
+  city: string;
 }
 
 interface DonorFormProps {
@@ -31,23 +35,47 @@ const DonorForm: React.FC<DonorFormProps> = ({
           <Checkbox
             id="wantsCelebrationDate"
             checked={formData.wantsCelebrationDate}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ wantsCelebrationDate: e.target.checked })}
+            onCheckedChange={(checked) => updateFormData({ wantsCelebrationDate: checked as boolean })}
           />
           <Label htmlFor="wantsCelebrationDate">
             Souhaite connaître la date de la célébration
           </Label>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="email">Mail</Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="exemple@email.com"
-            value={formData.email}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ email: e.target.value })}
-          />
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="lastName">Nom</Label>
+            <Input
+              id="lastName"
+              type="text"
+              placeholder="Nom"
+              value={formData.lastName || ''}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ lastName: e.target.value })}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="firstName">Prénom</Label>
+            <Input
+              id="firstName"
+              type="text"
+              placeholder="Prénom"
+              value={formData.firstName || ''}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ firstName: e.target.value })}
+            />
+          </div>
         </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="email">Mail</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="exemple@email.com"
+              value={formData.email}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ email: e.target.value })}
+            />
+          </div>
 
         <div className="space-y-2">
           <Label htmlFor="phone">Téléphone</Label>
@@ -69,6 +97,30 @@ const DonorForm: React.FC<DonorFormProps> = ({
             value={formData.address}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ address: e.target.value })}
           />
+        </div>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="postalCode">Code postal</Label>
+            <Input
+              id="postalCode"
+              type="text"
+              placeholder="Code postal"
+              value={formData.postalCode || ''}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ postalCode: e.target.value })}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="city">Ville</Label>
+            <Input
+              id="city"
+              type="text"
+              placeholder="Ville"
+              value={formData.city || ''}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ city: e.target.value })}
+            />
+          </div>
         </div>
       </div>
 
