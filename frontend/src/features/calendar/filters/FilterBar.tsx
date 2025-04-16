@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { List, Calendar as CalendarIcon, RotateCcw } from 'lucide-react';
-import { celebrantService, Celebrant } from '../../api/celebrantService';
+import { celebrantService, Celebrant } from '../../../api/celebrantService';
 
 interface FilterBarProps {
   viewMode: 'calendar' | 'list';
@@ -44,16 +44,6 @@ export const FilterBar: React.FC<FilterBarProps> = ({
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center space-x-2">
             <button
-              onClick={() => onViewModeChange('calendar')}
-              className={`p-2 rounded-lg ${
-                viewMode === 'calendar'
-                  ? 'bg-blue-100 text-blue-800'
-                  : 'bg-gray-100 text-gray-600'
-              }`}
-            >
-              <CalendarIcon className="w-5 h-5" />
-            </button>
-            <button
               onClick={() => onViewModeChange('list')}
               className={`p-2 rounded-lg ${
                 viewMode === 'list'
@@ -62,6 +52,16 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               }`}
             >
               <List className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => onViewModeChange('calendar')}
+              className={`p-2 rounded-lg ${
+                viewMode === 'calendar'
+                  ? 'bg-blue-100 text-blue-800'
+                  : 'bg-gray-100 text-gray-600'
+              }`}
+            >
+              <CalendarIcon className="w-5 h-5" />
             </button>
           </div>
 

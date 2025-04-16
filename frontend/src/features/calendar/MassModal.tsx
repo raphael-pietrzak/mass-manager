@@ -1,25 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { X, AlertTriangle, RotateCw, User, CalendarIcon } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Mass } from '../../api/massService';
-import { DropdownSearch } from '../../components/DropdownSearch';
 import { celebrantService, Celebrant } from '../../api/celebrantService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import RegularityForm from '../../components/forms/RegularityForm';
-import DonorForm from '../../components/forms/DonorForm';
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
-import { fr } from 'date-fns/locale';
+import RegularityForm from './forms/RegularityForm';
+import DonorForm from './forms/DonorForm';
+import OfferingForm from './forms/OfferingForm';
+import IntentionForm from './forms/IntentionForm';
 
 interface MassModalProps {
   mass: Mass | null;
   isOpen: boolean;
   onClose: () => void;
   onSave: (mass: Mass) => void;
-  onDelete?: (mass: Mass) => void;
 }
 
 export const MassModal: React.FC<MassModalProps> = ({
@@ -27,13 +21,11 @@ export const MassModal: React.FC<MassModalProps> = ({
   isOpen,
   onClose,
   onSave,
-  onDelete,
 }) => {
   const [celebrants, setCelebrants] = useState<Celebrant[]>([]);
   const [selectedCelebrant, setSelectedCelebrant] = useState<string>('');
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showRecurrenceModal, setShowRecurrenceModal] = useState(false);
-  const [showDonorModal, setShowDonorModal] = useState(false);
+  const [step, setStep] = useState(1); // État pour suivre l'étape actuelle
   
   // Valeur par défaut pour le célébrant non assigné
   const UNASSIGNED_VALUE = "unassigned";
@@ -50,25 +42,28 @@ export const MassModal: React.FC<MassModalProps> = ({
     paymentMethod: 'card',
     brotherName: '',
     wantsCelebrationDate: false,
+    firstName: '',
+    lastName: '',
     email: '',
     phone: '',
     address: '',
+    postalCode: '',
+    city: '',
     isRecurrent: false,
     startDate: null as Date | null,
     recurrenceType: 'weekly',
     endType: 'occurrences' as 'occurrences' | 'date',
     occurrences: 1,
-    endDate: null as Date | null
+    endDate: null as Date | null,
+    isForDeceased: true, // Par défaut, l'intention est pour un défunt
   });
   
   // Initialise les données par défaut
   const defaultMass = mass || {
     id: '',
     date: new Date().toISOString().split('T')[0],
-    time: '08:00', // Conservé dans les données mais plus édité via l'interface
     celebrant: UNASSIGNED_VALUE,
-    location: 'Main Chapel',
-    type: 'basse',
+    type: 'defunts', // Par défaut défunt
     intention: '',
   };
 
@@ -85,16 +80,30 @@ export const MassModal: React.FC<MassModalProps> = ({
         ...prev,
         intention: mass.intention || '',
         date: mass.date ? new Date(mass.date) : undefined,
+        isForDeceased: mass.type === 'defunts',
+        // Si ces valeurs existent dans mass, les utiliser, sinon garder les valeurs par défaut
+        massCount: mass.massCount || prev.massCount,
+        massType: mass.massType || prev.massType,
+        dateType: mass.dateType || prev.dateType,
       }));
       setSelectedDate(mass.date ? new Date(mass.date) : new Date());
     } else if (isOpen) {
       setSelectedCelebrant(UNASSIGNED_VALUE);
       setSelectedDate(new Date());
+      // Réinitialiser avec les valeurs par défaut
+      setFormData(prev => ({
+        ...prev,
+        intention: '',
+        date: undefined,
+        isForDeceased: true,
+        massCount: 1,
+        massType: 'unite',
+        dateType: 'indifferente',
+      }));
     }
-    // Réinitialiser l'état de confirmation à chaque ouverture
-    setShowDeleteConfirm(false);
+    // Réinitialiser l'état à chaque ouverture
     setShowRecurrenceModal(false);
-    setShowDonorModal(false);
+    setStep(1); // Réinitialiser l'étape à 1 à chaque ouverture
   }, [isOpen, mass]);
 
   useEffect(() => {
@@ -114,37 +123,16 @@ export const MassModal: React.FC<MassModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const formEl = e.target as HTMLFormElement;
-    const formData = new FormData(formEl);
-    const updatedMass: Mass = {
-      ...defaultMass,
-      date: selectedDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
-      time: defaultMass.time,
-      celebrant: selectedCelebrant,
-      intention: formData.get('intention') as string,
-    };
-    onSave(updatedMass);
-  };
-
-  const handleDelete = () => {
-    if (mass && onDelete) {
-      onDelete(mass);
-    }
-  };
-
   const handleRecurrenceClick = () => {
     setShowRecurrenceModal(true);
-  };
-
-  const handleDonorClick = () => {
-    setShowDonorModal(true);
   };
 
   const updateFormData = (data: Partial<typeof formData>) => {
     setFormData(prev => ({ ...prev, ...data }));
   };
+
+  const nextStep = () => setStep((prev) => Math.min(prev + 1, 3));
+  const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
 
   const celebrantOptions = [
     { value: UNASSIGNED_VALUE, label: "Aléatoire" },
@@ -153,6 +141,15 @@ export const MassModal: React.FC<MassModalProps> = ({
       label: c.religious_name || `${c.civil_first_name} ${c.civil_last_name}`
     }))
   ];
+
+  const getStepTitle = () => {
+    switch (step) {
+      case 1: return "Intention de messe";
+      case 2: return "Don et paiement";
+      case 3: return "Informations du donateur";
+      default: return "Intention de messe";
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -169,28 +166,15 @@ export const MassModal: React.FC<MassModalProps> = ({
           </div>
           <div className="p-4">
             <RegularityForm 
-              formData={formData}
+              formData={{
+                startDate: formData.startDate,
+                recurrenceType: formData.recurrenceType,
+                endType: formData.endType,
+                occurrences: formData.occurrences,
+                endDate: formData.endDate
+              }}
               updateFormData={updateFormData}
               onValidate={() => setShowRecurrenceModal(false)}
-            />
-          </div>
-        </div>
-      ) : showDonorModal ? (
-        <div className="bg-white rounded-lg max-w-md w-full mx-4">
-          <div className="p-4 flex justify-between items-center border-b">
-            <h3 className="font-medium">Informations du donateur</h3>
-            <button 
-              onClick={() => setShowDonorModal(false)} 
-              className="p-1 hover:bg-gray-100 rounded-full"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-          <div className="p-4">
-            <DonorForm 
-              formData={formData}
-              updateFormData={updateFormData}
-              onValidate={() => setShowDonorModal(false)}
             />
           </div>
         </div>
@@ -199,7 +183,7 @@ export const MassModal: React.FC<MassModalProps> = ({
           <CardHeader>
             <div className="flex justify-between items-center">
               <CardTitle>
-                {mass ? 'Modifier la messe' : 'Ajouter une messe'}
+                {getStepTitle()} - {step}/3
               </CardTitle>
               <button
                 onClick={onClose}
@@ -208,144 +192,112 @@ export const MassModal: React.FC<MassModalProps> = ({
                 <X className="w-5 h-5" />
               </button>
             </div>
+            <div className="w-full bg-muted h-2 rounded-full mt-4">
+              <div 
+                className="bg-primary h-2 rounded-full" 
+                style={{ width: `${(step / 3) * 100}%` }}
+              />
+            </div>
           </CardHeader>
-          <CardContent>
-            {/* Boîte de dialogue de confirmation de suppression */}
-            {showDeleteConfirm && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-300 rounded-md">
-                <div className="flex items-center gap-2 mb-2">
-                  <AlertTriangle className="w-5 h-5 text-red-500" />
-                  <p className="text-red-700 font-medium">Confirmer la suppression</p>
-                </div>
-                <p className="text-sm text-red-600 mb-3">
-                  Êtes-vous sûr de vouloir supprimer cette messe ? Cette action est irréversible.
-                </p>
-                <div className="flex justify-end space-x-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowDeleteConfirm(false)}
-                    size="sm"
-                  >
-                    Annuler
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    onClick={handleDelete}
-                    size="sm"
-                  >
-                    Supprimer
-                  </Button>
-                </div>
+          <CardContent className="h-[600px] flex flex-col">
+            {step === 1 && (
+              <div className="space-y-4 flex-1 flex flex-col">
+                <IntentionForm
+                  intention={formData.intention}
+                  selectedDate={selectedDate}
+                  selectedCelebrant={selectedCelebrant}
+                  celebrantOptions={celebrantOptions}
+                  massType={formData.massType}
+                  massCount={formData.massCount}
+                  dateType={formData.dateType}
+                  isForDeceased={formData.isForDeceased}
+                  onIntentionChange={(value) => updateFormData({ intention: value })}
+                  onDateChange={(date) => {
+                    setSelectedDate(date);
+                    updateFormData({ date });
+                  }}
+                  onCelebrantChange={(value) => {
+                    setSelectedCelebrant(value);
+                    updateFormData({ celebrant: value });
+                  }}
+                  onMassTypeChange={(value) => updateFormData({ massType: value })}
+                  onMassCountChange={(value) => updateFormData({ massCount: value })}
+                  onDateTypeChange={(value) => updateFormData({ dateType: value })}
+                  onIsForDeceasedChange={(value) => updateFormData({ isForDeceased: value })}
+                  onRecurrenceClick={handleRecurrenceClick}
+                  nextStep={nextStep}
+                />
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Intention */}
-              <div className="space-y-2">
-                <Label htmlFor="intention">
-                  Intention <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="intention"
-                  name="intention"
-                  defaultValue={defaultMass.intention}
-                  required
-                  placeholder="Votre intention..."
+            {step === 2 && (
+              <div className="space-y-4 flex-1 flex flex-col">
+                <OfferingForm
+                  formData={{
+                    amount: formData.amount,
+                    paymentMethod: formData.paymentMethod,
+                    brotherName: formData.brotherName
+                  }}
+                  updateFormData={(data) => updateFormData(data)}
+                  nextStep={nextStep}
+                  prevStep={prevStep}
                 />
               </div>
+            )}
 
-              {/* Date avec Popover/Calendar et icônes */}
-              <div className="flex items-end gap-2">
-                <div className="flex-grow space-y-2">
-                  <Label htmlFor="date">
-                    Date <span className="text-red-500">*</span>
-                  </Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button 
-                        variant="outline" 
-                        className="w-full justify-start text-left font-normal"
-                        id="date"
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {selectedDate ? (
-                          format(selectedDate, 'P', { locale: fr })
-                        ) : (
-                          <span>Sélectionner une date</span>
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={selectedDate}
-                        onSelect={(date: Date | undefined) => setSelectedDate(date)}
-                        initialFocus
-                        locale={fr}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={handleRecurrenceClick}
-                  title="Programmer une récurrence"
-                >
-                  <RotateCw className="w-5 h-5" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={handleDonorClick}
-                  title="Informations du donateur"
-                >
-                  <User className="w-5 h-5" />
-                </Button>
-              </div>
-
-              {/* Célébrant */}
-              <div className="space-y-2">
-                <Label>Célébrant</Label>
-                <DropdownSearch
-                  options={celebrantOptions}
-                  value={selectedCelebrant}
-                  onChange={(value) => setSelectedCelebrant(value)}
-                  placeholder="Sélectionner un célébrant"
-                  defaultValue={UNASSIGNED_VALUE}
+            {step === 3 && (
+              <div className="space-y-4 flex-1 flex flex-col">
+                <DonorForm
+                  formData={{
+                    wantsCelebrationDate: formData.wantsCelebrationDate,
+                    firstName: formData.firstName,
+                    lastName: formData.lastName,
+                    email: formData.email,
+                    phone: formData.phone,
+                    address: formData.address,
+                    postalCode: formData.postalCode,
+                    city: formData.city
+                  }}
+                  updateFormData={updateFormData}
+                  onValidate={() => {
+                    const updatedMass: Mass = {
+                      ...defaultMass,
+                      date: selectedDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
+                      celebrant: selectedCelebrant,
+                      intention: formData.intention,
+                      type: formData.isForDeceased ? 'defunts' : 'vivants',
+                      // Informations du donateur
+                      firstName: formData.firstName,
+                      lastName: formData.lastName,
+                      email: formData.email,
+                      phone: formData.phone,
+                      address: formData.address,
+                      postalCode: formData.postalCode,
+                      city: formData.city,
+                      wantsCelebrationDate: formData.wantsCelebrationDate,
+                      // Informations de l'offrande
+                      amount: formData.amount,
+                      paymentMethod: formData.paymentMethod,
+                      brotherName: formData.brotherName,
+                      // Informations de la masse
+                      massCount: formData.massCount,
+                      massType: formData.massType,
+                      dateType: formData.dateType,
+                      // Informations de récurrence
+                      isRecurrent: formData.startDate !== null,
+                      recurrenceType: formData.recurrenceType,
+                      occurrences: formData.occurrences,
+                      startDate: formData.startDate?.toISOString().split('T')[0],
+                      endDate: formData.endDate?.toISOString().split('T')[0],
+                      endType: formData.endType
+                    };
+                    onSave(updatedMass);
+                    onClose();
+                  }}
+                  prevStep={prevStep}
                 />
               </div>
-
-              <div className="flex justify-between space-x-3 pt-4">
-                {/* Bouton de suppression */}
-                {mass && mass.id && onDelete && (
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    onClick={() => setShowDeleteConfirm(true)}
-                  >
-                    Supprimer
-                  </Button>
-                )}
-                
-                <div className="flex justify-end space-x-3 ml-auto">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={onClose}
-                  >
-                    Annuler
-                  </Button>
-                  <Button
-                    type="submit"
-                  >
-                    Enregistrer
-                  </Button>
-                </div>
-              </div>
-            </form>
+            )}
           </CardContent>
         </Card>
       )}

@@ -119,6 +119,34 @@ const Mass = {
             .leftJoin('Celebrants', 'Masses.celebrant_id', 'Celebrants.id')
             .select('Masses.*', 'Celebrants.religious_name as celebrant_name')
             .orderBy('date');
+    },
+
+    getMassesByDateRange: async (startDate, endDate) => {
+        let query = db('Masses')
+            .leftJoin('Celebrants', 'Masses.celebrant_id', 'Celebrants.id')
+            .select(
+                'Masses.id',
+                'Masses.date',
+                'Celebrants.religious_name as celebrant',
+                'Masses.intention',
+                'Masses.status',
+                db.raw("COALESCE(Masses.status, 'basse') as type"),
+                db.raw("'Chapelle principale' as location")
+            )
+            .orderBy('Masses.date');
+        
+        if (startDate) {
+            // Extraire la partie YYYY-MM-DD de la date ISO
+            const formattedStartDate = new Date(startDate).toISOString().split('T')[0];
+            query = query.where(db.raw('DATE(Masses.date)'), '>=', formattedStartDate);
+        }
+        
+        if (endDate) {
+            // Extraire la partie YYYY-MM-DD de la date ISO
+            const formattedEndDate = new Date(endDate).toISOString().split('T')[0];
+        }
+        
+        return query;
     }
 };
 

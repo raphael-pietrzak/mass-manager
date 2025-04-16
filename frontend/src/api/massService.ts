@@ -1,15 +1,38 @@
 import axios from 'axios';
-import { formatDate, extractTimeOnly } from '../utils/dateUtils';
+import { formatDate } from '../utils/dateUtils';
 import { API_BASE_URL } from '.';
 
 export interface Mass {
   id?: string;
   date: string; // format YYYY-MM-DD
-  time: string; // format HH:MM
+  type: 'defunts' | 'vivants';
   intention?: string;
   celebrant: string;
-  location: string;
   status?: 'scheduled' | 'cancelled' | 'pending';
+  // Données du donateur
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  postalCode?: string;
+  city?: string;
+  wantsCelebrationDate?: boolean;
+  // Données de l'offrande
+  amount?: string;
+  paymentMethod?: string;
+  brotherName?: string;
+  // Données de masse
+  massCount?: number;
+  massType?: string;
+  dateType?: string;
+  // Données de récurrence
+  isRecurrent?: boolean;
+  recurrenceType?: string;
+  occurrences?: number;
+  startDate?: string;
+  endDate?: string;
+  endType?: string;
 }
 
 const API_URL = `${API_BASE_URL}/api/data`;
@@ -20,8 +43,7 @@ export const massService = {
     const data = response.data;
     return data.map((mass: any) => ({
       ...mass,
-      date: formatDate(mass.date), // Convertir le timestamp en format YYYY-MM-DD
-      time: extractTimeOnly(mass.date) // Extrait juste l'heure au format HH:MM
+      date: formatDate(mass.date) // Convertir le timestamp en format YYYY-MM-DD
     }));
   },
   createMass: async (mass: any) => {

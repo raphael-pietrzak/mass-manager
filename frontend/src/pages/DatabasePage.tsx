@@ -8,6 +8,7 @@ import { tabs } from '../features/database/tabs';
 import { useDeleteData } from '../hooks/useDeleteData';
 import { useUpdateData } from '../hooks/useUpdateData';
 import { DeleteConfirmationDialog } from '../components/dialogs/DeleteConfirmationDialog';
+import { Plus } from 'lucide-react';
 
 const DatabaseTabs: React.FC = () => {
   const [activeTab, setActiveTab] = useState(tabs[0].key);
@@ -15,6 +16,7 @@ const DatabaseTabs: React.FC = () => {
   const [editRowData, setEditRowData] = useState<any>(null);
   const [editColumns, setEditColumns] = useState<Array<{ key: string; label: string }>>([]);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
 
   const { data, loading, error, setData } = useFetchData(activeTab);
   const { handleDelete } = useDeleteData(activeTab, setData);
@@ -57,11 +59,38 @@ const DatabaseTabs: React.FC = () => {
 
     setEditRowData(row);
     setEditColumns(columns);
+    setIsCreating(false);
     setIsEditDialogOpen(true);
   };
 
   const handleSave = (updatedData: any) => {
-    handleUpdate(updatedData);
+    if (isCreating) {
+      // Logique pour créer un nouveau champ
+      console.log("Créer un nouveau champ:", updatedData);
+      // Vous pourriez implémenter un hook useCreateData similaire à useUpdateData
+    } else {
+      handleUpdate(updatedData);
+    }
+  };
+
+  const handleAddField = () => {
+    const selectedTab = tabs.find(tab => tab.key === activeTab);
+    if (!selectedTab) return;
+    
+    // Récupérer les colonnes pour le tab actif
+    const columns = selectedTab.columns || 
+      (data.length > 0 ? Object.keys(data[0]) : []);
+    
+    // Créer un objet vide initial avec les colonnes du tableau
+    const emptyRow: { [key: string]: any } = {};
+    columns.forEach(col => {
+      emptyRow[col] = '';
+    });
+    
+    setEditRowData(emptyRow);
+    setEditColumns(columns);
+    setIsCreating(true);
+    setIsEditDialogOpen(true);
   };
 
   // Pagination State

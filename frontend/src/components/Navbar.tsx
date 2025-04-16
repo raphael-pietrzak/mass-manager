@@ -6,7 +6,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MenuIcon } from "lucide-react";
-import { useAuth } from "../features/calendar/AuthContext";
+import { useAuth } from "../auth/AuthContext";
 
 interface NavLink {
   label: string;
