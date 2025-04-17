@@ -31,10 +31,10 @@ exports.createSpecialDay = async (req, res) => {
     };
 
     await SpecialDay.create(specialDay);
-    res.status(201).send('Journée spéciale enregistrée avec succès !');
+    res.status(201).send('✔ Jour particulier enregistrée avec succès !');
   } catch (error) {
     console.error(error);
-    res.status(500).send('Erreur lors de l\'enregistrement de la journée spéciale');
+    res.status(500).send('Erreur lors de l\'enregistrement du jour particulier');
   }
 };
 
@@ -49,10 +49,10 @@ exports.updateSpecialDay = async (req, res) => {
     };
 
     await SpecialDay.update(specialDay);
-    res.status(201).send("Journée spéciale mise à jour avec succès !");
+    res.status(201).send("✔ Jour particulier mis à jour avec succès !");
   } catch (error) {
     console.error(error);
-    res.status(500).send('Erreur lors de la mise à jour de la journée spéciale');
+    res.status(500).send('Erreur lors de la mise à jour des jours particuliers');
   }
 };
 
@@ -60,9 +60,9 @@ exports.deleteSpecialDay = async (req, res) => {
   try {
     const id = req.params.id;
     await SpecialDay.delete(id);
-    res.status(201).send("Journée spéciale supprimée avec succès !");
+    res.status(201).send("✔ Jour particulier supprimé avec succès !");
   } catch (error) {
     console.error(error);
-    res.status(500).send('Erreur lors de la suppression de la journée spéciale');
+    res.status(500).send('Erreur lors de la suppression des jours particuliers');
   }
 };
