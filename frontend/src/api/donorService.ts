@@ -19,6 +19,25 @@ class DonorService {
       const response = await axios.get(`${API_URL}/donors`);
       return response.data;
     }
+
+    async createDonor(donor: Donor): Promise<string> {
+      const response = await axios.post(`${API_URL}/donors`, donor);
+      return response.data;
+    }
+
+    async getDonorById(id: number): Promise<Donor> {
+      const response = await axios.get(`${API_URL}/donors/${id}`);
+      return response.data;
+    }
+
+    async updateDonor(id: number, donor: Donor): Promise<string> {
+      const response = await axios.put(`${API_URL}/donors/${id}`, donor);
+      return response.data;
+    }
+
+    async deleteDonor(id: number): Promise<void> {
+      await axios.delete(`${API_URL}/donors/${id}`);
+    }
 }
   
 export const donorsService = new DonorService();

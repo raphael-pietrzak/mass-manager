@@ -2,32 +2,46 @@ import { useState, useEffect, useRef } from 'react';
 import { DonorList } from '../features/donors/DonorList';
 import { exportDonorService } from '../api/exportDonorService';
 import { Donor, donorsService } from '../api/donorService';
-import { DonorModal } from '../features/donors/DonorModal';
+import DonorModal from '../features/donors/DonorModal';
 
 function DonorsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [donors, setDonors] = useState<Donor[]>([]);
   const [selectedDonor, setSelectedDonor] = useState<Donor | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const exportMenuRef = useRef<HTMLDivElement>(null);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchDonors = async () => {
-      try {
-        const data = await donorsService.getDonors();
-        setDonors(data);
-        setLoading(false);
-      } catch (err) {
-        setError('Erreur lors du chargement des donateurs');
-        setLoading(false);
-      }
-    };
+    if (successMessage) {
+      const timer = setTimeout(() => setSuccessMessage(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
+  useEffect(() => {
     fetchDonors();
   }, []);
+
+  const fetchDonors = async () => {
+    try {
+      const data = await donorsService.getDonors();
+      setDonors(data);
+      setLoading(false);
+    } catch (err) {
+      setError('Erreur lors du chargement des donateurs');
+      setLoading(false);
+    }
+  };
 
   const handleDonorClick = (donor: Donor) => {
     setSelectedDonor(donor);
@@ -55,15 +69,52 @@ function DonorsPage() {
     return fullName.includes(searchQuery.toLowerCase());
   });
 
+  const totalPages = Math.ceil(filteredDonors.length / itemsPerPage);
+
+  const paginatedDonors = filteredDonors.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handleItemsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setItemsPerPage(Number(e.target.value));
+    setCurrentPage(1); // reset page
+  };
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+  
+  const handleAddNewDonor = () => {
+    setSelectedDonor(null);  // Aucune sélection, c'est une création
+    setIsModalOpen(true);   // Ouvre la modal pour ajouter un nouveau donateur
+  };
+
   if (loading) return <div>Chargement...</div>;
   if (error) return <div>Erreur: {error}</div>;
 
   return (
     <div className="min-h-screen bg-gray-100">
       <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-        {/* Menu d'exportation discret */}
-        <div className="mt-4 flex justify-end" ref={exportMenuRef}>
-          <div className="relative">
+        <div className="mt-4 flex justify-between items-center">
+          {/* sélecteur lignes par page */}
+          <div className="flex items-center">
+            <label htmlFor="itemsPerPage" className="mr-2">Lignes par pages :</label>
+            <select
+              id="itemsPerPage"
+              value={itemsPerPage}
+              onChange={handleItemsPerPageChange}
+              className="p-1 border border-gray-300 rounded"
+            >
+              {[5, 10, 15, 20, 25].map(val => (
+                <option key={val} value={val}>{val}</option>
+              ))}
+            </select>
+          </div>
+          {/* Bouton Exporter */}
+          <div className="relative" ref={exportMenuRef}>
             <button
               onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
               className="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none flex items-center gap-1"
@@ -126,22 +177,72 @@ function DonorsPage() {
                 />
                 </svg>
             </div>
-            </div>
+        </div>
+
+        {successMessage && (
+  <div className="mb-4 p-4 bg-green-100 text-green-800 border border-green-300 rounded">
+    {successMessage}
+  </div>
+)}
 
         {/* Liste des donateurs filtrés */}
         <div className="mt-6">
           <DonorList
-            donors={filteredDonors}
+            donors={paginatedDonors}
             onDonorClick={handleDonorClick}
           />
         </div>
 
-        {/* Modal pour afficher les détails du donateur */}
+        {/* Pagination */}
+        <div className="flex justify-center items-center mt-6 gap-2">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="px-3 py-1 border rounded disabled:opacity-50"
+          >
+            &lt;
+          </button>
+          <span>Page {currentPage} sur {totalPages}</span>
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="px-3 py-1 border rounded disabled:opacity-50"
+          >
+            &gt;
+          </button>
+        </div>
+
         <DonorModal
-          donor={selectedDonor}
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
+          donor={selectedDonor} // Passer le donateur sélectionné à DonorModal
+          mode={selectedDonor ? 'edit' : 'create'}
+          onDonorUpdatedOrCreated={fetchDonors}
+          onSuccessMessage={setSuccessMessage} // Passer la fonction pour afficher le message de succès
         />
+        
+        {/* Bouton flottant pour ajouter un donateur */}
+        {!isModalOpen && (
+          <button
+            onClick={() => handleAddNewDonor()}  // Ouvre la modal
+            className="fixed bottom-6 right-6 p-4 bg-gray-900 text-white rounded-full shadow-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 z-50"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+              />
+            </svg>
+          </button>
+        )}
       </main>
     </div>
   );

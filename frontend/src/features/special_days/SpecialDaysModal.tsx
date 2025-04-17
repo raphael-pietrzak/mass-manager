@@ -124,11 +124,18 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white w-full max-w-2xl p-6 rounded shadow-lg relative max-h-[95vh] overflow-hidden flex flex-col">
-        <div className="sticky top-0 bg-white z-10 pb-4">
-            <button onClick={onClose} className="absolute top-2 right-2 text-gray-500 hover:text-gray-700">✕</button>
-            <div className="flex items-center justify-between mb-4">
+        <div className="sticky top-0 bg-white z-10 pb-4">      
+          <div className="relative mb-4">
+            <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold">Jours Particuliers</h2>
             </div>
+            <button
+              onClick={onClose}
+              className="absolute top-0 right-0 text-gray-500 hover:text-gray-700"
+            >
+              ✕
+            </button>
+          </div>
             <div className="flex items-center justify-between mb-4">
                 {/* Le bouton "+ Ajouter un jour" s'affiche uniquement si on est en mode édition (c'est-à-dire après avoir sélectionné un jour) */}
                 {editingDay && (
@@ -176,28 +183,34 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
                         className="w-full border p-2 rounded"
                     />
                 </label>
-                <label className="block">
-                    <span className="text-sm font-medium text-gray-700">Description<span className="text-red-500"> *</span></span>
+                <div className="flex gap-4 mb-4">
+                  <label className="block w-1/2">
+                    <span className="text-sm font-medium text-gray-700">
+                      Description<span className="text-red-500"> *</span>
+                    </span>
                     <input
-                        type="text"
-                        required
-                        placeholder="ex : Noël ou Jeudi Saint"
-                        value={newDay.description}
-                        onChange={e => handleChange('description', e.target.value)}
-                        className="w-full border p-2 rounded"
+                      type="text"
+                      required
+                      placeholder="ex : Noël ou Jeudi Saint"
+                      value={newDay.description}
+                      onChange={e => handleChange('description', e.target.value)}
+                      className="w-full border p-2 rounded"
                     />
-                </label>
-                <label className="block">
-                    <span className="text-sm font-medium text-gray-700">Nombre de messes (0 correspond à aucune intention ce jour-là)</span>
-                <input
-                    type="number"
-                    required
-                    //placeholder="Nombre de messes"
-                    value={newDay.number_of_masses ?? ''}
-                    onChange={e => handleChange('number_of_masses', e.target.value)}
-                    className="w-full border p-2 rounded"
-                />
-                </label>
+                  </label>
+
+                  <label className="block w-1/2">
+                    <span className="text-sm font-medium text-gray-700">
+                      Nombre de messes (par célébrant)
+                    </span>
+                    <input
+                      type="number"
+                      required
+                      value={newDay.number_of_masses ?? ''}
+                      onChange={e => handleChange('number_of_masses', e.target.value)}
+                      className="w-full border p-2 rounded"
+                    />
+                  </label> 
+                </div>
                 <label className="flex items-center gap-2">
                     <input
                     type="checkbox"
