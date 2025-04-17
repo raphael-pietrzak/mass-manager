@@ -12,7 +12,6 @@ import { SpecialDaysModal } from '../features/special_days/SpecialDaysModal';
 
 export type ViewMode = 'calendar' | 'list';
 
-
 function CalendarPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [masses, setMasses] = useState<Mass[]>([]);
@@ -112,7 +111,6 @@ function CalendarPage() {
   const handleAddSpecialDay = () => {
     setIsSpecialDayModalOpen(true);
   };
-     
 
   const handleExport = async (format: 'word' | 'excel' | 'pdf') => {
     try {
@@ -143,7 +141,7 @@ function CalendarPage() {
           onViewModeChange={setViewMode}
           filters={filters}
           onFilterChange={handleFilterChange}
-          onResetFilters={handleResetFilters}
+          onAddSpecialDay={handleAddSpecialDay}
         />
 
         {viewMode === 'list' && (
@@ -155,17 +153,6 @@ function CalendarPage() {
             endDate={filters.endDate}
             onExport={handleExport}
           />
-        )}
-
-        {/* Bouton pour ajouter un jour spécial */}
-        {!isMassModalOpen && !isSpecialDayModalOpen && (
-        <div className="mt-4">
-          <button
-            onClick={handleAddSpecialDay}
-            className="px-4 py-2 bg-yellow-500 text-white rounded-md shadow hover:bg-yellow-600 transition">
-            + Jours Particuliers
-          </button>
-        </div>
         )}
 
         <div className="mt-6">
@@ -200,13 +187,11 @@ function CalendarPage() {
           onMassClick={handleMassClick}
         />
 
-        {/* Modal pour les jours spéciaux */}
         <SpecialDaysModal
           isOpen={isSpecialDayModalOpen}
           onClose={() => setIsSpecialDayModalOpen(false)}
         />
 
-        {/* Bouton flottant pour ajouter une messe */}
         {!isMassModalOpen && !isSpecialDayModalOpen && (
           <button
             onClick={handleAddMass}

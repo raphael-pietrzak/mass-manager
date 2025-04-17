@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { Mass } from '../../api/massService';
+import { Mass, massService, MassPreview } from '../../api/massService';
 import { celebrantService, Celebrant } from '../../api/celebrantService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import RegularityForm from './forms/RegularityForm';
 import DonorForm from './forms/DonorForm';
 import OfferingForm from './forms/OfferingForm';
 import IntentionForm from './forms/IntentionForm';
+import SummaryForm from './forms/SummaryForm';
 
 interface MassModalProps {
   mass: Mass | null;
@@ -26,10 +26,12 @@ export const MassModal: React.FC<MassModalProps> = ({
   const [selectedCelebrant, setSelectedCelebrant] = useState<string>('');
   const [showRecurrenceModal, setShowRecurrenceModal] = useState(false);
   const [step, setStep] = useState(1); // État pour suivre l'étape actuelle
-  
+  const [isLoading, setIsLoading] = useState(false);
+  const [previewData, setPreviewData] = useState<MassPreview | null>(null);
+
   // Valeur par défaut pour le célébrant non assigné
   const UNASSIGNED_VALUE = "unassigned";
-  
+
   // Données de formulaire pour la récurrence et le donateur
   const [formData, setFormData] = useState({
     intention: '',
@@ -57,7 +59,7 @@ export const MassModal: React.FC<MassModalProps> = ({
     endDate: null as Date | null,
     isForDeceased: true, // Par défaut, l'intention est pour un défunt
   });
-  
+
   // Initialise les données par défaut
   const defaultMass = mass || {
     id: '',
@@ -71,7 +73,7 @@ export const MassModal: React.FC<MassModalProps> = ({
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
     mass?.date ? new Date(mass.date) : new Date()
   );
-  
+
   // Met à jour l'état du célébrant sélectionné quand le modal s'ouvre
   useEffect(() => {
     if (isOpen && mass) {
@@ -115,7 +117,7 @@ export const MassModal: React.FC<MassModalProps> = ({
         console.error('Erreur lors du chargement des célébrants:', error);
       }
     };
-    
+
     if (isOpen) {
       fetchCelebrants();
     }
@@ -131,7 +133,7 @@ export const MassModal: React.FC<MassModalProps> = ({
     setFormData(prev => ({ ...prev, ...data }));
   };
 
-  const nextStep = () => setStep((prev) => Math.min(prev + 1, 3));
+  const nextStep = () => setStep((prev) => Math.min(prev + 1, 4));
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
 
   const celebrantOptions = [
@@ -147,8 +149,69 @@ export const MassModal: React.FC<MassModalProps> = ({
       case 1: return "Intention de messe";
       case 2: return "Don et paiement";
       case 3: return "Informations du donateur";
+      case 4: return "Récapitulatif et confirmation";
       default: return "Intention de messe";
     }
+  };
+
+  // Crée l'objet mass à partir des données du formulaire
+  const createMassObject = (): Mass => {
+    return {
+      ...defaultMass,
+      date: selectedDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
+      celebrant: selectedCelebrant,
+      intention: formData.intention,
+      type: formData.isForDeceased ? 'defunts' : 'vivants',
+      // Informations du donateur
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      phone: formData.phone,
+      address: formData.address,
+      postalCode: formData.postalCode,
+      city: formData.city,
+      wantsCelebrationDate: formData.wantsCelebrationDate,
+      // Informations de l'offrande
+      amount: formData.amount,
+      paymentMethod: formData.paymentMethod,
+      brotherName: formData.brotherName,
+      // Informations de la masse
+      massCount: formData.massCount,
+      massType: formData.massType,
+      dateType: formData.dateType,
+      // Informations de récurrence
+      isRecurrent: formData.startDate !== null,
+      recurrenceType: formData.recurrenceType,
+      occurrences: formData.occurrences,
+      startDate: formData.startDate?.toISOString().split('T')[0],
+      endDate: formData.endDate?.toISOString().split('T')[0],
+      endType: formData.endType
+    };
+  };
+
+  // Fonction pour prévisualiser les messes
+  const previewMasses = async () => {
+    try {
+      setIsLoading(true);
+      const massObject = createMassObject();
+      const preview = await massService.previewMass(massObject);
+      setPreviewData(preview);
+      setStep(4); // Passer à l'étape de récapitulatif
+    } catch (error) {
+      console.error("Erreur lors de la prévisualisation des messes:", error);
+      // Gestion des erreurs ici
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Fonction pour confirmer et sauvegarder définitivement
+  const confirmAndSave = () => {
+    if (!previewData) return;
+
+    const massObject = createMassObject();
+    onSave(massObject);
+    onClose();
   };
 
   return (
@@ -183,7 +246,7 @@ export const MassModal: React.FC<MassModalProps> = ({
           <CardHeader>
             <div className="flex justify-between items-center">
               <CardTitle>
-                {getStepTitle()} - {step}/3
+                {getStepTitle()} - {step}/4
               </CardTitle>
               <button
                 onClick={onClose}
@@ -195,7 +258,7 @@ export const MassModal: React.FC<MassModalProps> = ({
             <div className="w-full bg-muted h-2 rounded-full mt-4">
               <div 
                 className="bg-primary h-2 rounded-full" 
-                style={{ width: `${(step / 3) * 100}%` }}
+                style={{ width: `${(step / 4) * 100}%` }}
               />
             </div>
           </CardHeader>
@@ -259,44 +322,30 @@ export const MassModal: React.FC<MassModalProps> = ({
                     city: formData.city
                   }}
                   updateFormData={updateFormData}
-                  onValidate={() => {
-                    const updatedMass: Mass = {
-                      ...defaultMass,
-                      date: selectedDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
-                      celebrant: selectedCelebrant,
-                      intention: formData.intention,
-                      type: formData.isForDeceased ? 'defunts' : 'vivants',
-                      // Informations du donateur
-                      firstName: formData.firstName,
-                      lastName: formData.lastName,
-                      email: formData.email,
-                      phone: formData.phone,
-                      address: formData.address,
-                      postalCode: formData.postalCode,
-                      city: formData.city,
-                      wantsCelebrationDate: formData.wantsCelebrationDate,
-                      // Informations de l'offrande
-                      amount: formData.amount,
-                      paymentMethod: formData.paymentMethod,
-                      brotherName: formData.brotherName,
-                      // Informations de la masse
-                      massCount: formData.massCount,
-                      massType: formData.massType,
-                      dateType: formData.dateType,
-                      // Informations de récurrence
-                      isRecurrent: formData.startDate !== null,
-                      recurrenceType: formData.recurrenceType,
-                      occurrences: formData.occurrences,
-                      startDate: formData.startDate?.toISOString().split('T')[0],
-                      endDate: formData.endDate?.toISOString().split('T')[0],
-                      endType: formData.endType
-                    };
-                    onSave(updatedMass);
-                    onClose();
-                  }}
                   prevStep={prevStep}
+                  onValidate={previewMasses}
                 />
               </div>
+            )}
+
+            {step === 4 && (
+              <SummaryForm
+                previewData={previewData!}
+                isLoading={isLoading}
+                formData={{
+                  firstName: formData.firstName,
+                  lastName: formData.lastName,
+                  email: formData.email,
+                  phone: formData.phone,
+                  address: formData.address,
+                  postalCode: formData.postalCode,
+                  city: formData.city,
+                  wantsCelebrationDate: formData.wantsCelebrationDate,
+                }}
+                celebrantOptions={celebrantOptions}
+                onValidate={confirmAndSave}
+                onEdit={() => setStep(1)}
+              />
             )}
           </CardContent>
         </Card>

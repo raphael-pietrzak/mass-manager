@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 
 interface OfferingFormData {
   amount: string;
-  paymentMethod: string;
+  paymentMethod: 'cheque' | 'cash' | 'card' | 'transfer';
   brotherName: string;
 }
 

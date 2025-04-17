@@ -11,7 +11,6 @@ exports.getCelebrants = async (req, res) => {
 };
 
 exports.getAvailableCelebrants = async (req, res) => {
-  console.log('getAvailableCelebrants');
   try {
     const { date } = req.query;
     

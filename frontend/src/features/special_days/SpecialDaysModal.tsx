@@ -2,6 +2,16 @@ import { useEffect, useState } from 'react';
 import { SpecialDays } from '../../api/specialDaysService';
 import { specialDayService } from '../../api/specialDaysService';
 import { formatDisplayDate } from '../../utils/dateUtils';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Calendar, Plus, AlertTriangle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Switch } from '@/components/ui/switch';
 
 interface Props {
   isOpen: boolean;
@@ -17,10 +27,10 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
     number_of_masses: 0,
     is_recurrent: false,
   });
-  const [isDeleting, setIsDeleting] = useState<string | null>(null); // To track which day is being deleted
-  const [showSpecialDays, setShowSpecialDays] = useState(false); // For toggle show special days
-  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false); // For confirmation of deletion
-  const [successMessage, setSuccessMessage] = useState<string | undefined>();
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [showSpecialDays, setShowSpecialDays] = useState(true);
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string>();
 
   useEffect(() => {
     if (isOpen) {
@@ -43,15 +53,14 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
   const loadSpecialDays = async () => {
     const data = await specialDayService.getSpecialDays();
-    // On filtre ou remplace les valeurs vides par des valeurs par défaut
     const sanitizedData = data.map((day) => ({
       ...day,
-      date: day.date || '',  // Si `date` est vide, on le remplace par une chaîne vide.
-      description: day.description || '',  // Même chose pour la description.
-      number_of_masses: day.number_of_masses || 0,  // Si `number_of_masses` est vide ou nul, on le remplace par 0.
-      is_recurrent: day.is_recurrent ?? false,  // Si `is_recurrent` est nul, on le remplace par `false`.
+      date: day.date || '',
+      note: day.description || '',
+      number_of_masses: day.number_of_masses || 0,
+      is_recurrent: day.is_recurrent ?? false,
     }));
-    setSpecialDays(sanitizedData);  // Mettre à jour l'état avec les données nettoyées.
+    setSpecialDays(sanitizedData);
   };
 
   const handleChange = (field: keyof SpecialDays, value: any) => {
@@ -71,45 +80,40 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
         setSuccessMessage(response);
       }
       await loadSpecialDays();
+      resetForm();
     } catch (error) {
       console.error("Erreur lors de l'enregistrement du jour spécial", error);
     }
   };
 
   const handleDelete = (id: string) => {
-    setIsDeleting(id); // Save the ID of the day to delete
-    setIsConfirmingDelete(true); // Display the confirmation message
+    setIsDeleting(id);
+    setIsConfirmingDelete(true);
   };
 
   const handleConfirmDelete = async () => {
     if (isDeleting) {
       try {
-        const response = await specialDayService.deleteSpecialDay(isDeleting);
-        await loadSpecialDays(); // Recharge sans toucher au form
-        resetForm(); // Réinitialise le formulaire après la suppression
+        await specialDayService.deleteSpecialDay(isDeleting);
+        await loadSpecialDays();
+        resetForm();
         setIsDeleting(null);
-        setSuccessMessage(response);
+        setSuccessMessage("Jour particulier supprimé avec succès");
       } catch (error) {
         console.error('Erreur lors de la suppression du jour spécial', error);
       }
     }
   };
 
-  const handleCancelDelete = () => {
-    setIsConfirmingDelete(false); // Cancel the deletion
-    setIsDeleting(null); // Reset the deleting state
-  };
-
   const handleEdit = (day: SpecialDays) => {
     setEditingDay(day);
     setNewDay({ ...day });
-    
   };
 
   const formatDateWithoutYear = (date: string) => {
     const d = new Date(date);
     const options: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'long' };
-    return d.toLocaleDateString('fr-FR', options); // Format without year
+    return d.toLocaleDateString('fr-FR', options);
   };
 
   const resetForm = () => {
@@ -117,196 +121,182 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
     setNewDay({ date: '', description: '', number_of_masses: 0, is_recurrent: false });
     setIsDeleting(null);
     setIsConfirmingDelete(false);
+    setSuccessMessage(undefined);
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white w-full max-w-2xl p-6 rounded shadow-lg relative max-h-[95vh] overflow-hidden flex flex-col">
-        <div className="sticky top-0 bg-white z-10 pb-4">      
-          <div className="relative mb-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Jours Particuliers</h2>
-            </div>
-            <button
-              onClick={onClose}
-              className="absolute top-0 right-0 text-gray-500 hover:text-gray-700"
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogHeader>
+          <DialogTitle>Jours particuliers</DialogTitle>
+        </DialogHeader>
+        
+        <div className="flex items-center justify-between mb-4">
+          {editingDay && (
+            <Button
+              variant="outline"
+              onClick={resetForm}
+              className="gap-2"
             >
-              ✕
-            </button>
+              <Plus size={16} /> Ajouter un jour
+            </Button>
+          )}
+          <div className="flex items-center gap-2 ml-auto">
+            <Label htmlFor="showList">Afficher la liste</Label>
+            <Switch 
+              id="showList"
+              checked={showSpecialDays}
+              onCheckedChange={setShowSpecialDays}
+            />
           </div>
-            <div className="flex items-center justify-between mb-4">
-                {/* Le bouton "+ Ajouter un jour" s'affiche uniquement si on est en mode édition (c'est-à-dire après avoir sélectionné un jour) */}
-                {editingDay && (
-                    <button
-                    onClick={() => {
-                        resetForm(); // Réinitialiser le formulaire pour revenir en mode ajout
-                        setEditingDay(null); // Réinitialiser l'état d'édition
-                    }}
-                    className="px-4 py-2 text-black border border-gray-300 rounded hover:bg-gray-100"
-                    >
-                    + Ajouter un jour
-                    </button>
-                )}
-
-                {/* Le bouton "Afficher la liste des jours" reste toujours aligné à droite */}
-                <div className="flex items-center ml-auto">
-                    <span className="mr-2">Afficher la liste des jours</span>
-                    <input
-                    type="checkbox"
-                    checked={showSpecialDays}
-                    onChange={() => setShowSpecialDays(!showSpecialDays)}
-                    className="mr-2"
-                    />
-                </div>
-            
-            </div>
-
-            {/* Toggle button to show/hide special days */}
-            {/* Formulaire d'ajout / édition */}
-            <form
-            className="space-y-2 border-t pt-4"
-            onSubmit={(e) => {
-                e.preventDefault(); // Pour bloquer la soumission native
-                handleSave();       // Ta logique de sauvegarde
-            }}
-            >
-                <h3 className="text-lg font-semibold">{editingDay ? 'Modifier' : 'Ajouter'} un jour particulier</h3>
-                <label className="block">
-                    <span className="text-sm font-medium text-gray-700">Date<span className="text-red-500"> *</span></span>
-                    <input
-                        type="date"
-                        required
-                        value={newDay.date}
-                        onChange={e => handleChange('date', e.target.value)}
-                        className="w-full border p-2 rounded"
-                    />
-                </label>
-                <div className="flex gap-4 mb-4">
-                  <label className="block w-1/2">
-                    <span className="text-sm font-medium text-gray-700">
-                      Description<span className="text-red-500"> *</span>
-                    </span>
-                    <input
-                      type="text"
-                      required
-                      placeholder="ex : Noël ou Jeudi Saint"
-                      value={newDay.description}
-                      onChange={e => handleChange('description', e.target.value)}
-                      className="w-full border p-2 rounded"
-                    />
-                  </label>
-
-                  <label className="block w-1/2">
-                    <span className="text-sm font-medium text-gray-700">
-                      Nombre de messes (par célébrant)
-                    </span>
-                    <input
-                      type="number"
-                      required
-                      value={newDay.number_of_masses ?? ''}
-                      onChange={e => handleChange('number_of_masses', e.target.value)}
-                      className="w-full border p-2 rounded"
-                    />
-                  </label> 
-                </div>
-                <label className="flex items-center gap-2">
-                    <input
-                    type="checkbox"
-                    checked={newDay.is_recurrent ?? false}
-                    onChange={e => handleChange('is_recurrent', e.target.checked)}
-                    />
-                    Récurrent (pour une date fixe)
-                </label>
-                <div className="flex gap-4 mt-4">
-                    <button
-                    type="submit" // ← crucial !
-                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                    >
-                    {editingDay ? 'Mettre à jour' : 'Ajouter'}
-                    </button>
-                    {editingDay && (
-                    <button
-                        type="button"
-                        onClick={() => handleDelete(editingDay.id!)}
-                        className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-                    >
-                        Supprimer
-                    </button>
-                    )}
-                </div>
-                </form>
-
-
-                {successMessage && (
-                <div className="relative mb-4 mt-8 p-3 bg-green-50 border border-green-300 text-green-700 rounded-md">
-                  <button
-                    onClick={() => setSuccessMessage(undefined)}
-                    className="absolute top-1 right-2 text-green-700 hover:text-green-900"
-                  >
-                    ✕
-                  </button>
-                  {successMessage}
-                </div>
-              )}
-
-            {/* Deletion Confirmation */}
-            {isConfirmingDelete && (
-            <div className="mb-4 mt-8 p-3 bg-red-50 border border-red-300 rounded-md">
-                <div className="flex items-center gap-2 mb-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-triangle-alert w-5 h-5 text-red-500">
-                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"></path>
-                    <path d="M12 9v4"></path>
-                    <path d="M12 17h.01"></path>
-                </svg>
-                <p className="text-red-700 font-medium">Confirmer la suppression</p>
-                </div>
-                <p className="text-sm text-red-600 mb-3">Êtes-vous sûr de vouloir supprimer ce jour particulier ? Cette action est irréversible.</p>
-                <div className="flex justify-end space-x-2">
-                <button
-                    onClick={handleCancelDelete} // Cancel the deletion
-                    className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 rounded-md px-3"
-                >
-                    Annuler
-                </button>
-                <button
-                    onClick={handleConfirmDelete} // Confirm deletion
-                    className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium bg-destructive text-destructive-foreground hover:bg-destructive/90 h-9 rounded-md px-3"
-                >
-                    Supprimer
-                </button>
-                </div>
-            </div>
-            )}
-
         </div>
-
-        {/* Show special days based on the checkbox */}
-        {showSpecialDays && (
-          <div className="space-y-3 border-t pt-8 overflow-y-auto flex-1 min-h-0">
-            {specialDays.map(day => (
-              <div
-                key={day.id}
-                className="flex justify-between items-center border p-3 rounded shadow-sm bg-gray-50 cursor-pointer"
-                onClick={() => handleEdit(day)} // Modify on click of the day
-              >
-                <div>
-                  <p className="font-medium">
-                    {day.is_recurrent 
-                      ? formatDateWithoutYear(day.date) // No year if recurrent
-                      : formatDisplayDate(new Date(day.date).getTime()) // Normal date format with year
-                    } - {day.description}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {day.number_of_masses} messe(s) — {day.is_recurrent ? 'Récurrent' : 'Unique'}
-                  </p>
-                </div>
+        
+        <div className="flex-1 overflow-y-auto space-y-6">
+          {/* Form section */}
+          <div className="space-y-4">
+            <Separator />
+            <h3 className="text-lg font-semibold">{editingDay ? 'Modifier' : 'Ajouter'} un jour particulier</h3>
+            
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="date">
+                  Date<span className="text-red-500"> *</span>
+                </Label>
+                <Input
+                  id="date"
+                  type="date"
+                  required
+                  value={newDay.date}
+                  onChange={(e) => handleChange('date', e.target.value)}
+                />
               </div>
-            ))}
+              
+              <div className="space-y-2">
+                <Label htmlFor="description">
+                  Description<span className="text-red-500"> *</span>
+                </Label>
+                <Input
+                  id="description"
+                  required
+                  placeholder="ex : Noël ou Jeudi Saint"
+                  value={newDay.description}
+                  onChange={(e) => handleChange('description', e.target.value)}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="massCount">
+                  Nombre de messes par prêtre
+                </Label>
+                <Input
+                  id="massCount"
+                  type="number"
+                  required
+                  min={0}
+                  value={newDay.number_of_masses ?? ''}
+                  onChange={(e) => handleChange('number_of_masses', e.target.value)}
+                />
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="recurrent"
+                  checked={newDay.is_recurrent ?? false}
+                  onCheckedChange={(checked) => handleChange('is_recurrent', checked)}
+                />
+                <Label htmlFor="recurrent">Récurrent chaque année</Label>
+              </div>
+              
+              <div className="flex gap-2 pt-2">
+                <Button 
+                  type="submit" 
+                  onClick={handleSave}
+                >
+                  {editingDay ? 'Mettre à jour' : 'Ajouter'}
+                </Button>
+                
+                {editingDay && (
+                  <Button
+                    variant="destructive"
+                    onClick={() => handleDelete(editingDay.id!)}
+                  >
+                    Supprimer
+                  </Button>
+                )}
+              </div>
+            </div>
           </div>
-        )}
-      </div>
-    </div>
+          
+          {/* Success message */}
+          {successMessage && (
+            <Alert className="bg-green-50 border-green-300 text-green-800">
+              <AlertTitle>Succès</AlertTitle>
+              <AlertDescription>{successMessage}</AlertDescription>
+            </Alert>
+          )}
+          
+          {/* Delete confirmation */}
+          {isConfirmingDelete && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4 mr-2" />
+              <AlertTitle>Confirmer la suppression</AlertTitle>
+              <AlertDescription className="mt-2">
+                <p className="mb-3">Êtes-vous sûr de vouloir supprimer ce jour particulier ? Cette action est irréversible.</p>
+                <div className="flex justify-end space-x-2">
+                  <Button 
+                    variant="outline" 
+                    // onClick={handleCancelDelete}
+                  >
+                    Annuler
+                  </Button>
+                  <Button 
+                    variant="destructive"
+                    onClick={handleConfirmDelete}
+                  >
+                    Supprimer
+                  </Button>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          {/* Special days list */}
+          {showSpecialDays && specialDays.length > 0 && (
+            <div className="space-y-4">
+              <Separator />
+              <h3 className="text-lg font-semibold flex gap-2 items-center">
+                <Calendar size={18} /> Liste des jours particuliers
+              </h3>
+              <div className="space-y-2">
+                {specialDays.map((day) => (
+                  <div
+                    key={day.id}
+                    onClick={() => handleEdit(day)}
+                    className="p-3 rounded-md border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer flex justify-between items-center"
+                  >
+                    <div>
+                      <div className="font-medium">
+                        {day.is_recurrent
+                          ? formatDateWithoutYear(day.date)
+                          : formatDisplayDate(new Date(day.date).getTime())}{' '}
+                        - {day.description}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {day.number_of_masses} messe(s)
+                      </div>
+                    </div>
+                    <Badge variant={day.is_recurrent ? "secondary" : "outline"}>
+                      {day.is_recurrent ? 'Récurrent' : 'Unique'}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };

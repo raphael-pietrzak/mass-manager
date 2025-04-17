@@ -18,15 +18,15 @@ interface DonorFormData {
 interface DonorFormProps {
   formData: DonorFormData;
   updateFormData: (data: Partial<DonorFormData>) => void;
-  onValidate: () => void;
   prevStep: () => void;
+  onValidate: () => void;
 }
 
 const DonorForm: React.FC<DonorFormProps> = ({ 
   formData, 
   updateFormData, 
-  onValidate,
-  prevStep
+  prevStep,
+  onValidate
 }) => {
   return (
     <div className="flex flex-col flex-1 h-[550px]">
@@ -129,7 +129,7 @@ const DonorForm: React.FC<DonorFormProps> = ({
           Précédent
         </Button>
         <Button type="button" onClick={onValidate}>
-          Enregistrer
+          Prévisualiser
         </Button>
       </div>
     </div>

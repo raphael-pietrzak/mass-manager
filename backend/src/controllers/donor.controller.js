@@ -24,18 +24,18 @@ exports.getDonor = async (req, res) => {
 
 exports.createDonor = async (req, res) => {
   try {
-    const donor = {
-      firstname: req.body.firstname,
-      lastname: req.body.lastname,
+    const donorData = {
+      firstname: req.body.firstName,
+      lastname: req.body.lastName,
       email: req.body.email,
       phone: req.body.phone,
       address: req.body.address,
-      zip_code: req.body.zip_code,
       city: req.body.city,
+      zip_code: req.body.zip_code
     };
 
-    const donorId = await Donor.create(donor);
-    res.status(201).send(' ✔ Donateur enregistré avec succès !');
+    await Donor.create(donorData);
+    res.status(201).send('Donateur enregistré');
   } catch (error) {
     console.error(error);
     res.status(500).send('Erreur lors de l\'enregistrement du donateur');
@@ -44,19 +44,19 @@ exports.createDonor = async (req, res) => {
 
 exports.updateDonor = async (req, res) => {
   try {
-    const donor = {
+    const donorData = {
       id: req.params.id,
-      firstname: req.body.firstname,
-      lastname: req.body.lastname,
+      firstname: req.body.firstName,
+      lastname: req.body.lastName,
       email: req.body.email,
       phone: req.body.phone,
       address: req.body.address,
-      zip_code: req.body.zip_code,
       city: req.body.city,
+      zip_code: req.body.zip_code
     };
 
-    await Donor.update(donor);
-    res.status(201).send('✔ Donateur mis à jour avec succès !');
+    await Donor.update(donorData);
+    res.status(204).send();
   } catch (error) {
     console.error(error);
     res.status(500).send('Erreur lors de la mise à jour du donateur');
@@ -73,15 +73,3 @@ exports.deleteDonor = async (req, res) => {
     res.status(500).send('Erreur lors de la suppression du donateur');
   }
 };
-
-// intention.controller.js
-// ...existing code...
-
-// mass.controller.js
-// ...existing code...
-
-// celebrant.controller.js
-// ...existing code...
-
-// specialDay.controller.js
-// ...existing code...

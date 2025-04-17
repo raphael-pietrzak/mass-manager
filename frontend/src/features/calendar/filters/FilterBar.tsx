@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { List, Calendar as CalendarIcon, RotateCcw } from 'lucide-react';
+import { List, Calendar as CalendarIcon } from 'lucide-react';
 import { celebrantService, Celebrant } from '../../../api/celebrantService';
 
 interface FilterBarProps {
@@ -9,7 +9,7 @@ interface FilterBarProps {
     celebrant: string;
   };
   onFilterChange: (key: string, value: string) => void;
-  onResetFilters: () => void;
+  onAddSpecialDay: () => void; // Nouvelle prop pour gérer l'ajout de jours particuliers
 }
 
 export const FilterBar: React.FC<FilterBarProps> = ({
@@ -17,7 +17,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   onViewModeChange,
   filters,
   onFilterChange,
-  onResetFilters,
+  onAddSpecialDay,
 }) => {
   const [celebrants, setCelebrants] = useState<Celebrant[]>([]);
   const [loading, setLoading] = useState(false);
@@ -83,12 +83,12 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           </div>
         </div>
 
+        {/* Bouton pour les jours particuliers */}
         <button
-          onClick={onResetFilters}
-          className="rounded-lg bg-gray-100 text-gray-600 px-3 py-2 flex items-center gap-2 hover:bg-gray-200"
+          onClick={onAddSpecialDay}
+          className="rounded-lg bg-yellow-500 text-white px-3 py-2 flex items-center gap-2 hover:bg-yellow-600"
         >
-          <RotateCcw className="w-4 h-4" />
-          Réinitialiser
+          + Jours Particuliers
         </button>
       </div>
     </div>
