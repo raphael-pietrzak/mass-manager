@@ -4,6 +4,9 @@ exports.seed = function(knex) {
   // Supprimer les entrées existantes
   return knex('Masses').del()
     .then(function () {
+      return knex('Intentions').del();
+    })
+    .then(function () {
       return knex('SpecialDays').del();
     })
     .then(function () {
@@ -17,7 +20,7 @@ exports.seed = function(knex) {
     })
     .then(function () {
       // Réinitialiser les séquences d'auto-incrémentation
-      return knex.raw("DELETE FROM sqlite_sequence WHERE name IN ('Masses', 'SpecialDays', 'Donors', 'Celebrants', 'Users')");
+      return knex.raw("DELETE FROM sqlite_sequence WHERE name IN ('Masses', 'SpecialDays', 'Donors', 'Celebrants', 'Users', 'Intentions')");
     })
     .then(function () {
       // Insérer des données fictives dans les tables
@@ -57,33 +60,61 @@ exports.seed = function(knex) {
         { religious_name: 'Xavier', civil_firstname: 'Jean-Luc', civil_lastname: 'Davesne', title: 'P', role: null },
         { religious_name: 'Lazare', civil_firstname: 'Kevin', civil_lastname: 'Libermann', title: 'P', role: null },
       ]);
-
     })
     .then(function () {
+      // Créer des données pour la table Intentions
+      return knex('Intentions').insert([
+        { donor_id: 1, intention_text: "Messe pour les défunts", type: 'defunts', amount: 100, payment_method: 'cash', wants_celebration_date: true, date_type: 'indifferente' },
+        { donor_id: 2, intention_text: "Messe pour les malades", type: 'vivants', amount: 20, payment_method: 'cheque', wants_celebration_date: true, date_type: 'indifferente' },
+        { donor_id: 3, intention_text: "Messe pour les vivants", type: 'vivants', amount: 30, payment_method: 'virement', wants_celebration_date: false, date_type: 'indifferente' },
+        { donor_id: 4, intention_text: "Messe pour les défunts", type: 'defunts', amount: 25, payment_method: 'cash', wants_celebration_date: true, date_type: 'specifique' },
+        { donor_id: 5, intention_text: "Messe pour les malades", type: 'vivants', amount: 45, payment_method: 'cheque', wants_celebration_date: false, date_type: 'indifferente' },
+        { donor_id: 6, intention_text: "Messe pour les vivants", type: 'vivants', amount: 40, payment_method: 'virement', wants_celebration_date: false, date_type: 'indifferente' },
+        { donor_id: 1, intention_text: "Messe pour les défunts", type: 'defunts', amount: 25, payment_method: 'cash', wants_celebration_date: true, date_type: 'specifique' },
+        { donor_id: 2, intention_text: "Messe pour les malades", type: 'vivants', amount: 45, payment_method: 'cheque', wants_celebration_date: false, date_type: 'indifferente' },
+        { donor_id: 3, intention_text: "Messe pour les vivants", type: 'vivants', amount: 40, payment_method: 'virement', wants_celebration_date: false, date_type: 'indifferente' },
+        { donor_id: 4, intention_text: "Messe pour les défunts", type: 'defunts', amount: 25, payment_method: 'cash', wants_celebration_date: true, date_type: 'specifique' },
+        { donor_id: 5, intention_text: "Messe pour les malades", type: 'vivants', amount: 45, payment_method: 'cheque', wants_celebration_date: false, date_type: 'indifferente' },
+        { donor_id: 6, intention_text: "Messe pour les vivants", type: 'vivants', amount: 40, payment_method: 'virement', wants_celebration_date: false, date_type: 'indifferente' },
+        { donor_id: 1, intention_text: "Messe pour les défunts", type: 'defunts', amount: 25, payment_method: 'cash', wants_celebration_date: true, date_type: 'specifique' },
+        { donor_id: 2, intention_text: "Messe pour les malades", type: 'vivants', amount: 45, payment_method: 'cheque', wants_celebration_date: false, date_type: 'indifferente' },
+        { donor_id: 3, intention_text: "Messe pour les vivants", type: 'vivants', amount: 40, payment_method: 'virement', wants_celebration_date: false, date_type: 'indifferente' },
+        { donor_id: 4, intention_text: "Messe pour les défunts", type: 'defunts', amount: 25, payment_method: 'cash', wants_celebration_date: true, date_type: 'specifique' },
+        { donor_id: 5, intention_text: "Messe pour les malades", type: 'vivants', amount: 45, payment_method: 'cheque', wants_celebration_date: false, date_type: 'indifferente' },
+        { donor_id: 6, intention_text: "Messe pour les vivants", type: 'vivants', amount: 40, payment_method: 'virement', wants_celebration_date: false, date_type: 'indifferente' },
+        { donor_id: 1, intention_text: "Messe pour les défunts", type: 'defunts', amount: 25, payment_method: 'cash', wants_celebration_date: true, date_type: 'specifique' },
+        { donor_id: 2, intention_text: "Messe pour les malades", type: 'vivants', amount: 45, payment_method: 'cheque', wants_celebration_date: false, date_type: 'indifferente' },
+        { donor_id: 3, intention_text: "Messe pour les vivants", type: 'vivants', amount: 40, payment_method: 'virement', wants_celebration_date: false, date_type: 'indifferente' },
+        { donor_id: 4, intention_text: "Messe pour les défunts", type: 'defunts', amount: 25, payment_method: 'cash', wants_celebration_date: true, date_type: 'specifique' },
+        { donor_id: 5, intention_text: "Messe pour les malades", type: 'vivants', amount: 45, payment_method: 'cheque', wants_celebration_date: false, date_type: 'indifferente' },
+      ]);
+    })
+    .then(function () {
+      // Mise à jour de l'insertion dans Masses pour utiliser intention_id
       return knex('Masses').insert([
-        { date: '2025-03-28', celebrant_id: 1, intention: "Messe pour les défunts", status: 'scheduled', deceased: true, amount: 100, wants_notification: true },
-        { date: '2025-04-30', celebrant_id: 2, intention: "Messe pour les malades", status: 'pending', deceased: false, amount: 20, wants_notification: true },
-        { date: '2025-05-01', celebrant_id: 3, intention: "Messe pour les vivants", status: 'scheduled', deceased: false, amount: 30, wants_notification: false },
-        { date: '2025-05-02', celebrant_id: 4, intention: "Messe pour les défunts", status: 'scheduled',  deceased: true, amount: 25, wants_notification: true },
-        { date: '2025-06-15', celebrant_id: 5, intention: "Messe pour les malades", status: 'pending',  deceased: false, amount: 45, wants_notification: false },
-        { date: '2025-07-20', celebrant_id: 6, intention: "Messe pour les vivants", status: 'cancelled',  deceased: false, amount: 40, wants_notification: false },
-        { date: '2025-05-02', celebrant_id: 7, intention: "Messe pour les défunts", status: 'scheduled',  deceased: true, amount: 25, wants_notification: true },
-        { date: '2025-06-15', celebrant_id: 8, intention: "Messe pour les malades", status: 'pending',  deceased: false, amount: 45, wants_notification: false },
-        { date: '2025-07-20', celebrant_id: 9, intention: "Messe pour les vivants", status: 'cancelled',  deceased: false, amount: 40, wants_notification: false },
-        { date: '2025-05-02', celebrant_id: 10, intention: "Messe pour les défunts", status: 'scheduled',  deceased: true, amount: 25, wants_notification: true },
-        { date: '2025-06-15', celebrant_id: 11, intention: "Messe pour les malades", status: 'pending',  deceased: false, amount: 45, wants_notification: false },
-        { date: '2025-07-20', celebrant_id: 12, intention: "Messe pour les vivants", status: 'cancelled',  deceased: false, amount: 40, wants_notification: false },
-        { date: '2025-05-02', celebrant_id: 13, intention: "Messe pour les défunts", status: 'scheduled',  deceased: true, amount: 25, wants_notification: true },
-        { date: '2025-06-15', celebrant_id: 14, intention: "Messe pour les malades", status: 'pending',  deceased: false, amount: 45, wants_notification: false },
-        { date: '2025-07-20', celebrant_id: 15, intention: "Messe pour les vivants", status: 'cancelled',  deceased: false, amount: 40, wants_notification: false },
-        { date: '2025-05-02', celebrant_id: 16, intention: "Messe pour les défunts", status: 'scheduled',  deceased: true, amount: 25, wants_notification: true },
-        { date: '2025-06-15', celebrant_id: 17, intention: "Messe pour les malades", status: 'pending',  deceased: false, amount: 45, wants_notification: false },
-        { date: '2025-07-20', celebrant_id: 18, intention: "Messe pour les vivants", status: 'cancelled',  deceased: false, amount: 40, wants_notification: false },
-        { date: '2025-05-02', celebrant_id: 19, intention: "Messe pour les défunts", status: 'scheduled',  deceased: true, amount: 25, wants_notification: true },
-        { date: '2025-06-15', celebrant_id: 20, intention: "Messe pour les malades", status: 'pending',  deceased: false, amount: 45, wants_notification: false },
-        { date: '2025-07-20', celebrant_id: 21, intention: "Messe pour les vivants", status: 'cancelled',  deceased: false, amount: 40, wants_notification: false },
-        { date: '2025-05-02', celebrant_id: 22, intention: "Messe pour les défunts", status: 'scheduled',  deceased: true, amount: 25, wants_notification: true },
-        { date: '2025-06-15', celebrant_id: 23, intention: "Messe pour les malades", status: 'pending',  deceased: false, amount: 45, wants_notification: false },
+        { date: '2025-03-28', celebrant_id: 1, intention_id: 1, status: 'scheduled' },
+        { date: '2025-04-30', celebrant_id: 2, intention_id: 2, status: 'pending' },
+        { date: '2025-05-01', celebrant_id: 3, intention_id: 3, status: 'scheduled' },
+        { date: '2025-05-02', celebrant_id: 4, intention_id: 4, status: 'scheduled' },
+        { date: '2025-06-15', celebrant_id: 5, intention_id: 5, status: 'pending' },
+        { date: '2025-07-20', celebrant_id: 6, intention_id: 6, status: 'cancelled' },
+        { date: '2025-05-02', celebrant_id: 7, intention_id: 7, status: 'scheduled' },
+        { date: '2025-06-15', celebrant_id: 8, intention_id: 8, status: 'pending' },
+        { date: '2025-07-20', celebrant_id: 9, intention_id: 9, status: 'cancelled' },
+        { date: '2025-05-02', celebrant_id: 10, intention_id: 10, status: 'scheduled' },
+        { date: '2025-06-15', celebrant_id: 11, intention_id: 11, status: 'pending' },
+        { date: '2025-07-20', celebrant_id: 12, intention_id: 12, status: 'cancelled' },
+        { date: '2025-05-02', celebrant_id: 13, intention_id: 13, status: 'scheduled' },
+        { date: '2025-06-15', celebrant_id: 14, intention_id: 14, status: 'pending' },
+        { date: '2025-07-20', celebrant_id: 15, intention_id: 15, status: 'cancelled' },
+        { date: '2025-05-02', celebrant_id: 16, intention_id: 16, status: 'scheduled' },
+        { date: '2025-06-15', celebrant_id: 17, intention_id: 17, status: 'pending' },
+        { date: '2025-07-20', celebrant_id: 18, intention_id: 18, status: 'cancelled' },
+        { date: '2025-05-02', celebrant_id: 19, intention_id: 19, status: 'scheduled' },
+        { date: '2025-06-15', celebrant_id: 20, intention_id: 20, status: 'pending' },
+        { date: '2025-07-20', celebrant_id: 21, intention_id: 21, status: 'cancelled' },
+        { date: '2025-05-02', celebrant_id: 22, intention_id: 22, status: 'scheduled' },
+        { date: '2025-06-15', celebrant_id: 23, intention_id: 23, status: 'pending' },
       ]);
     })
     .then(function () {

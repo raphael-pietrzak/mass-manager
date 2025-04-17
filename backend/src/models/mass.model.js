@@ -7,14 +7,15 @@ const Mass = {
                 'Masses.id',
                 'Masses.date',
                 'Celebrants.religious_name as celebrant',
-                'Masses.intention',
+                'Intentions.intention_text as intention',
                 'Masses.status',
-                'Masses.deceased',
-                'Masses.amount',
-                'Masses.wants_notification',
+                'Intentions.type',
+                'Intentions.amount',
+                'Intentions.wants_celebration_date as wants_notification',
+                'Intentions.donor_id'
             )
             .leftJoin('Celebrants', 'Masses.celebrant_id', 'Celebrants.id')
-
+            .leftJoin('Intentions', 'Masses.intention_id', 'Intentions.id')
             .orderBy('Masses.date');
     },
 
@@ -23,11 +24,35 @@ const Mass = {
     },
 
     getById: async (id) => {
-        return db.select().from('Masses').where('id', id);
+        return db('Masses')
+            .select(
+                'Masses.id',
+                'Masses.date',
+                'Masses.celebrant_id',
+                'Celebrants.religious_name as celebrant',
+                'Masses.status',
+                'Masses.intention_id',
+                'Intentions.intention_text as intention',
+                'Intentions.type',
+                'Intentions.amount',
+                'Intentions.wants_celebration_date as wants_notification',
+                'Intentions.donor_id'
+            )
+            .leftJoin('Celebrants', 'Masses.celebrant_id', 'Celebrants.id')
+            .leftJoin('Intentions', 'Masses.intention_id', 'Intentions.id')
+            .where('Masses.id', id)
+            .first();
     },
 
     update: async (mass) => {
-        return db('Masses').where('id', mass.id).update(mass);
+        return db('Masses')
+            .where('id', mass.id)
+            .update({
+                date: mass.date,
+                celebrant_id: mass.celebrant_id,
+                intention_id: mass.intention_id,
+                status: mass.status
+            });
     },
 
     delete: async (id) => {
@@ -117,20 +142,30 @@ const Mass = {
         return await db('Masses')
             .whereBetween('date', [startDate.toISOString(), endDate.toISOString()])
             .leftJoin('Celebrants', 'Masses.celebrant_id', 'Celebrants.id')
-            .select('Masses.*', 'Celebrants.religious_name as celebrant_name')
+            .leftJoin('Intentions', 'Masses.intention_id', 'Intentions.id')
+            .select(
+                'Masses.*',
+                'Celebrants.religious_name as celebrant_name',
+                'Intentions.intention_text as intention',
+                'Intentions.type',
+                'Intentions.amount',
+                'Intentions.wants_celebration_date as wants_notification',
+                'Intentions.donor_id'
+            )
             .orderBy('date');
     },
 
     getMassesByDateRange: async (startDate, endDate) => {
         let query = db('Masses')
             .leftJoin('Celebrants', 'Masses.celebrant_id', 'Celebrants.id')
+            .leftJoin('Intentions', 'Masses.intention_id', 'Intentions.id')
             .select(
                 'Masses.id',
                 'Masses.date',
                 'Celebrants.religious_name as celebrant',
-                'Masses.intention',
+                'Intentions.intention_text as intention',
                 'Masses.status',
-                db.raw("COALESCE(Masses.status, 'basse') as type"),
+                'Intentions.type',
                 db.raw("'Chapelle principale' as location")
             )
             .orderBy('Masses.date');
@@ -144,6 +179,7 @@ const Mass = {
         if (endDate) {
             // Extraire la partie YYYY-MM-DD de la date ISO
             const formattedEndDate = new Date(endDate).toISOString().split('T')[0];
+            query = query.where(db.raw('DATE(Masses.date)'), '<=', formattedEndDate);
         }
         
         return query;

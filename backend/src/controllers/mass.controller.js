@@ -1,4 +1,7 @@
 const Mass = require('../models/mass.model');
+const Intention = require('../models/intention.model');
+const Donor = require('../models/donor.model');
+const db = require('../../config/database');
 
 exports.getMasses = async (req, res) => {
   try {
@@ -22,15 +25,12 @@ exports.getMass = async (req, res) => {
 };
 
 exports.createMass = async (req, res) => {
-
-
-  // Data example : 
+  // Data example structure mise à jour pour correspondre à la nouvelle structure
   // {
-  //   id: '',
   //   date: '2025-04-16',
   //   celebrant: 3,
   //   type: 'vivants',
-  //   intention: 'mon intention',
+  //   intention_text: 'mon intention',
   //   firstName: 'Bob',
   //   lastName: 'Steve',
   //   email: 'exemple@email.com',
@@ -53,54 +53,78 @@ exports.createMass = async (req, res) => {
   // }
 
   try {
-    const mass = {
-      date: req.body.date,
-      date: req.body.date,
-      celebrant_id: req.body.celebrant_id,
-      intention: req.body.intention,
-      status: req.body.status,
-      deceased: req.body.deceased,
-      amount: req.body.amount,
-      wants_notification: req.body.wants_notification,
+    // 1. Créer ou récupérer le donateur
+    let donorId = null;
+    
+    const donorData = {
+      firstname: req.body.firstName,
+      lastname: req.body.lastName,
+      email: req.body.email,
+      phone: req.body.phone,
+      address: req.body.address,
+      city: req.body.city,
+      zip_code: req.body.postalCode
     };
 
-    const massId = await Mass.create(mass);
-    const createdMass = await Mass.getById(massId);
-    res.status(201).json(createdMass);
+    donorId = await Donor.create(donorData);
+    
+    // 2. Créer l'intention
+    const intentionData = {
+      donor_id: donorId,
+      intention_text: req.body.intention_text,
+      type: req.body.type || 'defunts',
+      amount: req.body.amount,
+      payment_method: req.body.paymentMethod || 'cash',
+      brother_name: req.body.brotherName,
+      wants_celebration_date: req.body.wantsCelebrationDate || false,
+      date_type: req.body.dateType || 'indifferente',
+      
+      // Récurrence
+      is_recurrent: req.body.isRecurrent || false,
+      recurrence_type: req.body.recurrenceType,
+      occurrences: req.body.occurrences,
+      start_date: req.body.startDate,
+      end_type: req.body.endType,
+      end_date: req.body.endDate
+    };
+    
+    const intentionId = await Intention.create(intentionData);
+    
+    // 3. Créer la messe associée
+    const massData = {
+      date: req.body.date,
+      celebrant_id: req.body.celebrant_id,
+      intention_id: intentionId,
+      status: 'pending'
+    };
+
+    const massId = await Mass.create(massData);
+    
+    res.status(201).send('Messe créée avec succès');
   } catch (error) {
     console.error(error);
     res.status(500).send('Erreur lors de l\'enregistrement de la messe');
   }
 };
 
-// Fonctions utilitaires à ajouter
-async function getCelebrantIdByName(celebrantName) {
-  const celebrant = await db('Celebrants')
-    .where('name', celebrantName)
-    .first();
-  return celebrant ? celebrant.id : null;
-}
-
-async function createIntention(description) {
-  const [id] = await db('Intentions')
-    .insert({ description });
-  return id;
-}
-
 exports.updateMass = async (req, res) => {
   try {
+    // Mise à jour de la messe uniquement (pas l'intention)
     const mass = {
       id: req.params.id,
       date: req.body.date,
       celebrant_id: req.body.celebrant_id,
-      intention: req.body.intention,
-      status: req.body.status,
-      deceased: req.body.deceased,
-      amount: req.body.amount,
-      wants_notification: req.body.wants_notification,
+      intention_id: req.body.intention_id,
+      status: req.body.status
     };
 
     await Mass.update(mass);
+    
+    // Si des données d'intention sont fournies, mettre à jour l'intention également
+    if (req.body.intention_data) {
+      await Intention.update(req.body.intention_data.id, req.body.intention_data);
+    }
+    
     res.status(204).send();
   } catch (error) {
     console.error(error);

@@ -1,5 +1,6 @@
 const Intention = require('../models/intention.model');
 const Donor = require('../models/donor.model');
+const db = require('../../config/database');
 
 exports.getIntentions = async (req, res) => {
   try {
@@ -24,22 +25,44 @@ exports.getIntention = async (req, res) => {
 
 exports.createIntention = async (req, res) => {
   try {
+      // Créer ou récupérer le donateur
+      let donorId = null;
+    
+      const donorData = {
+        firstname: req.body.firstName,
+        lastname: req.body.lastName,
+        email: req.body.email,
+        phone: req.body.phone,
+        address: req.body.address,
+        city: req.body.city,
+        zip_code: req.body.zip_code
+      };
+    
+      donorId = await Donor.create(donorData);
 
-    const donor = {
-      name: "",
-      email: req.body.email,
-      phone: req.body.phone,
-      address: req.body.address
-    };
-
-    const donorId = await Donor.create(donor);
-    const intention = {
-      description: req.body.intention,
-      amount: req.body.amount,
-      donor_id: donorId,
-      date_requested: req.body.date
-    };
-    await Intention.create(intention);
+    
+      // Créer l'intention
+      const intention = {
+        donor_id: donorId,
+        intention_text: req.body.intention_text,
+        type: req.body.type || 'defunts',
+        amount: req.body.amount,
+        payment_method: req.body.payment_method || 'cash',
+        brother_name: req.body.brother_name,
+        wants_celebration_date: req.body.wants_celebration_date || false,
+        date_type: req.body.date_type || 'indifferente',
+        
+        // Propriétés de récurrence
+        is_recurrent: req.body.is_recurrent || false,
+        recurrence_type: req.body.recurrence_type,
+        occurrences: req.body.occurrences,
+        start_date: req.body.start_date,
+        end_type: req.body.end_type,
+        end_date: req.body.end_date
+      };
+      
+      // Utiliser le modèle Intention avec la transaction
+      await Intention.create(intention);
 
     res.status(201).send('Intention enregistrée');
   } catch (error) {
@@ -50,15 +73,24 @@ exports.createIntention = async (req, res) => {
 
 exports.updateIntention = async (req, res) => {
   try {
-    const intention = {
-      id: req.params.id,
-      description: req.body.description,
+    const id = req.params.id;
+    const intentionData = {
+      intention_text: req.body.intention_text,
+      type: req.body.type,
       amount: req.body.amount,
-      donor_id: req.body.donor_id,
-      date_requested: req.body.date_requested
+      payment_method: req.body.payment_method,
+      brother_name: req.body.brother_name,
+      wants_celebration_date: req.body.wants_celebration_date,
+      date_type: req.body.date_type,
+      is_recurrent: req.body.is_recurrent,
+      recurrence_type: req.body.recurrence_type,
+      occurrences: req.body.occurrences,
+      start_date: req.body.start_date,
+      end_type: req.body.end_type,
+      end_date: req.body.end_date
     };
 
-    await Intention.update(intention);
+    await Intention.update(id, intentionData);
     res.status(204).send();
   } catch (error) {
     console.error(error);
@@ -74,5 +106,15 @@ exports.deleteIntention = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send('Erreur lors de la suppression de l\'intention');
+  }
+};
+
+exports.getPendingIntentions = async (req, res) => {
+  try {
+    const data = await Intention.getPendingIntentions();
+    res.json(data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Erreur lors de la récupération des intentions en attente');
   }
 };

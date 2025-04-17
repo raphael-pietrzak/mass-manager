@@ -73,26 +73,6 @@ const DatabaseTabs: React.FC = () => {
     }
   };
 
-  const handleAddField = () => {
-    const selectedTab = tabs.find(tab => tab.key === activeTab);
-    if (!selectedTab) return;
-    
-    // Récupérer les colonnes pour le tab actif
-    const columns = selectedTab.columns || 
-      (data.length > 0 ? Object.keys(data[0]) : []);
-    
-    // Créer un objet vide initial avec les colonnes du tableau
-    const emptyRow: { [key: string]: any } = {};
-    columns.forEach(col => {
-      emptyRow[col] = '';
-    });
-    
-    setEditRowData(emptyRow);
-    setEditColumns(columns);
-    setIsCreating(true);
-    setIsEditDialogOpen(true);
-  };
-
   // Pagination State
   const [itemsPerPage, setItemsPerPage] = useState(10);  // Nombre d'éléments par page
   const [currentPage, setCurrentPage] = useState(1);  // Page active
