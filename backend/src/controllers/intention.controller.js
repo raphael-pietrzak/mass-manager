@@ -40,14 +40,14 @@ exports.createIntention = async (req, res) => {
     
       donorId = await Donor.create(donorData);
 
-    
+
       // Créer l'intention
       const intention = {
         donor_id: donorId,
         intention_text: req.body.intention_text,
         type: req.body.type || 'defunts',
         amount: req.body.amount,
-        payment_method: req.body.payment_method || 'cash',
+        payment_method: req.body.payment_method,
         brother_name: req.body.brother_name,
         wants_celebration_date: req.body.wants_celebration_date || false,
         date_type: req.body.date_type || 'indifferente',

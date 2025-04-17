@@ -6,6 +6,7 @@ const db = require('../../config/database');
 exports.getMasses = async (req, res) => {
   try {
     const data = await Mass.getAll();
+    console.log('Données des messes récupérées:', data);
     res.json(data);
   } catch (error) {
     console.error(error);
@@ -27,31 +28,32 @@ exports.getMass = async (req, res) => {
 exports.createMass = async (req, res) => {
   // Data example structure mise à jour pour correspondre à la nouvelle structure
   // {
-  //   date: '2025-04-16',
-  //   celebrant: 3,
-  //   type: 'vivants',
-  //   intention_text: 'mon intention',
-  //   firstName: 'Bob',
-  //   lastName: 'Steve',
-  //   email: 'exemple@email.com',
-  //   phone: '123456789',
-  //   address: '123 rue du lilas',
-  //   postalCode: '34000',
-  //   city: 'Montpellier',
+  //   id: '',
+  //   date: '2025-04-17',
+  //   celebrant: 'unassigned',
+  //   type: 'defunts',
+  //   intention: 'dfdfd',
+  //   firstName: 'fdf',
+  //   lastName: 'fdfd',
+  //   email: 'dfdf',
+  //   phone: 'dfdf',
+  //   address: 'dfdf',
+  //   postalCode: 'fdfdf',
+  //   city: 'fddf',
   //   wantsCelebrationDate: false,
-  //   amount: '30',
-  //   paymentMethod: 'cash',
-  //   brotherName: 'Basile',
+  //   amount: '20',
+  //   paymentMethod: 'card',
+  //   brotherName: '',
   //   massCount: 1,
   //   massType: 'unite',
   //   dateType: 'indifferente',
-  //   isRecurrent: true,
-  //   recurrenceType: 'daily',
-  //   occurrences: 3,
-  //   startDate: '2025-04-02',
+  //   isRecurrent: false,
+  //   recurrenceType: 'weekly',
+  //   occurrences: 1,
   //   endType: 'occurrences'
   // }
 
+  console.log('Création de la messe avec les données suivantes:', req.body);
   try {
     // 1. Créer ou récupérer le donateur
     let donorId = null;
@@ -69,12 +71,13 @@ exports.createMass = async (req, res) => {
     donorId = await Donor.create(donorData);
     
     // 2. Créer l'intention
+
     const intentionData = {
       donor_id: donorId,
-      intention_text: req.body.intention_text,
+      intention_text: req.body.intention,
       type: req.body.type || 'defunts',
       amount: req.body.amount,
-      payment_method: req.body.paymentMethod || 'cash',
+      payment_method: req.body.paymentMethod,
       brother_name: req.body.brotherName,
       wants_celebration_date: req.body.wantsCelebrationDate || false,
       date_type: req.body.dateType || 'indifferente',
@@ -83,7 +86,7 @@ exports.createMass = async (req, res) => {
       is_recurrent: req.body.isRecurrent || false,
       recurrence_type: req.body.recurrenceType,
       occurrences: req.body.occurrences,
-      start_date: req.body.startDate,
+      start_date: req.body.startDate || req.body.date,
       end_type: req.body.endType,
       end_date: req.body.endDate
     };
@@ -91,9 +94,22 @@ exports.createMass = async (req, res) => {
     const intentionId = await Intention.create(intentionData);
     
     // 3. Créer la messe associée
+    let celebrant_id = null;
+    
+    // Si le célébrant est non-assigné ou non spécifié, trouver un célébrant disponible automatiquement
+    if (!req.body.celebrant || req.body.celebrant === 'unassigned') {
+      const availableCelebrant = await Mass.findNextAvailableCelebrant(req.body.date);
+      if (availableCelebrant) {
+        celebrant_id = availableCelebrant.id;
+        console.log(`Célébrant attribué automatiquement: ${availableCelebrant.religious_name} (ID: ${celebrant_id})`);
+      }
+    } else {
+      celebrant_id = req.body.celebrant;
+    }
+    
     const massData = {
       date: req.body.date,
-      celebrant_id: req.body.celebrant_id,
+      celebrant_id: celebrant_id,
       intention_id: intentionId,
       status: 'pending'
     };
