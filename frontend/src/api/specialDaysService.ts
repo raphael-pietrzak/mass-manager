@@ -5,7 +5,7 @@ import { API_BASE_URL } from '.';
 export interface SpecialDays {
   id?: string;
   date: string; // format YYYY-MM-DD
-  note: string;
+  description: string;
   number_of_masses?: number;
   is_recurrent?: boolean;
 }
@@ -29,7 +29,7 @@ export const specialDayService = {
     },
   
     // Créer un jour spécial
-    createSpecialDays: async (specialDay: SpecialDays): Promise<SpecialDays> => {
+    createSpecialDays: async (specialDay: SpecialDays): Promise<string> => {
       try {
         const response = await axios.post(`${API_URL}/special-days`, specialDay);
         return response.data;
@@ -43,7 +43,6 @@ export const specialDayService = {
     updateSpecialDay: async (id: string, specialDay: SpecialDays): Promise<string> => {
       try {
         const response = await axios.put(`${API_URL}/special-days/${id}`, specialDay);
-        console.log(response.data);
         return response.data;
       } catch (error) {
         console.error('Erreur lors de la mise à jour du jour spécial:', error);
@@ -52,9 +51,10 @@ export const specialDayService = {
     },
   
     // Supprimer un jour spécial
-    deleteSpecialDay: async (id: string): Promise<void> => {
+    deleteSpecialDay: async (id: string): Promise<string> => {
       try {
-        await axios.delete(`${API_URL}/special-days/${id}`);
+        const response = await axios.delete(`${API_URL}/special-days/${id}`);
+        return response.data;
       } catch (error) {
         console.error('Erreur lors de la suppression du jour spécial:', error);
         throw new Error('Erreur lors de la suppression du jour spécial');

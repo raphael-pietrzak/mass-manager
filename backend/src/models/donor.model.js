@@ -5,7 +5,7 @@ const db = require('../../config/database'); // Connexion Knex
 
 const Donor = {
   getAll: async () => {
-    return db.select().from('Donors');
+    return db.select().from('Donors').orderBy('lastname', 'asc');
   },
 
   create: async (donor) => {

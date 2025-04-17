@@ -9,7 +9,7 @@ const downloadFile = async (format: 'excel' | 'pdf') => {
   const url = window.URL.createObjectURL(blob);
   const link = document.createElement('a');
 
-  const filename = `donors.${format === 'excel' ? 'xlsx' : 'pdf'}`;
+  const filename = `Liste des donateurs.${format === 'excel' ? 'xlsx' : 'pdf'}`;
   link.href = url;
   link.setAttribute('download', filename);
   document.body.appendChild(link);

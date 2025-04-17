@@ -24,6 +24,7 @@ exports.up = function(knex) {
         table.increments('id').primary();
         table.datetime('date').notNullable();
         table.integer('celebrant_id').unsigned().references('id').inTable('Celebrants');
+        table.integer('donor_id').unsigned().references('id').inTable('Donors');
         table.string('intention').nullable();
         table.enu('status', ['scheduled', 'cancelled', 'pending']).defaultTo('pending');
         table.boolean('deceased').defaultTo(false);
@@ -80,6 +81,7 @@ exports.up = function(knex) {
         table.increments('id').primary();
         table.datetime('date').notNullable();
         table.integer('celebrant_id').unsigned().references('id').inTable('Celebrants');
+        table.integer('donor_id').unsigned().references('id').inTable('Donors');
         table.string('intention').nullable();
         table.enu('status', ['scheduled', 'cancelled', 'pending']).defaultTo('pending');
         table.boolean('deceased').defaultTo(false);

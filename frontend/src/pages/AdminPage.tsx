@@ -15,7 +15,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Save, Trash2, UserPlus, Lock, Mail, Plus } from 'lucide-react';
+import { Save, Trash2, UserPlus, Lock, Mail, Plus, Database } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const UNASSIGNED_VALUE = 'unassigned';
 
@@ -37,11 +38,15 @@ const AdminPage = () => {
     title: '',
     role: ''
   });
-
   const celebrantOptions = celebrants.map((celebrant) => ({
     value: celebrant.id,
     label: `Père ${celebrant.religious_name} `
   }));
+  const navigate = useNavigate();
+  const [deleteBeforeDate, setDeleteBeforeDate] = useState(() => {
+    const today = new Date();
+    return today.toISOString().split('T')[0]; // format 'YYYY-MM-DD'
+  });
 
   // Charger les célébrants depuis l'API
   useEffect(() => {
@@ -61,8 +66,8 @@ const AdminPage = () => {
     console.log('Sauvegarde effectuée');
   };
 
-  const handleDeleteHistory = () => {
-    console.log('Historique supprimé');
+  const handleDeleteHistory = (date: string) => {
+    console.log('Historique supprimé avant la date:', date);
   };
 
   const handlePasswordChange = () => {
@@ -105,6 +110,15 @@ const AdminPage = () => {
             Sauvegarder
           </Button>
 
+          <Button 
+            className="w-full justify-start" 
+            variant="outline"
+            onClick={() => navigate('/database')}
+          >
+            <Database className="mr-2 h-4 w-4" />
+            Base de données
+          </Button>
+
           {/* Supprimer l'historique */}
           <AlertDialog>
             <AlertDialogTrigger asChild>
@@ -118,20 +132,28 @@ const AdminPage = () => {
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Cette action va supprimer définitivement l'historique des années écoulées.
+                <AlertDialogTitle>Supprimer les intentions de messe antérieures à :</AlertDialogTitle>
+                <div className="mt-4">
+                  <input
+                    type="date"
+                    name="deleteBeforeDate"
+                    value={deleteBeforeDate}
+                    onChange={(e) => setDeleteBeforeDate(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded"
+                  />
+                </div>
+                <AlertDialogDescription className="mt-4">
+                  ⚠ Cette action va supprimer définitivement toutes les intentions de messe antérieures à cette date.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Annuler</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDeleteHistory}>
+                <AlertDialogAction onClick={() => handleDeleteHistory(deleteBeforeDate)}>
                   Confirmer
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-
           {/* Gestion des célébrants */}
           <AlertDialog open={showCelebrantDialog} onOpenChange={setShowCelebrantDialog}>
             <AlertDialogTrigger asChild>
@@ -179,7 +201,7 @@ const AdminPage = () => {
               {/* Bouton pour ajouter un célébrant */}
               <Button 
                 className="bg-black text-white mt-3 p-3 rounded-full w-full"
-                onClick={() => { setShowAddForm(true); setShowUpdateForm(false);}}
+                onClick={() => { setShowAddForm(true); setShowUpdateForm(false); setSelectedCelebrant(""); }}
               >
                 <Plus className="h-4 w-4" />
                 Ajouter un célébrant
