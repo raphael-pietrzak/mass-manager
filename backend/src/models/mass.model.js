@@ -12,20 +12,17 @@ const Mass = {
                 'Intentions.type',
                 'Intentions.amount',
                 'Intentions.wants_celebration_date as wants_notification',
-                'Intentions.donor_id'
+                'Intentions.donor_id',
+                'Donors.firstname as donor_firstname',
+                'Donors.lastname as donor_lastname',
+
             )
             .leftJoin('Celebrants', 'Masses.celebrant_id', 'Celebrants.id')
             .leftJoin('Intentions', 'Masses.intention_id', 'Intentions.id')
+            .leftJoin('Donors', 'Intentions.donor_id', 'Donors.id')
             .orderBy('Masses.date');
     
-        // On transforme chaque ligne pour y inclure un objet "donor"
-        return results.map(({ donor_firstname, donor_lastname, ...rest }) => ({
-            ...rest,
-            donor: {
-                firstname: donor_firstname,
-                lastname: donor_lastname
-            }
-        }));
+        return results
     },
     
 
@@ -77,37 +74,33 @@ const Mass = {
             .first();
     },
 
-    findNextAvailableCelebrant: async (targetDate) => {
-        const celebrants = await db('Celebrants')
-            .where('is_available', true);
-
-        const massCount = await db('Masses')
-            .select('celebrant_id')
-            .count('* as count')
-            .where('date', '>=', db.raw('DATE_SUB(CURDATE(), INTERVAL 30 DAY)'))
-            .groupBy('celebrant_id');
-
-        const workload = {};
-        massCount.forEach(item => {
-            workload[item.celebrant_id] = parseInt(item.count);
-        });
-
-        const availableCelebrants = await Promise.all(
-            celebrants.map(async (celebrant) => {
-                const masses = await Mass.getMassesByCelebrantAndDate(celebrant.id, targetDate);
-                return {
-                    ...celebrant,
-                    currentMasses: masses.count,
-                    totalWorkload: workload[celebrant.id] || 0
-                };
-            })
-        );
-
-        const freeCelebrants = availableCelebrants.filter(c => c.currentMasses === 0);
+    getRandomAvailableCelebrant: async (targetDate) => {
+        // Formater la date pour la requête SQL
+        const formattedDate = new Date(targetDate).toISOString().split('T')[0];
         
-        freeCelebrants.sort((a, b) => a.totalWorkload - b.totalWorkload);
+        // Récupérer les IDs des célébrants déjà programmés pour cette date
+        const busyCelebrants = await db('Masses')
+            .where(db.raw('DATE(date) = DATE(?)', [formattedDate]))
+            .pluck('celebrant_id');
+            
+        // Récupérer tous les célébrants disponibles (ceux qui ne sont pas déjà programmés)
+        const availableCelebrants = await db('Celebrants')
+            .whereNotIn('id', busyCelebrants)
+            .select('id', 'religious_name');
+            
+        // Vérifier s'il y a des célébrants disponibles
+        if (availableCelebrants.length === 0) {
+            return null;
+        }
+        
+        // Choisir un célébrant aléatoirement parmi ceux disponibles
+        const randomIndex = Math.floor(Math.random() * availableCelebrants.length);
+        return availableCelebrants[randomIndex];
+    },
 
-        return freeCelebrants[0] || null;
+    findNextAvailableCelebrant: async (targetDate) => {
+        // Appel de la méthode getRandomAvailableCelebrant
+        return await Mass.getRandomAvailableCelebrant(targetDate);
     },
 
     findNextAvailableSlot: async () => {
