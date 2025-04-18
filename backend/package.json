@@ -6,7 +6,8 @@
     "start": "nodemon ./src/server.js",
     "test": "jest --detectOpenHandles --forceExit --silent",
     "seed": "npx knex seed:run",
-    "migrate": "npx knex migrate:latest"
+    "migrate": "npx knex migrate:latest",
+    "reset": "rm -rf ./database/mass_manager.db && npx knex migrate:latest && npx knex seed:run"
   },
   "keywords": [],
   "author": "",

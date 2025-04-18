@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { Mass, massService, MassPreview } from '../../api/massService';
+import { Mass, massService, MassPreview, MassSubmission } from '../../api/massService';
 import { celebrantService, Celebrant } from '../../api/celebrantService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import RegularityForm from './forms/RegularityForm';
@@ -13,7 +13,7 @@ interface MassModalProps {
   mass: Mass | null;
   isOpen: boolean;
   onClose: () => void;
-  onSave: (mass: Mass) => void;
+  onSave: (mass: MassSubmission) => void;
 }
 
 export const MassModal: React.FC<MassModalProps> = ({
@@ -29,17 +29,17 @@ export const MassModal: React.FC<MassModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [previewData, setPreviewData] = useState<MassPreview | null>(null);
 
-  // Valeur par défaut pour le célébrant non assigné
-  const UNASSIGNED_VALUE = "unassigned";
-
   // Données de formulaire pour la récurrence et le donateur
+  // type Mass 
+
   const [formData, setFormData] = useState({
     intention: '',
     massCount: 1,
     massType: 'unite',
     dateType: 'indifferente',
     date: undefined as Date | undefined,
-    celebrant: '',
+    celebrant_name: '',
+    celebrant_id: '',
     amount: '20',
     paymentMethod: 'card',
     brotherName: '',
@@ -64,7 +64,8 @@ export const MassModal: React.FC<MassModalProps> = ({
   const defaultMass = mass || {
     id: '',
     date: new Date().toISOString().split('T')[0],
-    celebrant: UNASSIGNED_VALUE,
+    celebrant_id: '',
+    celebrant_name: '',
     type: 'defunts', // Par défaut défunt
     intention: '',
   };
@@ -77,7 +78,7 @@ export const MassModal: React.FC<MassModalProps> = ({
   // Met à jour l'état du célébrant sélectionné quand le modal s'ouvre
   useEffect(() => {
     if (isOpen && mass) {
-      setSelectedCelebrant(mass.celebrant || UNASSIGNED_VALUE);
+      setSelectedCelebrant(mass.celebrant_id);
       setFormData(prev => ({
         ...prev,
         intention: mass.intention || '',
@@ -90,7 +91,7 @@ export const MassModal: React.FC<MassModalProps> = ({
       }));
       setSelectedDate(mass.date ? new Date(mass.date) : new Date());
     } else if (isOpen) {
-      setSelectedCelebrant(UNASSIGNED_VALUE);
+      setSelectedCelebrant('');
       setSelectedDate(new Date());
       // Réinitialiser avec les valeurs par défaut
       setFormData(prev => ({
@@ -137,7 +138,7 @@ export const MassModal: React.FC<MassModalProps> = ({
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
 
   const celebrantOptions = [
-    { value: UNASSIGNED_VALUE, label: "Aléatoire" },
+    { value: '', label: "Aléatoire" },
     ...celebrants.map(c => ({
       value: c.id,
       label: c.religious_name || `${c.civil_first_name} ${c.civil_last_name}`
@@ -159,7 +160,7 @@ export const MassModal: React.FC<MassModalProps> = ({
     return {
       ...defaultMass,
       date: selectedDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
-      celebrant: selectedCelebrant,
+      celebrant_id: selectedCelebrant,
       intention: formData.intention,
       type: formData.isForDeceased ? 'defunts' : 'vivants',
       // Informations du donateur
@@ -173,7 +174,7 @@ export const MassModal: React.FC<MassModalProps> = ({
       wantsCelebrationDate: formData.wantsCelebrationDate,
       // Informations de l'offrande
       amount: formData.amount,
-      paymentMethod: formData.paymentMethod,
+      paymentMethod: formData.paymentMethod as 'cheque' | 'cash' | 'card' | 'transfer',
       brotherName: formData.brotherName,
       // Informations de la masse
       massCount: formData.massCount,
@@ -206,12 +207,41 @@ export const MassModal: React.FC<MassModalProps> = ({
   };
 
   // Fonction pour confirmer et sauvegarder définitivement
-  const confirmAndSave = () => {
+  const confirmAndSave = async () => {
     if (!previewData) return;
-
-    const massObject = createMassObject();
-    onSave(massObject);
-    onClose();
+    
+    try {
+      setIsLoading(true);
+      
+      // Créer l'objet au format de prévisualisation
+      const submissionData = {
+        preview: previewData,
+        donor: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+          address: formData.address,
+          postalCode: formData.postalCode,
+          city: formData.city,
+          wantsCelebrationDate: formData.wantsCelebrationDate
+        },
+        payment: {
+          amount: formData.amount,
+          paymentMethod: formData.paymentMethod as 'cheque' | 'cash' | 'card' | 'transfer',
+          brotherName: formData.brotherName
+        },
+        dateType: formData.dateType // Ajouter pour que le backend ait cette information
+      };
+      
+      await onSave(submissionData);
+      onClose();
+    } catch (error) {
+      console.error("Erreur lors de la sauvegarde des messes:", error);
+      // Gestion des erreurs ici
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -281,7 +311,7 @@ export const MassModal: React.FC<MassModalProps> = ({
                   }}
                   onCelebrantChange={(value) => {
                     setSelectedCelebrant(value);
-                    updateFormData({ celebrant: value });
+                    updateFormData({ celebrant_id: value });
                   }}
                   onMassTypeChange={(value) => updateFormData({ massType: value })}
                   onMassCountChange={(value) => updateFormData({ massCount: value })}
@@ -298,7 +328,7 @@ export const MassModal: React.FC<MassModalProps> = ({
                 <OfferingForm
                   formData={{
                     amount: formData.amount,
-                    paymentMethod: formData.paymentMethod,
+                    paymentMethod: formData.paymentMethod as 'cheque' | 'cash' | 'card' | 'transfer',
                     brotherName: formData.brotherName
                   }}
                   updateFormData={(data) => updateFormData(data)}

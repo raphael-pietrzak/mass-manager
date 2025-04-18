@@ -7,7 +7,8 @@ export interface Mass {
   date: string; // format YYYY-MM-DD
   type: 'defunts' | 'vivants';
   intention?: string;
-  celebrant: string;
+  celebrant_id: string; // ID du célébrant, plus de champ "celebrant"
+  celebrant_name?: string; // Nom du célébrant pour l'affichage
   status?: 'scheduled' | 'cancelled' | 'pending';
   // Données du donateur
   firstName?: string;
@@ -20,7 +21,7 @@ export interface Mass {
   wantsCelebrationDate?: boolean;
   // Données de l'offrande
   amount?: string;
-  paymentMethod?: string;
+  paymentMethod?: 'cheque' | 'cash' | 'card' | 'transfer';
   brotherName?: string;
   // Données de masse
   massCount?: number;
@@ -35,11 +36,39 @@ export interface Mass {
   endType?: string;
 }
 
-// Type pour la réponse de prévisualisation
+// Type pour la réponse de prévisualisation avec une structure simplifiée des masses
 export interface MassPreview {
-  masses: Mass[];
+  masses: {
+    date: string | null; // peut être null pour les messes sans date assignée
+    intention: string;
+    type: 'defunts' | 'vivants';
+    celebrant_id: string | null; // peut être null si non assigné
+    celebrant_name: string;
+    status: 'scheduled' | 'cancelled' | 'pending';
+  }[];
   totalAmount: string;
   massCount: number;
+}
+
+// Nouveau type pour la soumission finale basée sur la prévisualisation
+export interface MassSubmission {
+  id?: string;
+  preview: MassPreview;
+  donor: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone?: string;
+    address?: string;
+    postalCode?: string;
+    city?: string;
+    wantsCelebrationDate: boolean;
+  };
+  payment: {
+    amount: string;
+    paymentMethod: 'cheque' | 'cash' | 'card' | 'transfer';
+    brotherName?: string;
+  };
 }
 
 const API_URL = `${API_BASE_URL}/api/data`;
@@ -53,7 +82,7 @@ export const massService = {
       date: formatDate(mass.date) // Convertir le timestamp en format YYYY-MM-DD
     }));
   },
-  createMass: async (mass: any) => {
+  createMass: async (mass: MassSubmission): Promise<string> => {
     const response = await axios.post(`${API_URL}/masses`, mass);
     return response.data;
   },

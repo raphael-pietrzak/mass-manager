@@ -31,6 +31,7 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
   const [showSpecialDays, setShowSpecialDays] = useState(true);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string>();
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -52,15 +53,21 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
   
 
   const loadSpecialDays = async () => {
-    const data = await specialDayService.getSpecialDays();
-    const sanitizedData = data.map((day) => ({
-      ...day,
-      date: day.date || '',
-      note: day.description || '',
-      number_of_masses: day.number_of_masses || 0,
-      is_recurrent: day.is_recurrent ?? false,
-    }));
-    setSpecialDays(sanitizedData);
+    try {
+      const data = await specialDayService.getSpecialDays();
+      console.log("Données chargées:", data); // Pour déboguer
+      const sanitizedData = data.map((day) => ({
+        ...day,
+        date: day.date || '',
+        description: day.description || '', // Assurez-vous d'utiliser description et non note
+        number_of_masses: day.number_of_masses || 0,
+        is_recurrent: day.is_recurrent ?? false,
+      }));
+      setSpecialDays(sanitizedData);
+    } catch (error) {
+      console.error("Erreur lors du chargement des jours spéciaux", error);
+      setSpecialDays([]);
+    }
   };
 
   const handleChange = (field: keyof SpecialDays, value: any) => {
@@ -71,6 +78,20 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
   };
 
   const handleSave = async () => {
+    // Valider les champs obligatoires
+    if (!newDay.date.trim()) {
+      setValidationError("La date est obligatoire");
+      return;
+    }
+    
+    if (!newDay.description.trim()) {
+      setValidationError("La description est obligatoire");
+      return;
+    }
+    
+    // Réinitialiser l'erreur si validation OK
+    setValidationError(null);
+    
     try {
       if (editingDay?.id) {
         const response = await specialDayService.updateSpecialDay(editingDay.id, newDay);
@@ -122,6 +143,7 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
     setIsDeleting(null);
     setIsConfirmingDelete(false);
     setSuccessMessage(undefined);
+    setValidationError(null);
   };
 
   if (!isOpen) return null;
@@ -170,6 +192,7 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
                   required
                   value={newDay.date}
                   onChange={(e) => handleChange('date', e.target.value)}
+                  className={validationError && !newDay.date.trim() ? "border-red-500" : ""}
                 />
               </div>
               
@@ -183,6 +206,7 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
                   placeholder="ex : Noël ou Jeudi Saint"
                   value={newDay.description}
                   onChange={(e) => handleChange('description', e.target.value)}
+                  className={validationError && !newDay.description.trim() ? "border-red-500" : ""}
                 />
               </div>
               
@@ -208,6 +232,13 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
                 />
                 <Label htmlFor="recurrent">Récurrent chaque année</Label>
               </div>
+              
+              {validationError && (
+                <Alert variant="destructive" className="mt-2">
+                  <AlertTriangle className="h-4 w-4 mr-2" />
+                  <AlertDescription>{validationError}</AlertDescription>
+                </Alert>
+              )}
               
               <div className="flex gap-2 pt-2">
                 <Button 
@@ -263,36 +294,43 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
           )}
           
           {/* Special days list */}
-          {showSpecialDays && specialDays.length > 0 && (
+          {showSpecialDays && (
             <div className="space-y-4">
               <Separator />
               <h3 className="text-lg font-semibold flex gap-2 items-center">
                 <Calendar size={18} /> Liste des jours particuliers
               </h3>
-              <div className="space-y-2">
-                {specialDays.map((day) => (
-                  <div
-                    key={day.id}
-                    onClick={() => handleEdit(day)}
-                    className="p-3 rounded-md border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer flex justify-between items-center"
-                  >
-                    <div>
-                      <div className="font-medium">
-                        {day.is_recurrent
-                          ? formatDateWithoutYear(day.date)
-                          : formatDisplayDate(new Date(day.date).getTime())}{' '}
-                        - {day.description}
+              
+              {specialDays.length > 0 ? (
+                <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
+                  {specialDays.map((day) => (
+                    <div
+                      key={day.id}
+                      onClick={() => handleEdit(day)}
+                      className="p-3 rounded-md border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer flex justify-between items-center"
+                    >
+                      <div>
+                        <div className="font-medium">
+                          {day.is_recurrent
+                            ? formatDateWithoutYear(day.date)
+                            : formatDisplayDate(new Date(day.date).getTime())}{' '}
+                          - {day.description}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {day.number_of_masses} messe(s)
+                        </div>
                       </div>
-                      <div className="text-sm text-gray-500">
-                        {day.number_of_masses} messe(s)
-                      </div>
+                      <Badge variant={day.is_recurrent ? "secondary" : "outline"}>
+                        {day.is_recurrent ? 'Récurrent' : 'Unique'}
+                      </Badge>
                     </div>
-                    <Badge variant={day.is_recurrent ? "secondary" : "outline"}>
-                      {day.is_recurrent ? 'Récurrent' : 'Unique'}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center p-4 text-gray-500">
+                  Aucun jour particulier enregistré
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -5,7 +5,7 @@ import { FilterBar } from '../features/calendar/filters/FilterBar';
 import { DateFilterBar } from '../features/calendar/filters/DateFilterBar';
 import { MassModal } from '../features/calendar/MassModal';
 import { DaySlider } from '../features/calendar/DaySlider';
-import { Mass } from '../api/massService';
+import { Mass, MassSubmission } from '../api/massService';
 import { massService } from '../api/massService';
 import { exportService } from '../api/exportService';
 import { SpecialDaysModal } from '../features/special_days/SpecialDaysModal';
@@ -54,7 +54,7 @@ function CalendarPage() {
     setIsSliderOpen(true);
   };
 
-  const handleSaveMass = async (updatedMass: Mass) => {
+  const handleSaveMass = async (updatedMass: MassSubmission ) => {
     try {
       if (updatedMass.id) {
         await massService.updateMass(updatedMass.id, updatedMass);

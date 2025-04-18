@@ -59,10 +59,10 @@ const SummaryForm: React.FC<SummaryFormProps> = ({
         <div className="space-y-2 max-h-[250px] overflow-y-auto">
           {previewData.masses.map((mass, index) => (
             <div key={index} className="border p-3 rounded-md">
-              <p><span className="font-medium">Date:</span> {mass.date}</p>
+              <p><span className="font-medium">Date:</span> {mass.date || "Date à déterminer"}</p>
               <p><span className="font-medium">Intention:</span> {mass.intention}</p>
               <p><span className="font-medium">Type:</span> {mass.type === 'defunts' ? 'Défunts' : 'Vivants'}</p>
-              <p><span className="font-medium">Célébrant:</span> {celebrantOptions.find(c => c.value === mass.celebrant)?.label || 'Non assigné'}</p>
+              <p><span className="font-medium">Célébrant:</span> {mass.celebrant_name || (celebrantOptions.find(c => c.value === mass.celebrant_id)?.label || 'Non assigné')}</p>
             </div>
           ))}
         </div>
