@@ -34,10 +34,10 @@ const OfferingForm: React.FC<OfferingFormProps> = ({ prevStep, nextStep, formDat
 
         <div className="space-y-2">
           <Label htmlFor="paymentMethod">Mode de paiement</Label>
-          <Select 
-            onValueChange={(value: string) => updateFormData({ paymentMethod: value })}
+            <Select 
+            onValueChange={(value: OfferingFormData['paymentMethod']) => updateFormData({ paymentMethod: value })}
             value={formData.paymentMethod}
-          >
+            >
             <SelectTrigger>
               <SelectValue placeholder="Sélectionner le mode de paiement" />
             </SelectTrigger>

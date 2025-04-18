@@ -20,7 +20,7 @@ export const specialDayService = {
         const data = response.data;
         return data.map((specialDay: any) => ({
           ...specialDay,
-          date: formatDate(specialDay.date), // On applique le formatage de la date
+          date: formatDate(specialDay.date) || '', // Convertir le timestamp en format YYYY-MM-DD
         }));
       } catch (error) {
         console.error('Erreur lors de la récupération des jours spéciaux:', error);

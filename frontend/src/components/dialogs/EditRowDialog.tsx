@@ -34,7 +34,6 @@ export const EditRowDialog: React.FC<EditRowDialogProps> = ({
     if (data) {
       setFormData({ ...data });
     }
-    //console.log('Data updated:', data);
   }, [data]);
 
   const handleSubmit = (e: React.FormEvent) => {
