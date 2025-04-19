@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { SpecialDays } from '../../api/specialDaysService';
 import { specialDayService } from '../../api/specialDaysService';
-import { formatDisplayDate } from '../../utils/dateUtils';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -313,7 +312,11 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
                         <div className="font-medium">
                           {day.is_recurrent
                             ? formatDateWithoutYear(day.date)
-                            : formatDisplayDate(new Date(day.date).getTime())}{' '}
+                            : new Date(day.date).toLocaleDateString('fr-FR', {
+                                day: '2-digit',
+                                month: 'long',
+                                year: 'numeric',
+                              })}
                           - {day.description}
                         </div>
                         <div className="text-sm text-gray-500">

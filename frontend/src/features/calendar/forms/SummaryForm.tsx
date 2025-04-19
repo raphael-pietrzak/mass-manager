@@ -1,20 +1,11 @@
 import React from 'react';
-import { Mass, MassPreview } from '../../../api/massService';
 import { Button } from '@/components/ui/button';
+import { Intention, Masses } from '../../../api/intentionService';
 
 interface SummaryFormProps {
-  previewData: MassPreview;
+  previewData: Masses[];
   isLoading: boolean;
-  formData: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    address: string;
-    postalCode: string;
-    city: string;
-    wantsCelebrationDate: boolean;
-  };
+  formData: Partial<Intention>;
   celebrantOptions: { value: string; label: string }[];
   onValidate: () => void;
   onEdit: () => void;
@@ -49,15 +40,15 @@ const SummaryForm: React.FC<SummaryFormProps> = ({
       <div>
         <h3 className="font-semibold text-lg mb-2">Récapitulatif</h3>
         <div className="bg-muted p-3 rounded-md">
-          <p><span className="font-medium">Nombre de messes:</span> {previewData.massCount}</p>
-          <p><span className="font-medium">Don total:</span> {previewData.totalAmount} €</p>
+          <p><span className="font-medium">Nombre de messes:</span> {previewData.length}</p>
+          <p><span className="font-medium">Don total:</span> {formData.amount} €</p>
         </div>
       </div>
       
       <div>
         <h3 className="font-semibold text-lg mb-2">Messes planifiées</h3>
         <div className="space-y-2 max-h-[250px] overflow-y-auto">
-          {previewData.masses.map((mass, index) => (
+          {previewData.map((mass, index) => (
             <div key={index} className="border p-3 rounded-md">
               <p><span className="font-medium">Date:</span> {mass.date || "Date à déterminer"}</p>
               <p><span className="font-medium">Intention:</span> {mass.intention}</p>

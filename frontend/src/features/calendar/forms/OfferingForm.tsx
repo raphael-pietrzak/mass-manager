@@ -3,16 +3,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-
-interface OfferingFormData {
-  amount: string;
-  paymentMethod: 'cheque' | 'cash' | 'card' | 'transfer';
-  brotherName: string;
-}
+import { Intention } from '../../../api/intentionService';
 
 interface OfferingFormProps {
-  formData: OfferingFormData;
-  updateFormData: (data: Partial<OfferingFormData>) => void;
+  formData: Partial<Intention>;
+  updateFormData: (data: Partial<Intention>) => void;
   nextStep: () => void;
   prevStep: () => void;
 }
@@ -35,8 +30,8 @@ const OfferingForm: React.FC<OfferingFormProps> = ({ prevStep, nextStep, formDat
         <div className="space-y-2">
           <Label htmlFor="paymentMethod">Mode de paiement</Label>
             <Select 
-            onValueChange={(value: OfferingFormData['paymentMethod']) => updateFormData({ paymentMethod: value })}
-            value={formData.paymentMethod}
+            onValueChange={(value: 'cheque' | 'cash' | 'card' | 'transfer') => updateFormData({ paymentMethod: value })}
+            value={formData.paymentMethod as 'cheque' | 'cash' | 'card' | 'transfer'}
             >
             <SelectTrigger>
               <SelectValue placeholder="Sélectionner le mode de paiement" />

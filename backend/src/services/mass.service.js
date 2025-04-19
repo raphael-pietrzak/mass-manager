@@ -8,17 +8,14 @@ const MassService = {
      * @param {Object} params - Paramètres pour la prévisualisation
      * @param {string} params.intention - Le texte d'intention
      * @param {string} params.type - Le type d'intention (défunts/vivants)
-     * @param {number} params.amount - Le montant du don
      * @param {boolean} params.wantsCelebrationDate - Si le donateur souhaite être notifié de la date
      * @param {Array<string>} params.dates - Dates souhaitées pour les messes (facultatif)
      * @param {number} params.massCount - Nombre de messes à prévoir
-     * @returns {Object} Prévisualisation avec masses, montant total et nombre
+     * @returns {Object} Prévisualisation avec masses
      */
     generateMassPreview: async (params) => {
         try {
-            const { intention, type, amount, wantsCelebrationDate, dates, massCount = 1 } = params;
-            
-            const totalAmount = parseFloat(amount || 0) * massCount;
+            const { intention, type, dates, massCount = 1 } = params;
             const masses = [];
             
             // Si des dates spécifiques sont fournies, utiliser ces dates
@@ -66,11 +63,7 @@ const MassService = {
                 }
             }
             
-            return {
-                masses,
-                totalAmount: totalAmount.toFixed(2),
-                massCount
-            };
+            return { masses };
         } catch (error) {
             console.error('Erreur lors de la génération de prévisualisation de messes:', error);
             throw error;

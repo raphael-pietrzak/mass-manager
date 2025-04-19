@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { formatDate } from '../utils/dateUtils';
 import { API_BASE_URL } from '.';
 
 export interface SpecialDays {
@@ -20,7 +19,7 @@ export const specialDayService = {
         const data = response.data;
         return data.map((specialDay: any) => ({
           ...specialDay,
-          date: formatDate(specialDay.date) || '', // Convertir le timestamp en format YYYY-MM-DD
+          date: new Date(specialDay.date).toISOString().split('T')[0], // format YYYY-MM-DD
         }));
       } catch (error) {
         console.error('Erreur lors de la récupération des jours spéciaux:', error);

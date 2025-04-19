@@ -3,11 +3,12 @@ import { MassCalendar } from '../features/calendar/views/MassCalendar';
 import { MassList } from '../features/calendar/views/MassList';
 import { FilterBar } from '../features/calendar/filters/FilterBar';
 import { DateFilterBar } from '../features/calendar/filters/DateFilterBar';
-import { MassModal } from '../features/calendar/MassModal';
+import { IntentionModal } from '../features/calendar/IntentionModal';
 import { DaySlider } from '../features/calendar/DaySlider';
-import { Mass, MassSubmission } from '../api/massService';
+import { Mass } from '../api/massService';
 import { massService } from '../api/massService';
 import { exportService } from '../api/exportService';
+import { IntentionSubmission, intentionService } from '../api/intentionService';
 import { SpecialDaysModal } from '../features/special_days/SpecialDaysModal';
 
 export type ViewMode = 'calendar' | 'list';
@@ -54,12 +55,12 @@ function CalendarPage() {
     setIsSliderOpen(true);
   };
 
-  const handleSaveMass = async (updatedMass: MassSubmission ) => {
+  const handleSaveMass = async (updatedMass: IntentionSubmission ) => {
     try {
       if (updatedMass.id) {
-        await massService.updateMass(updatedMass.id, updatedMass);
+        await intentionService.updateMass(updatedMass.id, updatedMass);
       } else {
-        await massService.createMass(updatedMass);
+        await intentionService.createMass(updatedMass);
       }
       const newMasses = await massService.getMasses();
       setMasses(newMasses);
@@ -172,8 +173,8 @@ function CalendarPage() {
           )}
         </div>
 
-        <MassModal
-          mass={selectedMass}
+        <IntentionModal
+          intention={null}
           isOpen={isMassModalOpen}
           onClose={() => setIsMassModalOpen(false)}
           onSave={handleSaveMass}
