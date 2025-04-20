@@ -2,6 +2,7 @@ const Intention = require('../models/intention.model');
 const Donor = require('../models/donor.model');
 const db = require('../../config/database');
 const MassService = require('../services/mass.service');
+const MassModel = require('../models/mass.model');
 
 exports.getIntentions = async (req, res) => {
   try {
@@ -25,8 +26,63 @@ exports.getIntention = async (req, res) => {
 };
 
 exports.createIntention = async (req, res) => {
+  
   try {
-    const result = await IntentionService.createIntentionWithMasses(req.body);
+    const intentionData = req.body;
+    let donorId;
+    
+    // Préparer les données du donateur
+    const donorData = {
+      firstname: intentionData.donor.firstName,
+      lastname: intentionData.donor.lastName,
+      email: intentionData.donor.email || null,
+      phone: intentionData.donor.phone || null,
+      address: intentionData.donor.address || null,
+      zip_code: intentionData.donor.postalCode || null,
+      city: intentionData.donor.city || null
+    };
+
+    // Vérifier si le donateur existe déjà
+    const existingDonor = await Donor.findByEmail(intentionData.donor.email);
+    if (existingDonor) {
+      donorId = existingDonor.id;
+    } else {
+      // Si le donateur n'existe pas, le créer
+      donorId = await Donor.create(donorData);
+    }
+
+    // Créer l'intention
+    const intention = {
+      donor_id: donorId,
+      intention_text: intentionData.masses[0]?.intention || "Intention de messe",
+      deceased: intentionData.deceased || false,
+      amount: parseFloat(intentionData.payment.amount),
+      payment_method: intentionData.payment.paymentMethod,
+      brother_name: intentionData.payment.brotherName || null,
+      wants_celebration_date: intentionData.donor.wantsCelebrationDate,
+      date_type: intentionData.donor.wantsCelebrationDate ? 'specifique' : 'indifferente'
+    };
+    
+    const intentionId = await Intention.create(intention);
+    
+    // Traiter les messes associées
+    if (intentionData.masses && intentionData.masses.length > 0) {
+      for (const mass of intentionData.masses) {
+        const massData = {
+          date: mass.date,
+          intention_id: intentionId,
+          celebrant_id: mass.celebrantId || null,
+          status: 'pending'
+        };
+        
+        await MassModel.create(massData);
+      }
+    }
+    
+    
+    // Récupérer les données complètes pour la réponse
+    const result = await Intention.findById(intentionId);
+    
     res.status(201).json(result);
   } catch (error) {
     console.error('Erreur lors de la création de l\'intention:', error);

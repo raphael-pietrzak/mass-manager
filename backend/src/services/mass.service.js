@@ -63,7 +63,7 @@ const MassService = {
                 }
             }
             
-            return { masses };
+            return masses;
         } catch (error) {
             console.error('Erreur lors de la génération de prévisualisation de messes:', error);
             throw error;

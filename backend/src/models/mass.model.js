@@ -9,7 +9,7 @@ const Mass = {
                 'Celebrants.religious_name as celebrant',
                 'Intentions.intention_text as intention',
                 'Masses.status',
-                'Intentions.type',
+                'Intentions.deceased',
                 'Intentions.amount',
                 'Intentions.wants_celebration_date as wants_notification',
                 'Intentions.donor_id',

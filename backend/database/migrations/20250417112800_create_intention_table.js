@@ -5,7 +5,7 @@ exports.up = function(knex) {
         table.increments('id').primary();
         table.integer('donor_id').unsigned().references('id').inTable('Donors');
         table.string('intention_text').notNullable();
-        table.enu('type', ['vivants', 'defunts']).notNullable();
+        table.boolean('deceased').defaultTo(false);
         table.integer('amount').notNullable();
         table.enu('payment_method', ['cash', 'cheque', 'card', 'transfer']).notNullable();
         table.string('brother_name').nullable();
