@@ -3,21 +3,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from '@/components/ui/button';
-
-interface DonorFormData {
-  wantsCelebrationDate: boolean;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  address: string;
-  postalCode: string;
-  city: string;
-}
+import { Intention } from '../../../api/intentionService';
 
 interface DonorFormProps {
-  formData: DonorFormData;
-  updateFormData: (data: Partial<DonorFormData>) => void;
+  formData: Partial<Intention>;
+  updateFormData: (data: Partial<Intention>) => void;
   prevStep: () => void;
   onValidate: () => void;
 }

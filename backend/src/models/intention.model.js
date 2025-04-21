@@ -21,7 +21,8 @@ const Intention = {
         .leftJoin('Donors', 'Intentions.donor_id', 'Donors.id')
         .first(),
         
-    create: (intentionData) => db('Intentions').insert(intentionData).returning('*'),
+    create: (intentionData) => db('Intentions').insert(intentionData).returning('id')
+        .then(ids => ids[0]),
     
     update: (id, intentionData) => db('Intentions').where({ id }).update(intentionData),
     

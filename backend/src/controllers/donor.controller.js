@@ -25,8 +25,8 @@ exports.getDonor = async (req, res) => {
 exports.createDonor = async (req, res) => {
   try {
     const donorData = {
-      firstname: req.body.firstName,
-      lastname: req.body.lastName,
+      firstname: req.body.firstname,
+      lastname: req.body.lastname,
       email: req.body.email,
       phone: req.body.phone,
       address: req.body.address,

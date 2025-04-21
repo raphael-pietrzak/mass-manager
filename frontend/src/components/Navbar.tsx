@@ -19,6 +19,7 @@ const NAV_LINKS: NavLink[] = [
   { label: "Calendrier", href: "/calendar" },
   { label: "Donateurs", href: "/donors" },
   { label: "Administrateur", href: "/admin" },
+  { label: "Intentions", href: "/intentions" },
 ];
 
 const Navbar: React.FC = () => {
