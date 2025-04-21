@@ -147,3 +147,25 @@ exports.previewIntention = async (req, res) => {
     res.status(500).json({ message: 'Erreur lors de la prévisualisation de l\'intention' });
   }
 };
+
+exports.getIntentionMasses = async (req, res) => {
+  try {
+    const intentionId = req.params.id;
+    const masses = await MassModel.getMassesByIntentionId(intentionId);
+    
+    // Transformer les données pour correspondre au format attendu par le frontend
+    const formattedMasses = masses.map(mass => ({
+      date: mass.date ? new Date(mass.date).toISOString().split('T')[0] : null,
+      intention: mass.intention || '',
+      type: mass.deceased ? 'defunts' : 'vivants',
+      celebrant_id: mass.celebrant_id || null,
+      celebrant_name: mass.celebrant_name || '',
+      status: mass.status || 'pending'
+    }));
+    
+    res.json(formattedMasses);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des messes associées:', error);
+    res.status(500).json({ message: 'Erreur lors de la récupération des messes associées' });
+  }
+};

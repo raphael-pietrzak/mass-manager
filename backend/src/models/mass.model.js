@@ -186,6 +186,22 @@ const Mass = {
         }
         
         return query;
+    },
+
+    getMassesByIntentionId: async (intentionId) => {
+        return db('Masses')
+            .select(
+                'Masses.id',
+                'Masses.date',
+                'Masses.status',
+                'Celebrants.religious_name as celebrant_name',
+                'Intentions.intention_text as intention',
+                'Intentions.deceased'
+            )
+            .leftJoin('Celebrants', 'Masses.celebrant_id', 'Celebrants.id')
+            .leftJoin('Intentions', 'Masses.intention_id', 'Intentions.id')
+            .where('Masses.intention_id', intentionId)
+            .orderBy('Masses.date');
     }
 };
 

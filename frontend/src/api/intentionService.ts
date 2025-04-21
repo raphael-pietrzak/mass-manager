@@ -66,6 +66,11 @@ export interface IntentionSubmission {
     brotherName?: string;
   };
 }
+
+export interface IntentionWithMasses extends Intention {
+    masses?: Masses[];
+}
+
 const API_URL = `${API_BASE_URL}/api/data/intentions`;
 
 export const intentionService = {
@@ -83,4 +88,23 @@ export const intentionService = {
         const response = await axios.put(`${API_URL}/${id}`, data);
         return response.data; // Retourne les données mises à jour
     },
+
+    async getIntentions(): Promise<IntentionWithMasses[]> {
+        const response = await axios.get(`${API_URL}`);
+        return response.data;
+    },
+
+    async getIntentionById(id: string): Promise<IntentionWithMasses> {
+        const response = await axios.get(`${API_URL}/${id}`);
+        return response.data;
+    },
+
+    async getIntentionMasses(id: string): Promise<Masses[]> {
+        const response = await axios.get(`${API_URL}/${id}/masses`);
+        return response.data;
+    },
+
+    async deleteMass(id: string) {
+        await axios.delete(`${API_URL}/${id}`);
+    }
 };
