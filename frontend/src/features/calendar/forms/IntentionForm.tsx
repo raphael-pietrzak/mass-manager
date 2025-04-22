@@ -3,11 +3,22 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { DropdownSearch } from '../../../components/DropdownSearch';
+<<<<<<< HEAD
 import { RotateCw } from 'lucide-react';
+=======
+import { Calendar } from "@/components/ui/calendar";
+import { CalendarIcon, RotateCw } from 'lucide-react';
+>>>>>>> 36d366151b13142de5b4edec0d7e996e937b8f7e
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { fr } from "date-fns/locale";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from '@/components/ui/checkbox';
+<<<<<<< HEAD
 import CalendarSelector from '../../../components/CalendarSelector';
+=======
+import { Intention } from '../../../api/intentionService';
+import { formatDateForApi, formatDateForDisplay } from '../../../utils/dateUtils';
+>>>>>>> 36d366151b13142de5b4edec0d7e996e937b8f7e
 
 interface DropdownOption {
   value: string;
@@ -15,41 +26,21 @@ interface DropdownOption {
 }
 
 interface IntentionFormProps {
-  intention: string;
+  formData: Intention;
+  updateFormData: (data: Partial<Intention>) => void;
   selectedDate?: Date;
-  selectedCelebrant: string;
+  setSelectedDate: (date: Date | undefined) => void;
   celebrantOptions: DropdownOption[];
-  massType: string;
-  massCount: number;
-  dateType: string;
-  isForDeceased: boolean;
-  onIntentionChange: (value: string) => void;
-  onDateChange: (date: Date | undefined) => void;
-  onCelebrantChange: (value: string) => void;
-  onMassTypeChange: (value: string) => void;
-  onMassCountChange: (value: number) => void;
-  onDateTypeChange: (value: string) => void;
-  onIsForDeceasedChange: (value: boolean) => void;
   onRecurrenceClick: () => void;
   nextStep: () => void;
 }
 
 const IntentionForm: React.FC<IntentionFormProps> = ({
-  intention,
+  formData,
+  updateFormData,
   selectedDate,
-  selectedCelebrant,
+  setSelectedDate,
   celebrantOptions,
-  massType,
-  massCount,
-  dateType,
-  isForDeceased,
-  onIntentionChange,
-  onDateChange,
-  onCelebrantChange,
-  onMassTypeChange,
-  onMassCountChange,
-  onDateTypeChange,
-  onIsForDeceasedChange,
   onRecurrenceClick,
   nextStep
 }) => {
@@ -67,8 +58,8 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
         <div className="flex items-center space-x-2">
           <Checkbox 
             id="isForDeceased"
-            checked={isForDeceased}
-            onCheckedChange={(checked: boolean | "indeterminate") => onIsForDeceasedChange(checked as boolean)}
+            checked={formData.isForDeceased}
+            onCheckedChange={(checked: boolean | "indeterminate") => updateFormData({ isForDeceased: checked as boolean })}
           />
           <Label htmlFor="isForDeceased">
             Intention pour un défunt
@@ -83,8 +74,8 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
           <Input
             id="intention"
             name="intention"
-            value={intention}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => onIntentionChange(e.target.value)}
+            value={formData.intention}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ intention: e.target.value })}
             required
             placeholder="Votre intention..."
           />
@@ -99,12 +90,12 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
               type="number" 
               min="1" 
               className="w-24"
-              value={massCount}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onMassCountChange(parseInt(e.target.value))}
+              value={formData.massCount}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ massCount: parseInt(e.target.value) })}
             />
             <Select 
-              onValueChange={(value: string) => onMassTypeChange(value)}
-              value={massType}
+              onValueChange={(value: string) => updateFormData({ massType: value })}
+              value={formData.massType}
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Type de messe" />
@@ -124,8 +115,8 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
         <div className="space-y-4">
           <Label>Type de date</Label>
           <RadioGroup 
-            value={dateType}
-            onValueChange={(value: string) => onDateTypeChange(value)}
+            value={formData.dateType}
+            onValueChange={(value: string) => updateFormData({ dateType: value })}
             className="flex flex-col space-y-2"
           >
             <div className="flex items-center space-x-2">
@@ -143,13 +134,47 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
           </RadioGroup>
 
           {/* Date avec conditionnelle pour l'affichage */}
-          {dateType !== "indifferente" && (
+          {formData.dateType !== "indifferente" && (
             <div className="flex items-end gap-2">
               <div className="flex-grow">
+<<<<<<< HEAD
                 <CalendarSelector
                   selectedDate={selectedDate}
                   onDateChange={onDateChange}
                 />
+=======
+                <Button
+                  variant="outline" 
+                  className="w-full justify-start text-left font-normal"
+                  onClick={(e: React.MouseEvent) => {
+                    e.preventDefault();
+                    setShowCalendar(!showCalendar);
+                  }}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {selectedDate ? (
+                    formatDateForDisplay(selectedDate)
+                  ) : (
+                    <span>Sélectionner une date</span>
+                  )}
+                </Button>
+                {showCalendar && (
+                  <div className="absolute mt-2 p-2 bg-white border rounded-md shadow-lg z-10">
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={(date: Date | undefined) => {
+                        setSelectedDate(date);
+                        // Convertir la date en chaîne de caractères au format YYYY-MM-DD
+                        const dateString = formatDateForApi(date);
+                        updateFormData({ date: dateString });
+                        setShowCalendar(false);
+                      }}
+                      locale={fr}
+                    />
+                  </div>
+                )}
+>>>>>>> 36d366151b13142de5b4edec0d7e996e937b8f7e
               </div>
               <Button
                 type="button"
@@ -169,10 +194,10 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
           <Label>Célébrant</Label>
           <DropdownSearch
             options={celebrantOptions}
-            value={selectedCelebrant}
-            onChange={onCelebrantChange}
+            value={formData.celebrant_id}
+            onChange={(value: string) => updateFormData({ celebrant_id: value })}
             placeholder="Sélectionner un célébrant"
-            defaultValue={selectedCelebrant}
+            defaultValue={formData.celebrant_id}
           />
         </div>
       </div>
