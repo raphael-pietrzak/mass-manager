@@ -12,6 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Switch } from '@/components/ui/switch';
+import CalendarSelector from '../../components/CalendarSelector';
 
 interface Props {
   isOpen: boolean;
@@ -101,7 +102,6 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
         setSuccessMessage(response);
       }
       await loadSpecialDays();
-      resetForm();
     } catch (error) {
       console.error("Erreur lors de l'enregistrement du jour spécial", error);
     }
@@ -186,13 +186,9 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
                 <Label htmlFor="date">
                   Date<span className="text-red-500"> *</span>
                 </Label>
-                <Input
-                  id="date"
-                  type="date"
-                  required
-                  value={newDay.date}
-                  onChange={(e) => handleChange('date', e.target.value)}
-                  className={validationError && !newDay.date.trim() ? "border-red-500" : ""}
+                <CalendarSelector
+                  selectedDate={newDay.date ? new Date(newDay.date) : undefined} 
+                  onDateChange={(date: Date | undefined) => handleChange('date', date ? date.toISOString().split('T')[0] : '')}
                 />
               </div>
               
@@ -205,7 +201,7 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
                   required
                   placeholder="ex : Noël ou Jeudi Saint"
                   value={newDay.description}
-                  onChange={(e) => handleChange('description', e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('description', e.target.value)}
                   className={validationError && !newDay.description.trim() ? "border-red-500" : ""}
                 />
               </div>
@@ -220,7 +216,7 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
                   required
                   min={0}
                   value={newDay.number_of_masses ?? ''}
-                  onChange={(e) => handleChange('number_of_masses', e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('number_of_masses', e.target.value)}
                 />
               </div>
               
@@ -228,7 +224,7 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
                 <Checkbox
                   id="recurrent"
                   checked={newDay.is_recurrent ?? false}
-                  onCheckedChange={(checked) => handleChange('is_recurrent', checked)}
+                  onCheckedChange={(checked: boolean) => handleChange('is_recurrent', checked)}
                 />
                 <Label htmlFor="recurrent">Récurrent chaque année</Label>
               </div>
@@ -263,7 +259,7 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
           {/* Success message */}
           {successMessage && (
             <Alert className="bg-green-50 border-green-300 text-green-800">
-              <AlertTitle>Succès</AlertTitle>
+              <AlertTitle>✓ Succès</AlertTitle>
               <AlertDescription>{successMessage}</AlertDescription>
             </Alert>
           )}

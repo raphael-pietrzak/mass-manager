@@ -1,15 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { DropdownSearch } from '../../../components/DropdownSearch';
-import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
-import { fr } from 'date-fns/locale';
-import { CalendarIcon, RotateCw } from 'lucide-react';
+import { RotateCw } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from '@/components/ui/checkbox';
+import CalendarSelector from '../../../components/CalendarSelector';
 
 interface DropdownOption {
   value: string;
@@ -55,7 +53,6 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
   onRecurrenceClick,
   nextStep
 }) => {
-  const [showCalendar, setShowCalendar] = useState(false);
 
   const massTypes = [
     { value: "unite", label: "Unité" },
@@ -149,34 +146,10 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
           {dateType !== "indifferente" && (
             <div className="flex items-end gap-2">
               <div className="flex-grow">
-                <Button
-                  variant="outline" 
-                  className="w-full justify-start text-left font-normal"
-                  onClick={(e: React.MouseEvent) => {
-                    e.preventDefault();
-                    setShowCalendar(!showCalendar);
-                  }}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {selectedDate ? (
-                    format(selectedDate, 'P', { locale: fr })
-                  ) : (
-                    <span>Sélectionner une date</span>
-                  )}
-                </Button>
-                {showCalendar && (
-                  <div className="absolute mt-2 p-2 bg-white border rounded-md shadow-lg z-10">
-                    <Calendar
-                      mode="single"
-                      selected={selectedDate}
-                      onSelect={(date: Date | undefined) => {
-                        onDateChange(date);
-                        setShowCalendar(false);
-                      }}
-                      locale={fr}
-                    />
-                  </div>
-                )}
+                <CalendarSelector
+                  selectedDate={selectedDate}
+                  onDateChange={onDateChange}
+                />
               </div>
               <Button
                 type="button"

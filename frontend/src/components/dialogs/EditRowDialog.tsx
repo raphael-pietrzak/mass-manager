@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import CalendarSelector from '../CalendarSelector';
+import { X } from 'lucide-react';
 
 type FormatterOption = {
   label: string;
@@ -55,14 +57,6 @@ export const EditRowDialog: React.FC<EditRowDialogProps> = ({
     );
   }
 
-  const formatDateForInput = (value: any): string => {
-    const date = new Date(value);
-    if (isNaN(date.getTime())) {
-      return '';
-    }
-    return date.toISOString().split('T')[0];
-  };
-
   if (!isOpen) return null;
 
   return (
@@ -71,8 +65,12 @@ export const EditRowDialog: React.FC<EditRowDialogProps> = ({
 
       <div className="flex items-center justify-center min-h-screen">
         <div className="relative bg-white rounded-lg w-full max-w-md p-6 mx-4 max-h-[95vh] overflow-y-auto">
-          <h3 className="text-lg font-medium mb-4">Modifier la ligne</h3>
-
+          <div className="p-1 flex items-center justify-between mb-6">
+            <h3 className="text-lg font-medium">Modifier la ligne</h3>
+            <button className="p-1 hover:bg-gray-100 rounded-full" onClick={onClose}>
+              <X className="w-5 h-5" />
+            </button>
+          </div>
           <form onSubmit={handleSubmit}>
             {editableColumns.map((column) => {
               const formatter = formatters[column.key];
@@ -157,16 +155,16 @@ export const EditRowDialog: React.FC<EditRowDialogProps> = ({
                       }
                     />
                   ) :formatter?.type === 'date' || column.key.toLowerCase().includes('date') ? (
-                    <input
-                      type="date"
-                      className="w-full border border-gray-300 rounded-md p-2"
-                      value={formatDateForInput(value)}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          [column.key]: e.target.value,
-                        })
-                      }
+                    <CalendarSelector
+                      selectedDate={value ? new Date(value) : new Date()}
+                      onDateChange={(newDate) => {
+                        if (newDate) {
+                          setFormData({
+                            ...formData,
+                            [column.key]: newDate.toISOString(),
+                          });
+                        }
+                      }}
                     />
                   ) : formatter?.type === 'enum' || formatter?.type === 'boolean' ? (
                     <select
