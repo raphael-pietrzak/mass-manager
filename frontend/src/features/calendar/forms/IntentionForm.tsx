@@ -1,16 +1,24 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { DropdownSearch } from '../../../components/DropdownSearch';
+<<<<<<< HEAD
+import { RotateCw } from 'lucide-react';
+=======
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon, RotateCw } from 'lucide-react';
+>>>>>>> 36d366151b13142de5b4edec0d7e996e937b8f7e
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { fr } from "date-fns/locale";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from '@/components/ui/checkbox';
+<<<<<<< HEAD
+import CalendarSelector from '../../../components/CalendarSelector';
+=======
 import { Intention } from '../../../api/intentionService';
 import { formatDateForApi, formatDateForDisplay } from '../../../utils/dateUtils';
+>>>>>>> 36d366151b13142de5b4edec0d7e996e937b8f7e
 
 interface DropdownOption {
   value: string;
@@ -36,7 +44,6 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
   onRecurrenceClick,
   nextStep
 }) => {
-  const [showCalendar, setShowCalendar] = useState(false);
 
   const massTypes = [
     { value: "unite", label: "Unité" },
@@ -130,6 +137,12 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
           {formData.dateType !== "indifferente" && (
             <div className="flex items-end gap-2">
               <div className="flex-grow">
+<<<<<<< HEAD
+                <CalendarSelector
+                  selectedDate={selectedDate}
+                  onDateChange={onDateChange}
+                />
+=======
                 <Button
                   variant="outline" 
                   className="w-full justify-start text-left font-normal"
@@ -161,6 +174,7 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
                     />
                   </div>
                 )}
+>>>>>>> 36d366151b13142de5b4edec0d7e996e937b8f7e
               </div>
               <Button
                 type="button"

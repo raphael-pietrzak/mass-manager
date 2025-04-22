@@ -57,8 +57,43 @@ const logoutUser = (req, res) => {
   res.status(200).json({ message: 'Déconnexion réussie' });
 };
 
-// Exporter les deux fonctions en CommonJS
+const changeUserPassword = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { oldPassword, newPassword, confirmPassword } = req.body;
+
+    // Vérifier si l'utilisateur existe
+    const user = await User.getById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'Utilisateur non trouvé' });
+    }
+
+    // Vérifier si le mot de passe actuel est correct
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Mot de passe actuel incorrect' });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ error: 'Les nouveaux mots de passe ne correspondent pas' });
+    }
+
+    // Hacher le nouveau mot de passe
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Mettre à jour le mot de passe dans la base de données
+    await User.updatePassword(userId, hashedPassword);
+
+    res.status(200).json({ success: 'Mot de passe mis à jour avec succès' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Erreur lors de la mise à jour du mot de passe' });
+  }
+};
+
+// Exporter les fonctions en CommonJS
 module.exports = {
   loginUser,
-  logoutUser
+  logoutUser,
+  changeUserPassword
 };

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { loginUser, logoutUser } = require('../controllers/auth.controller');
+const { loginUser, logoutUser, changeUserPassword } = require('../controllers/auth.controller');
 const { authenticateToken } = require('../middlewares/auth.middleware');
 
 // Route de login
@@ -13,5 +13,7 @@ router.post('/logout', logoutUser);
 router.get('/check_login', authenticateToken, (req, res) => {
   res.status(200).json({ authenticated: true });
 });
+
+router.post('/change_password', authenticateToken, changeUserPassword);
 
 module.exports = router;

@@ -41,14 +41,13 @@ exports.createCelebrant = async (req, res) => {
   try {
     const celebrant = {
       religious_name: req.body.religious_name,
-      civil_first_name: req.body.civil_first_name,
-      civil_last_name: req.body.civil_last_name,
+      civil_firstname: req.body.civil_firstname,
+      civil_lastname: req.body.civil_lastname,
       title: req.body.title,
       role: req.body.role
     };
-
-    const celebrantId = await Celebrant.create(celebrant);
-    res.status(201).send('Célébrant enregistré');
+    await Celebrant.create(celebrant);
+    res.status(201).send('Célébrant enregistré ! ');
   } catch (error) {
     console.error(error);
     res.status(500).send('Erreur lors de l\'enregistrement du célébrant');
@@ -60,14 +59,14 @@ exports.updateCelebrant = async (req, res) => {
     const celebrant = {
       id: req.params.id,
       religious_name: req.body.religious_name,
-      civil_first_name: req.body.civil_first_name,
-      civil_last_name: req.body.civil_last_name,
+      civil_firstname: req.body.civil_firstname,
+      civil_lastname: req.body.civil_lastname,
       title: req.body.title,
       role: req.body.role
     };
 
     await Celebrant.update(celebrant);
-    res.status(204).send();
+    res.status(201).send("Célébrant mis à jour ! ");
   } catch (error) {
     console.error(error);
     res.status(500).send('Erreur lors de la mise à jour du célébrant');
@@ -78,7 +77,7 @@ exports.deleteCelebrant = async (req, res) => {
   try {
     const id = req.params.id;
     await Celebrant.delete(id);
-    res.status(204).send();
+    res.status(201).send("Célébrant supprimé ! ");
   } catch (error) {
     console.error(error);
     res.status(500).send('Erreur lors de la suppression du célébrant');

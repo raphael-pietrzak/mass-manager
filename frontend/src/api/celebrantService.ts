@@ -2,9 +2,9 @@ import axios from 'axios';
 import { API_BASE_URL } from '.';
 
 export interface Celebrant {
-  id: string;
-  civil_first_name: string;
-  civil_last_name: string;
+  id: number;
+  civil_firstname: string;
+  civil_lastname: string;
   religious_name?: string;
   title: string;
   role: string;
@@ -29,6 +29,31 @@ class CelebrantService {
     } catch (error) {
       console.error('Erreur dans le service célébrant:', error);
       return [];
+    }
+  }
+
+  async addCelebrant(celebrant: Celebrant): Promise<string> {
+    const response = await axios.post(`${API_URL}/celebrants`, celebrant);
+    return response.data;
+  }
+
+  async deleteCelebrant(id: string): Promise<string> {
+    const response = await axios.delete(`${API_URL}/celebrants/${id}`);
+    return response.data;
+  }
+
+  async updateCelebrant(celebrant: Celebrant): Promise<string> {
+    const response = await axios.put(`${API_URL}/celebrants/${celebrant.id}`, celebrant); 
+    return response.data;
+  }
+
+  async getCelebrantById(id: string): Promise<Celebrant | null> {
+    try {
+      const response = await axios.get(`${API_URL}/celebrants/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error("Erreur lors de la récupération du célébrant:", error);
+      return null;
     }
   }
 }
