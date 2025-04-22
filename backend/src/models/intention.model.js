@@ -22,7 +22,7 @@ const Intention = {
         .first(),
         
     create: (intentionData) => db('Intentions').insert(intentionData).returning('id')
-        .then(ids => ids[0]),
+        .then(([id]) => id?.id ?? id),
     
     update: (id, intentionData) => db('Intentions').where({ id }).update(intentionData),
     
