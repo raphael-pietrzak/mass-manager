@@ -8,7 +8,7 @@ interface TabsNavigationProps {
 
 export const TabsNavigation: React.FC<TabsNavigationProps> = ({ activeTab, setActiveTab }) => {
   return (
-    <div className="border-b border-gray-200 mb-4">
+    <div className="border-b border-gray-200">
       <nav className="-mb-px flex space-x-8">
         {tabs.map((tab) => (
           <div key={tab.key} className="flex items-center">

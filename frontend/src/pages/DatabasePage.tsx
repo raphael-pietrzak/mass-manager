@@ -8,6 +8,7 @@ import { tabs } from '../features/database/tabs';
 import { useDeleteData } from '../hooks/useDeleteData';
 import { useUpdateData } from '../hooks/useUpdateData';
 import { DeleteConfirmationDialog } from '../components/dialogs/DeleteConfirmationDialog';
+import { Plus } from 'lucide-react';
 
 const DatabaseTabs: React.FC = () => {
   const [activeTab, setActiveTab] = useState(tabs[0].key);
@@ -98,24 +99,8 @@ const DatabaseTabs: React.FC = () => {
   return (
     <div className="w-full bg-white shadow-xl rounded-lg p-6">
       
-      <TabsNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
-      
-      {/* Barre d'outils du tableau */}
-      <div className="flex justify-between items-center mb-4 border-b pb-4">
-        <div className="flex items-center space-x-2">
-          <span className="font-medium text-gray-700">Lignes par page:</span>
-          <select
-            value={itemsPerPage}
-            onChange={handleItemsPerPageChange}
-            className="px-3 py-1.5 bg-white border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-          >
-            <option value={5}>5</option>
-            <option value={10}>10</option>
-            <option value={15}>15</option>
-            <option value={20}>20</option>
-            <option value={25}>25</option>
-          </select>
-        </div>
+      <div className="flex items-center justify-between mb-4">
+        <TabsNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
         
         <button 
           onClick={() => {
@@ -124,9 +109,10 @@ const DatabaseTabs: React.FC = () => {
             setIsCreating(true);
             setIsEditDialogOpen(true);
           }}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-gray-100 rounded-full transition-colors"
+          title="Ajouter une entrée"
         >
-          Ajouter
+          <Plus className="h-5 w-5" />
         </button>
       </div>
 
@@ -154,8 +140,25 @@ const DatabaseTabs: React.FC = () => {
       {/* Pagination */}
       {data.length > 0 && (
         <div className="flex justify-between items-center mt-4 pt-4 border-t">
-          <div className="text-sm text-gray-700">
-            Affichage de <span className="font-medium">{Math.min((currentPage - 1) * itemsPerPage + 1, totalItems)}</span> à <span className="font-medium">{Math.min(currentPage * itemsPerPage, totalItems)}</span> sur <span className="font-medium">{totalItems}</span> entrées
+          <div className="flex items-center space-x-4">
+            <div className="text-sm text-gray-700">
+              Affichage de <span className="font-medium">{Math.min((currentPage - 1) * itemsPerPage + 1, totalItems)}</span> à <span className="font-medium">{Math.min(currentPage * itemsPerPage, totalItems)}</span> sur <span className="font-medium">{totalItems}</span> entrées
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium text-gray-700">Lignes par page:</span>
+              <select
+                value={itemsPerPage}
+                onChange={handleItemsPerPageChange}
+                className="px-2 py-1 bg-white border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none"
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={15}>15</option>
+                <option value={20}>20</option>
+                <option value={25}>25</option>
+              </select>
+            </div>
           </div>
           
           <div className="flex items-center space-x-2">
