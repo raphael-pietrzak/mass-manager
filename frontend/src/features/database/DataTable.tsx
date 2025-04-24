@@ -1,5 +1,5 @@
 import React from 'react';
-import { Edit, Trash } from 'lucide-react';
+import { Edit, Trash2 } from 'lucide-react';
 import { tabs } from './tabs';
 
 interface DataTableProps {
@@ -86,12 +86,13 @@ export const DataTable: React.FC<DataTableProps> = ({ data, activeTab, handleEdi
                 </td>
               );
             })}
+            {/* Colonne des actions */}
             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-              <button className="text-indigo-600 hover:text-indigo-900 mr-4" onClick={() => handleEdit(row)}>
-                <Edit className="h-5 w-5" />
+              <button className="p-1 text-gray-400 hover:text-blue-500 rounded-full hover:bg-gray-100 transition-colors" onClick={() => handleEdit(row)}>
+                <Edit className="h-4 w-4" />
               </button>
-              <button className="text-red-600 hover:text-red-900" onClick={() => handleDeleteClick(row.id)}>
-                <Trash className="h-5 w-5" />
+              <button className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100 transition-colors" onClick={() => handleDeleteClick(row.id)}>
+                <Trash2 className="w-4 h-4" />
               </button>
             </td>
           </tr>
