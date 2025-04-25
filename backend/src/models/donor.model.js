@@ -7,8 +7,8 @@ const Donor = {
   },
 
   create: async (donor) => {
-    return db('Donors').insert(donor).returning('id')
-      .then(ids => ids[0]);
+    const [id] = await db('Donors').insert(donor).returning('id');
+    return id?.id ?? id;
   },
 
   getById: async (id) => {

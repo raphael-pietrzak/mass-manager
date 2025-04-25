@@ -86,12 +86,13 @@ export const DataTable: React.FC<DataTableProps> = ({ data, activeTab, handleEdi
                 </td>
               );
             })}
-            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex gap-3">
+            {/* Colonne des actions */}
+            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
               <button className="p-1 text-gray-400 hover:text-blue-500 rounded-full hover:bg-gray-100 transition-colors" onClick={() => handleEdit(row)}>
-                <Edit className="h-5 w-5" />
+                <Edit className="h-4 w-4" />
               </button>
               <button className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100 transition-colors" onClick={() => handleDeleteClick(row.id)}>
-                <Trash2 className="h-5 w-5" />
+                <Trash2 className="w-4 h-4" />
               </button>
             </td>
           </tr>

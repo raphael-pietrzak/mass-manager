@@ -2,7 +2,7 @@ import React from 'react';
 import { Intention, Masses } from '../../../api/intentionService';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { X, Calendar, User } from 'lucide-react';
+import { X, Calendar, User, Repeat, Clock } from 'lucide-react';
 
 interface IntentionMassesModalProps {
   intention: Intention;
@@ -30,31 +30,71 @@ export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ inte
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
               <div>
                 <p className="text-sm text-gray-500">Intention</p>
-                <p className="font-medium">{intention.intention || "Non spécifiée"}</p>
+                <p className="font-medium">{intention.intention_text || "Non spécifiée"}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Type</p>
-                <p className="font-medium">{intention.isForDeceased ? "Défunts" : "Vivants"}</p>
+                <p className="font-medium">{intention.deceased ? "Défunts" : "Vivants"}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Donateur</p>
-                <p className="font-medium">{`${intention.firstName || ''} ${intention.lastName || ''}`}</p>
+                <p className="font-medium">{`${intention.firstname || ''} ${intention.lastname || ''}`}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Montant</p>
                 <p className="font-medium">{intention.amount ? `${intention.amount}€` : "Non spécifié"}</p>
               </div>
-              {intention.paymentMethod && (
+              {intention.payment_method && (
                 <div>
                   <p className="text-sm text-gray-500">Méthode de paiement</p>
                   <p className="font-medium">
-                    {intention.paymentMethod === 'cash' && 'Espèces'}
-                    {intention.paymentMethod === 'cheque' && 'Chèque'}
-                    {intention.paymentMethod === 'card' && 'Carte bancaire'}
-                    {intention.paymentMethod === 'transfer' && 'Virement'}
+                    {intention.payment_method === 'cash' && 'Espèces'}
+                    {intention.payment_method === 'cheque' && 'Chèque'}
+                    {intention.payment_method === 'card' && 'Carte bancaire'}
+                    {intention.payment_method === 'transfer' && 'Virement'}
                   </p>
                 </div>
               )}
+              {intention.email && (
+                <div>
+                  <p className="text-sm text-gray-500">Email</p>
+                  <p className="font-medium">{intention.email}</p>
+                </div>
+              )}
+              <div>
+                <p className="text-sm text-gray-500">Préférence de date</p>
+                <p className="font-medium">
+                  {intention.wants_celebration_date ? (
+                    intention.date_type === 'indifferente' ? 'Date indifférente' : intention.date_type
+                  ) : 'Aucune préférence'}
+                </p>
+              </div>
+              {intention.brother_name && (
+                <div>
+                  <p className="text-sm text-gray-500">Célébrant souhaité</p>
+                  <p className="font-medium">{intention.brother_name}</p>
+                </div>
+              )}
+              <div>
+                <p className="text-sm text-gray-500">Récurrence</p>
+                <p className="font-medium">
+                  {intention.is_recurrent ? (
+                    <span className="flex items-center">
+                      <Repeat className="w-3.5 h-3.5 mr-1 text-blue-500" />
+                      {intention.recurrence_type}, {intention.occurrences} occurrences
+                    </span>
+                  ) : "Non récurrente"}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Créée le</p>
+                <p className="font-medium">
+                  <span className="flex items-center">
+                    <Clock className="w-3.5 h-3.5 mr-1 text-gray-400" />
+                    {intention.created_at ? format(new Date(intention.created_at), 'dd/MM/yyyy à HH:mm', { locale: fr }) : "Non spécifié"}
+                  </span>
+                </p>
+              </div>
             </div>
           </div>
 

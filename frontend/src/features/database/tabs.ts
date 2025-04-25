@@ -127,4 +127,46 @@ export const tabs: TabColumn[] = [
       }
     }
   },
+  {
+    key: "intention",
+    label: "Intentions",
+    endpoint: "http://localhost:3001/api/data/intentions",
+    columns: [
+      { key: "donor", label: "Donateur" },
+      { key: "mass", label: "Messe" },
+      { key: "intention", label: "Intention" },
+      { key: "amount", label: "Montant" },
+      { key: "status", label: "Statut" },
+    ],
+    formatters: {
+      donor: {
+        type: 'string' as 'enum',
+        display: (value) => {
+          if (value && value.firstname && value.lastname) {
+            return `${value.firstname} ${value.lastname}`;
+          }
+          if (typeof value === 'string') {
+            return value;
+          }
+          return 'Donateur inconnu';
+        }
+      },
+      status: {
+        type: 'enum',
+        options: [
+          { label: 'Planifiée', value: 'scheduled' },
+          { label: 'En attente', value: 'pending' },
+          { label: 'Annulée', value: 'cancelled' }
+        ],
+        display: (value) => {
+          switch (value) {
+            case "scheduled": return "Planifiée";
+            case "pending": return "En attente";
+            case "cancelled": return "Annulée";
+            default: return value;
+          }
+        }
+      }
+    }
+  }
 ];

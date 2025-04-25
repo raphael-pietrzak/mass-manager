@@ -8,6 +8,7 @@ import { tabs } from '../features/database/tabs';
 import { useDeleteData } from '../hooks/useDeleteData';
 import { useUpdateData } from '../hooks/useUpdateData';
 import { DeleteConfirmationDialog } from '../components/dialogs/DeleteConfirmationDialog';
+import { Plus } from 'lucide-react';
 
 const DatabaseTabs: React.FC = () => {
   const [activeTab, setActiveTab] = useState(tabs[0].key);
@@ -98,43 +99,23 @@ const DatabaseTabs: React.FC = () => {
   return (
     <div className="w-full bg-white shadow-xl rounded-lg p-6">
       
-      <TabsNavigation activeTab={activeTab} setActiveTab={setActiveTab} />     
-      {/* Sélecteur pour le nombre d'éléments par page */}
-      <div className="flex justify-between p-4">
-        <div>
-          <label>Lignes par page :</label>
-          <select
-            value={itemsPerPage}
-            onChange={handleItemsPerPageChange}
-            className="ml-2 p-1 border border-gray-300 rounded"
-          >
-            <option value={5}>5</option>
-            <option value={10}>10</option>
-            <option value={15}>15</option>
-            <option value={20}>20</option>
-            <option value={25}>25</option>
-          </select>
-        </div>
-
-        {/* Contrôles de pagination */}
-        <div>
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="px-3 py-1 border rounded mx-1"
-          >
-            &lt;
-          </button>
-          <span className="mx-1">Page {currentPage} sur {totalPages}</span>
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="px-3 py-1 border rounded mx-1"
-          >
-            &gt;
-          </button>
-        </div>
+      <div className="flex items-center justify-between mb-4">
+        <TabsNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
+        
+        <button 
+          onClick={() => {
+            setEditRowData(null);
+            setEditColumns(selectedTab?.columns || []);
+            setIsCreating(true);
+            setIsEditDialogOpen(true);
+          }}
+          className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-gray-100 rounded-full transition-colors"
+          title="Ajouter une entrée"
+        >
+          <Plus className="h-5 w-5" />
+        </button>
       </div>
+
       <div className="p-4">
         {loading ? (
           <div className="text-center text-gray-500">Loading...</div>
@@ -155,7 +136,69 @@ const DatabaseTabs: React.FC = () => {
           </div>
         )}
       </div>
-
+      
+      {/* Pagination */}
+      {data.length > 0 && (
+        <div className="flex justify-between items-center mt-4 pt-4 border-t">
+          <div className="flex items-center space-x-4">
+            <div className="text-sm text-gray-700">
+              Affichage de <span className="font-medium">{Math.min((currentPage - 1) * itemsPerPage + 1, totalItems)}</span> à <span className="font-medium">{Math.min(currentPage * itemsPerPage, totalItems)}</span> sur <span className="font-medium">{totalItems}</span> entrées
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium text-gray-700">Lignes par page:</span>
+              <select
+                value={itemsPerPage}
+                onChange={handleItemsPerPageChange}
+                className="px-2 py-1 bg-white border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none"
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={15}>15</option>
+                <option value={20}>20</option>
+                <option value={25}>25</option>
+              </select>
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => handlePageChange(1)}
+              disabled={currentPage === 1}
+              className="px-2 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              &laquo;
+            </button>
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-2 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              &lt;
+            </button>
+            
+            <span className="px-4 py-1 text-sm text-gray-700">
+              Page <span className="font-medium">{currentPage}</span> sur <span className="font-medium">{totalPages}</span>
+            </span>
+            
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="px-2 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              &gt;
+            </button>
+            <button
+              onClick={() => handlePageChange(totalPages)}
+              disabled={currentPage === totalPages}
+              className="px-2 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              &raquo;
+            </button>
+          </div>
+        </div>
+      )}
+      
       {selectedTab && (
         <EditRowDialog
           isOpen={isEditDialogOpen}

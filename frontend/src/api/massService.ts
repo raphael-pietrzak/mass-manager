@@ -81,10 +81,10 @@ export const massService = {
       date: mass.date ? new Date(mass.date).toISOString().split('T')[0] : null,
     }));
   },
-  createMass: async (mass: MassSubmission): Promise<string> => {
-    const response = await axios.post(`${API_URL}`, mass);
-    return response.data;
-  },
+  // createMass: async (mass: MassSubmission): Promise<string> => {
+  //   const response = await axios.post(`${API_URL}`, mass);
+  //   return response.data;
+  // },
 
   updateMass: async (id: string, mass: any) => {
     const response = await axios.put(`${API_URL}/${id}`, mass);
