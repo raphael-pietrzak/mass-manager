@@ -71,7 +71,7 @@ exports.createIntention = async (req, res) => {
         const massData = {
           date: mass.date,
           intention_id: intentionId,
-          celebrant_id: mass.celebrantId || null,
+          celebrant_id: mass.celebrant_id || null,
           status: 'pending'
         };
         

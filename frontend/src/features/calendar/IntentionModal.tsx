@@ -49,7 +49,6 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
   intention,
   isOpen,
   onClose,
-  onSave,
 }) => {
   const [celebrants, setCelebrants] = useState<Celebrant[]>([]);
   const [showRecurrenceModal, setShowRecurrenceModal] = useState(false);
