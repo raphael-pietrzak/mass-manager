@@ -18,31 +18,31 @@ interface IntentionModalProps {
 }
 
 const testFormData: Partial<Intention> = {
-  intention: 'Intention test',
-  massCount: 1,
-  massType: 'unite',
-  dateType: 'indifferente',
+  intention_text: 'Intention test',
+  mass_count: 1,
+  mass_type: 'unite',
+  date_type: 'indifferente',
   date: undefined,
   celebrant_name: '',
   celebrant_id: '',
   amount: '20',
-  paymentMethod: 'card',
-  brotherName: '',
-  wantsCelebrationDate: false,
-  firstName: 'John',
-  lastName: 'Doe',
+  payment_method: 'card',
+  brother_name: '',
+  wants_celebration_date: false,
+  first_name: 'John',
+  last_name: 'Doe',
   email: 'example@email.com',
   phone: '1234567890',
   address: '123 Main St',
-  postalCode: '12345',
+  postal_code: '12345',
   city: 'Paris',
-  isRecurrent: false,
-  startDate: undefined,
-  recurrenceType: 'weekly',
-  endType: 'occurrences',
+  is_recurrent: false,
+  start_date: undefined,
+  recurrence_type: 'weekly',
+  end_type: 'occurrences',
   occurrences: 1,
-  endDate: undefined,
-  isForDeceased: true,
+  end_date: undefined,
+  deceased: true,
 };
 
 export const IntentionModal: React.FC<IntentionModalProps> = ({
@@ -94,7 +94,7 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
     { value: '', label: "Aléatoire" },
     ...celebrants.map(c => ({
       value: c.id,
-      label: c.religious_name || `${c.civil_first_name} ${c.civil_last_name}`
+      label: c.religious_name || `${c.civil_firstname} ${c.civil_lastname}`
     }))
   ];
 
@@ -112,18 +112,18 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
     try {
       setIsLoading(true);
       const preview = await intentionService.previewMasses({
-        intention: formData.intention,
+        intention_text: formData.intention_text,
         date: formData.date || formatDateForApi(selectedDate),
-        isForDeceased: formData.isForDeceased,
-        massCount: formData.massCount,
-        massType: formData.massType,
-        dateType: formData.dateType,
-        isRecurrent: !!formData.startDate,
-        recurrenceType: formData.recurrenceType,
+        deceased: formData.deceased,
+        mass_count: formData.mass_count,
+        mass_type: formData.mass_type,
+        date_type: formData.date_type,
+        is_recurrent: !!formData.start_date,
+        recurrence_type: formData.recurrence_type,
         occurrences: formData.occurrences,
-        startDate: formData.startDate,
-        endDate: formData.endDate,
-        endType: formData.endType,
+        start_date: formData.start_date,
+        end_date: formData.end_date,
+        end_type: formData.end_type,
       });
       setPreviewData(preview);
       setStep(4); // Passer à l'étape de récapitulatif
@@ -142,19 +142,19 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
       await intentionService.createMass({
         masses: previewData,
         donor: {
-          firstName: formData.firstName || '',
-          lastName: formData.lastName || '',
+          first_name: formData.first_name || '',
+          last_name: formData.last_name || '',
           email: formData.email || '',
           phone: formData.phone,
           address: formData.address,
-          postalCode: formData.postalCode,
+          postal_code: formData.postal_code,
           city: formData.city,
-          wantsCelebrationDate: formData.wantsCelebrationDate || false,
+          wants_celebration_date: formData.wants_celebration_date || false,
         },
         payment: {
           amount: formData.amount || '',
-          paymentMethod: formData.paymentMethod as 'cheque' | 'cash' | 'card' | 'transfer',
-          brotherName: formData.brotherName,
+          payment_method: formData.payment_method as 'cheque' | 'cash' | 'card' | 'transfer',
+          brother_name: formData.brother_name || '',
         },
       });
       onClose();

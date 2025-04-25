@@ -3,22 +3,12 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { DropdownSearch } from '../../../components/DropdownSearch';
-<<<<<<< HEAD
 import { RotateCw } from 'lucide-react';
-=======
-import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon, RotateCw } from 'lucide-react';
->>>>>>> 36d366151b13142de5b4edec0d7e996e937b8f7e
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { fr } from "date-fns/locale";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from '@/components/ui/checkbox';
-<<<<<<< HEAD
 import CalendarSelector from '../../../components/CalendarSelector';
-=======
 import { Intention } from '../../../api/intentionService';
-import { formatDateForApi, formatDateForDisplay } from '../../../utils/dateUtils';
->>>>>>> 36d366151b13142de5b4edec0d7e996e937b8f7e
 
 interface DropdownOption {
   value: string;
@@ -57,25 +47,25 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
         {/* Type d'intention (défunt/vivant) */}
         <div className="flex items-center space-x-2">
           <Checkbox 
-            id="isForDeceased"
-            checked={formData.isForDeceased}
-            onCheckedChange={(checked: boolean | "indeterminate") => updateFormData({ isForDeceased: checked as boolean })}
+            id="deceased"
+            checked={formData.deceased}
+            onCheckedChange={(checked: boolean | "indeterminate") => updateFormData({ deceased: checked as boolean })}
           />
-          <Label htmlFor="isForDeceased">
+          <Label htmlFor="deceased">
             Intention pour un défunt
           </Label>
         </div>
 
         {/* Intention */}
         <div className="space-y-2">
-          <Label htmlFor="intention">
+          <Label htmlFor="intention_text">
             Intention <span className="text-red-500">*</span>
           </Label>
           <Input
-            id="intention"
-            name="intention"
-            value={formData.intention}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ intention: e.target.value })}
+            id="intention_text"
+            name="intention_text"
+            value={formData.intention_text}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ intention_text: e.target.value })}
             required
             placeholder="Votre intention..."
           />
@@ -83,19 +73,19 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
 
         {/* Nombre de messes */}
         <div className="space-y-2">
-          <Label htmlFor="massCount">Nombre de messes</Label>
+          <Label htmlFor="mass_count">Nombre de messes</Label>
           <div className="flex gap-4">
             <Input 
-              id="massCount" 
+              id="mass_count" 
               type="number" 
               min="1" 
               className="w-24"
-              value={formData.massCount}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ massCount: parseInt(e.target.value) })}
+              value={formData.mass_count}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ mass_count: parseInt(e.target.value) })}
             />
             <Select 
-              onValueChange={(value: string) => updateFormData({ massType: value })}
-              value={formData.massType}
+              onValueChange={(value: string) => updateFormData({ mass_type: value })}
+              value={formData.mass_type}
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Type de messe" />
@@ -115,8 +105,8 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
         <div className="space-y-4">
           <Label>Type de date</Label>
           <RadioGroup 
-            value={formData.dateType}
-            onValueChange={(value: string) => updateFormData({ dateType: value })}
+            value={formData.date_type}
+            onValueChange={(value: string) => updateFormData({ date_type: value })}
             className="flex flex-col space-y-2"
           >
             <div className="flex items-center space-x-2">
@@ -134,47 +124,13 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
           </RadioGroup>
 
           {/* Date avec conditionnelle pour l'affichage */}
-          {formData.dateType !== "indifferente" && (
+          {formData.date_type !== "indifferente" && (
             <div className="flex items-end gap-2">
               <div className="flex-grow">
-<<<<<<< HEAD
                 <CalendarSelector
                   selectedDate={selectedDate}
-                  onDateChange={onDateChange}
+                  onDateChange={(date: Date | undefined) => setSelectedDate(date)}
                 />
-=======
-                <Button
-                  variant="outline" 
-                  className="w-full justify-start text-left font-normal"
-                  onClick={(e: React.MouseEvent) => {
-                    e.preventDefault();
-                    setShowCalendar(!showCalendar);
-                  }}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {selectedDate ? (
-                    formatDateForDisplay(selectedDate)
-                  ) : (
-                    <span>Sélectionner une date</span>
-                  )}
-                </Button>
-                {showCalendar && (
-                  <div className="absolute mt-2 p-2 bg-white border rounded-md shadow-lg z-10">
-                    <Calendar
-                      mode="single"
-                      selected={selectedDate}
-                      onSelect={(date: Date | undefined) => {
-                        setSelectedDate(date);
-                        // Convertir la date en chaîne de caractères au format YYYY-MM-DD
-                        const dateString = formatDateForApi(date);
-                        updateFormData({ date: dateString });
-                        setShowCalendar(false);
-                      }}
-                      locale={fr}
-                    />
-                  </div>
-                )}
->>>>>>> 36d366151b13142de5b4edec0d7e996e937b8f7e
               </div>
               <Button
                 type="button"

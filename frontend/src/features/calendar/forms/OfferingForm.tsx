@@ -28,10 +28,10 @@ const OfferingForm: React.FC<OfferingFormProps> = ({ prevStep, nextStep, formDat
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="paymentMethod">Mode de paiement</Label>
+          <Label htmlFor="payment_method">Mode de paiement</Label>
             <Select 
-            onValueChange={(value: 'cheque' | 'cash' | 'card' | 'transfer') => updateFormData({ paymentMethod: value })}
-            value={formData.paymentMethod as 'cheque' | 'cash' | 'card' | 'transfer'}
+            onValueChange={(value: 'cheque' | 'cash' | 'card' | 'transfer') => updateFormData({ payment_method: value })}
+            value={formData.payment_method as 'cheque' | 'cash' | 'card' | 'transfer'}
             >
             <SelectTrigger>
               <SelectValue placeholder="Sélectionner le mode de paiement" />
@@ -45,15 +45,15 @@ const OfferingForm: React.FC<OfferingFormProps> = ({ prevStep, nextStep, formDat
           </Select>
         </div>
         
-        { (formData.paymentMethod === 'cash' || formData.paymentMethod === 'cheque') && (
+        { (formData.payment_method === 'cash' || formData.payment_method === 'cheque') && (
           <div className="space-y-2">
-            <Label htmlFor="brotherName">Transmise par le frère</Label>
+            <Label htmlFor="brother_name">Transmise par le frère</Label>
             <Input
-              id="brotherName"
+              id="brother_name"
               type="text"
               placeholder="Nom du frère"
-              value={formData.brotherName}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ brotherName: e.target.value })}
+              value={formData.brother_name}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ brother_name: e.target.value })}
             />
           </div>
         )}

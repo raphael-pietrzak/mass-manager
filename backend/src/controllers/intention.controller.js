@@ -33,12 +33,12 @@ exports.createIntention = async (req, res) => {
     
     // Préparer les données du donateur
     const donorData = {
-      firstname: intentionData.donor.firstName,
-      lastname: intentionData.donor.lastName,
+      firstname: intentionData.donor.first_name,
+      lastname: intentionData.donor.last_name,
       email: intentionData.donor.email || null,
       phone: intentionData.donor.phone || null,
       address: intentionData.donor.address || null,
-      zip_code: intentionData.donor.postalCode || null,
+      zip_code: intentionData.donor.postal_code || null,
       city: intentionData.donor.city || null
     };
 
@@ -57,10 +57,10 @@ exports.createIntention = async (req, res) => {
       intention_text: intentionData.masses[0]?.intention || "Intention de messe",
       deceased: intentionData.deceased || false,
       amount: parseFloat(intentionData.payment.amount),
-      payment_method: intentionData.payment.paymentMethod,
-      brother_name: intentionData.payment.brotherName || null,
-      wants_celebration_date: intentionData.donor.wantsCelebrationDate,
-      date_type: intentionData.donor.wantsCelebrationDate ? 'specifique' : 'indifferente'
+      payment_method: intentionData.payment.payment_method,
+      brother_name: intentionData.payment.brother_name || null,
+      wants_celebration_date: intentionData.donor.wants_celebration_date,
+      date_type: intentionData.donor.wants_celebration_date ? 'specifique' : 'indifferente'
     };
     
     const intentionId = await Intention.create(intention);
@@ -78,7 +78,6 @@ exports.createIntention = async (req, res) => {
         await MassModel.create(massData);
       }
     }
-    
     
     // Récupérer les données complètes pour la réponse
     const result = await Intention.findById(intentionId);
@@ -140,7 +139,19 @@ exports.getPendingIntentions = async (req, res) => {
 
 exports.previewIntention = async (req, res) => {
   try {
-    const preview = await MassService.generateMassPreview(req.body);
+    const preview = await MassService.generateMassPreview({
+      intention_text: req.body.intention_text,
+      deceased: req.body.deceased,
+      dates: req.body.dates,
+      mass_count: req.body.mass_count,
+      date_type: req.body.date_type,
+      is_recurrent: req.body.is_recurrent,
+      recurrence_type: req.body.recurrence_type,
+      occurrences: req.body.occurrences,
+      start_date: req.body.start_date,
+      end_date: req.body.end_date,
+      end_type: req.body.end_type
+    });
     res.status(200).json(preview);
   } catch (error) {
     console.error('Erreur lors de la prévisualisation de l\'intention:', error);
