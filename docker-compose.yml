@@ -24,4 +24,4 @@ services:
       - NODE_ENV=production
 
 volumes:
-  db:
+  database:
