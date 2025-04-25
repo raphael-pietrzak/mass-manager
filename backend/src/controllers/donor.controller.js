@@ -35,7 +35,7 @@ exports.createDonor = async (req, res) => {
     };
 
     await Donor.create(donorData);
-    res.status(201).send('Donateur enregistré');
+    res.status(201).send('Donateur enregistré !');
   } catch (error) {
     console.error(error);
     res.status(500).send('Erreur lors de l\'enregistrement du donateur');
@@ -46,8 +46,8 @@ exports.updateDonor = async (req, res) => {
   try {
     const donorData = {
       id: req.params.id,
-      firstname: req.body.firstName,
-      lastname: req.body.lastName,
+      firstname: req.body.firstname,
+      lastname: req.body.lastname,
       email: req.body.email,
       phone: req.body.phone,
       address: req.body.address,
@@ -56,7 +56,7 @@ exports.updateDonor = async (req, res) => {
     };
 
     await Donor.update(donorData);
-    res.status(204).send();
+    res.status(201).send("Donateur mis à jour !");
   } catch (error) {
     console.error(error);
     res.status(500).send('Erreur lors de la mise à jour du donateur');

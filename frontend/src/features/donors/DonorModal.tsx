@@ -1,6 +1,7 @@
 // DonorModal2.tsx
 import React, { useState, useEffect } from 'react';
 import { Donor, donorsService } from '../../api/donorService';
+import { X } from 'lucide-react';
 
 interface DonorModalProps {
   isOpen: boolean;
@@ -76,10 +77,18 @@ const DonorModal: React.FC<DonorModalProps> = ({ isOpen, onClose, donor, mode, o
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg relative">
-        <h2 className="text-xl font-bold mb-4">
-          {mode === 'edit' ? 'Modifier un Donateur' : 'Ajouter un Donateur'} 
-        </h2>
+      <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg relative">    
+        <div className="p-1 flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold">
+            {mode === 'edit' ? 'Modifier un Donateur' : 'Ajouter un Donateur'}
+          </h2>
+          <button
+            className="p-1 hover:bg-gray-100 rounded-full"
+            onClick={onClose}
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <label className="block">
             <span className="text-sm font-medium text-gray-700">Prénom<span className="text-red-500"> *</span></span>
