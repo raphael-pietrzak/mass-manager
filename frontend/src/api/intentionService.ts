@@ -3,39 +3,45 @@ import { API_BASE_URL } from '.';
 
 export interface Intention {
     id?: string;
-    date?: string; // format YYYY-MM-DD
-    intention?: string;
-    celebrant_id?: string; // Maintenant optionnel
+    date?: string;
+    intention_text?: string;
+    celebrant_id?: string;
     celebrant_name?: string;
     status?: 'scheduled' | 'cancelled' | 'pending';
-    isForDeceased?: boolean;
+    deceased?: boolean;
 
     // Données du donateur
-    firstName?: string;
-    lastName?: string;
+    first_name?: string;
+    last_name?: string;
     email?: string;
     phone?: string;
     address?: string;
-    postalCode?: string;
+    postal_code?: string;
     city?: string;
-    wantsCelebrationDate?: boolean;
+    wants_celebration_date?: boolean;
+    donor_id?: number;
 
     // Données de l'offrande
     amount?: string;
-    paymentMethod?: 'cheque' | 'cash' | 'card' | 'transfer';
-    brotherName?: string;
+    payment_method?: 'cheque' | 'cash' | 'card' | 'transfer';
+    brother_name?: string | null;
+    
     // Données de masse
-    massCount?: number;
-    massType?: string;
-    dateType?: string;
+    mass_count?: number;
+    mass_type?: string;
+    date_type?: string;
     
     // Données de récurrence
-    isRecurrent?: boolean;
-    recurrenceType?: string;
-    occurrences?: number;
-    startDate?: string; // format YYYY-MM-DD (modifié)
-    endDate?: string;   // format YYYY-MM-DD (modifié)
-    endType?: 'occurrences' | 'date';
+    is_recurrent?: boolean;
+    recurrence_type?: string | null;
+    occurrences?: number | null;
+    start_date?: string | null; 
+    end_date?: string | null;
+    end_type?: string | null;
+    
+    // Horodatage
+    created_at?: string;
+    updated_at?: string;
 }
 
 export interface Masses {
@@ -51,19 +57,19 @@ export interface IntentionSubmission {
   id?: string;
   masses: Masses[];
   donor: {
-    firstName: string;
-    lastName: string;
+    first_name: string;
+    last_name: string;
     email: string;
     phone?: string;
     address?: string;
-    postalCode?: string;
+    postal_code?: string;
     city?: string;
-    wantsCelebrationDate: boolean;
+    wants_celebration_date: boolean;
   };
   payment: {
     amount: string;
-    paymentMethod: 'cheque' | 'cash' | 'card' | 'transfer';
-    brotherName?: string;
+    payment_method: 'cheque' | 'cash' | 'card' | 'transfer';
+    brother_name?: string;
   };
 }
 

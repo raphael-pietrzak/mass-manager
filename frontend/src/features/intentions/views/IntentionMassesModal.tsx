@@ -38,7 +38,7 @@ export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ inte
               </div>
               <div>
                 <p className="text-sm text-gray-500">Donateur</p>
-                <p className="font-medium">{`${intention.firstname || ''} ${intention.lastname || ''}`}</p>
+                <p className="font-medium">{`${intention.first_name || ''} ${intention.last_name || ''}`}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Montant</p>
