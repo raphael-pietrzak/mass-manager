@@ -77,6 +77,16 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    if (isOpen) {
+      // Réinitialiser aux valeurs par défaut ou aux valeurs de l'intention si fournie
+      setFormData(intention || testFormData);
+      setSelectedDate(intention?.date ? parseApiDate(intention.date) : new Date());
+      setStep(1);
+      setPreviewData([]);
+    }
+  }, [isOpen, intention]);
+
   if (!isOpen) return null;
 
   const handleRecurrenceClick = () => {
