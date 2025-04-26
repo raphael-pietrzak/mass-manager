@@ -82,9 +82,21 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
               className="w-24"
               value={formData.mass_count}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ mass_count: parseInt(e.target.value) })}
+              disabled={formData.mass_type === "neuvaine" || formData.mass_type === "trentain"}
             />
             <Select 
-              onValueChange={(value: string) => updateFormData({ mass_type: value })}
+              onValueChange={(value: string) => {
+                // Mettre à jour automatiquement le nombre de messes en fonction du type
+                let newMassCount = formData.mass_count;
+                if (value === "neuvaine") {
+                  newMassCount = 9;
+                } else if (value === "trentain") {
+                  newMassCount = 30;
+                } else {
+                  newMassCount = 1;
+                }
+                updateFormData({ mass_type: value, mass_count: newMassCount });
+              }}
               value={formData.mass_type}
             >
               <SelectTrigger className="w-[180px]">

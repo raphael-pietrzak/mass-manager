@@ -2,7 +2,7 @@ import axios from 'axios';
 import { API_BASE_URL } from '.';
 
 export interface Celebrant {
-  id: number;
+  id: string;
   civil_firstname: string;
   civil_lastname: string;
   religious_name?: string;
