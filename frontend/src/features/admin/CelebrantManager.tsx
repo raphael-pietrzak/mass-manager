@@ -32,7 +32,7 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
 
   const celebrantOptions = celebrants.map((celebrant) => ({
     value: celebrant.id.toString(),
-    label: `Père ${celebrant.religious_name}`
+    label: `${celebrant.title} ${celebrant.religious_name}`
   }));
 
 //   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -87,7 +87,7 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
 
   const handleAddCelebrant = async () => {
     try {
-        const response = await celebrantService.addCelebrant({ ...newCelebrant, id: 0 }); // Appel au service pour ajouter
+        const response = await celebrantService.addCelebrant(newCelebrant); // Appel au service pour ajouter
         setSuccessMessage(response);
         await refreshCelebrants(); // Rafraîchit la liste des célébrants
         setNewCelebrant({ religious_name: '', civil_firstname: '', civil_lastname: '', title: '', role: '' }); // Réinitialise le formulaire
@@ -113,7 +113,7 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
 
   const handleSelectCelebrant = (value: string) => {
     setSelectedCelebrant(value);
-    const celebrant = celebrants.find(c => c.id === Number(value));
+    const celebrant = celebrants.find(c => c.id === value);
     if (celebrant) {
       setSelectedCelebrantData(celebrant);
       setFormMode('edit'); // Passer en mode édition

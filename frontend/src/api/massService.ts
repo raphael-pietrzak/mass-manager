@@ -7,6 +7,7 @@ export interface Mass {
   type: 'defunts' | 'vivants';
   intention?: string;
   celebrant_id: string; // ID du célébrant, plus de champ "celebrant"
+  celebrant_title?: string; // Titre du célébrant pour l'affichage
   celebrant_name?: string; // Nom du célébrant pour l'affichage
   status?: 'scheduled' | 'cancelled' | 'pending';
   // Données du donateur
