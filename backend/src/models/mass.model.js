@@ -21,7 +21,6 @@ const Mass = {
             .leftJoin('Intentions', 'Masses.intention_id', 'Intentions.id')
             .leftJoin('Donors', 'Intentions.donor_id', 'Donors.id')
             .orderBy('Masses.date');
-    
         return results
     },
     
@@ -63,6 +62,12 @@ const Mass = {
 
     delete: async (id) => {
         return db('Masses').where('id', id).del();
+    },
+
+    deleteBeforeDate: async (date) => {
+        const formattedDate = new Date(date).toISOString().split('T')[0];
+        console.log("Date reçue : ", formattedDate);
+        return db('Masses').where(db.raw('DATE(date) < DATE(?)', [formattedDate])).del();
     },
 
     getMassesByCelebrantAndDate: async (celebrantId, date) => {

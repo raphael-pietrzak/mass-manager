@@ -83,15 +83,12 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
       setValidationError("La date est obligatoire");
       return;
     }
-    
     if (!newDay.description.trim()) {
       setValidationError("La description est obligatoire");
       return;
     }
-    
     // Réinitialiser l'erreur si validation OK
     setValidationError(null);
-    
     try {
       if (editingDay?.id) {
         const response = await specialDayService.updateSpecialDay(editingDay.id, newDay);
@@ -143,6 +140,10 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
     setIsConfirmingDelete(false);
     setSuccessMessage(undefined);
     setValidationError(null);
+  };
+
+  const handleCloseConfirmDelete = () => {
+    setIsConfirmingDelete(false); // Ferme la fenêtre de confirmation
   };
 
   if (!isOpen) return null;
@@ -273,7 +274,7 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
                 <div className="flex justify-end space-x-2">
                   <Button 
                     variant="outline" 
-                    // onClick={handleCancelDelete}
+                    onClick={handleCloseConfirmDelete}
                   >
                     Annuler
                   </Button>

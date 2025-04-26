@@ -24,7 +24,11 @@ const CalendarSelector: React.FC<CalendarSelectorProps> = ({
   };
 
   const handleSelect = (date: Date | undefined) => {
-    onDateChange(date);
+    if (date) {
+      // Ajuster la date en fonction du fuseau horaire local pour éviter un décalage
+      const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+      onDateChange(localDate); // Passer la date ajustée au parent
+    }
     setShowCalendar(false);
   };
 
@@ -50,6 +54,7 @@ const CalendarSelector: React.FC<CalendarSelectorProps> = ({
           <Calendar
             mode="single"
             selected={selectedDate}
+            defaultMonth={selectedDate}
             onSelect={handleSelect}
             locale={fr}
             captionLayout="dropdown-buttons"
