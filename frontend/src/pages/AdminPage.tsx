@@ -274,6 +274,7 @@ const AdminPage = () => {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+          
         </CardContent>
       </Card>
     </div>

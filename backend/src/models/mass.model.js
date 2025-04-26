@@ -9,7 +9,7 @@ const Mass = {
                 'Celebrants.religious_name as celebrant',
                 'Intentions.intention_text as intention',
                 'Masses.status',
-                'Intentions.type',
+                'Intentions.deceased',
                 'Intentions.amount',
                 'Intentions.wants_celebration_date as wants_notification',
                 'Intentions.donor_id',
@@ -40,7 +40,6 @@ const Mass = {
                 'Masses.status',
                 'Masses.intention_id',
                 'Intentions.intention_text as intention',
-                'Intentions.type',
                 'Intentions.amount',
                 'Intentions.wants_celebration_date as wants_notification',
                 'Intentions.donor_id'
@@ -150,7 +149,6 @@ const Mass = {
                 'Masses.*',
                 'Celebrants.religious_name as celebrant_name',
                 'Intentions.intention_text as intention',
-                'Intentions.type',
                 'Intentions.amount',
                 'Intentions.wants_celebration_date as wants_notification',
                 'Intentions.donor_id'
@@ -168,8 +166,6 @@ const Mass = {
                 'Celebrants.religious_name as celebrant',
                 'Intentions.intention_text as intention',
                 'Masses.status',
-                'Intentions.type',
-                db.raw("'Chapelle principale' as location")
             )
             .orderBy('Masses.date');
         
@@ -186,6 +182,22 @@ const Mass = {
         }
         
         return query;
+    },
+
+    getMassesByIntentionId: async (intentionId) => {
+        return db('Masses')
+            .select(
+                'Masses.id',
+                'Masses.date',
+                'Masses.status',
+                'Celebrants.religious_name as celebrant_name',
+                'Intentions.intention_text as intention',
+                'Intentions.deceased'
+            )
+            .leftJoin('Celebrants', 'Masses.celebrant_id', 'Celebrants.id')
+            .leftJoin('Intentions', 'Masses.intention_id', 'Intentions.id')
+            .where('Masses.intention_id', intentionId)
+            .orderBy('Masses.date');
     }
 };
 

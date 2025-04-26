@@ -8,6 +8,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from '@/components/ui/checkbox';
 import CalendarSelector from '../../../components/CalendarSelector';
+import { Intention } from '../../../api/intentionService';
 
 interface DropdownOption {
   value: string;
@@ -15,41 +16,21 @@ interface DropdownOption {
 }
 
 interface IntentionFormProps {
-  intention: string;
+  formData: Intention;
+  updateFormData: (data: Partial<Intention>) => void;
   selectedDate?: Date;
-  selectedCelebrant: string;
+  setSelectedDate: (date: Date | undefined) => void;
   celebrantOptions: DropdownOption[];
-  massType: string;
-  massCount: number;
-  dateType: string;
-  isForDeceased: boolean;
-  onIntentionChange: (value: string) => void;
-  onDateChange: (date: Date | undefined) => void;
-  onCelebrantChange: (value: string) => void;
-  onMassTypeChange: (value: string) => void;
-  onMassCountChange: (value: number) => void;
-  onDateTypeChange: (value: string) => void;
-  onIsForDeceasedChange: (value: boolean) => void;
   onRecurrenceClick: () => void;
   nextStep: () => void;
 }
 
 const IntentionForm: React.FC<IntentionFormProps> = ({
-  intention,
+  formData,
+  updateFormData,
   selectedDate,
-  selectedCelebrant,
+  setSelectedDate,
   celebrantOptions,
-  massType,
-  massCount,
-  dateType,
-  isForDeceased,
-  onIntentionChange,
-  onDateChange,
-  onCelebrantChange,
-  onMassTypeChange,
-  onMassCountChange,
-  onDateTypeChange,
-  onIsForDeceasedChange,
   onRecurrenceClick,
   nextStep
 }) => {
@@ -66,25 +47,25 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
         {/* Type d'intention (défunt/vivant) */}
         <div className="flex items-center space-x-2">
           <Checkbox 
-            id="isForDeceased"
-            checked={isForDeceased}
-            onCheckedChange={(checked: boolean | "indeterminate") => onIsForDeceasedChange(checked as boolean)}
+            id="deceased"
+            checked={formData.deceased}
+            onCheckedChange={(checked: boolean | "indeterminate") => updateFormData({ deceased: checked as boolean })}
           />
-          <Label htmlFor="isForDeceased">
+          <Label htmlFor="deceased">
             Intention pour un défunt
           </Label>
         </div>
 
         {/* Intention */}
         <div className="space-y-2">
-          <Label htmlFor="intention">
+          <Label htmlFor="intention_text">
             Intention <span className="text-red-500">*</span>
           </Label>
           <Input
-            id="intention"
-            name="intention"
-            value={intention}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => onIntentionChange(e.target.value)}
+            id="intention_text"
+            name="intention_text"
+            value={formData.intention_text}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ intention_text: e.target.value })}
             required
             placeholder="Votre intention..."
           />
@@ -92,19 +73,31 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
 
         {/* Nombre de messes */}
         <div className="space-y-2">
-          <Label htmlFor="massCount">Nombre de messes</Label>
+          <Label htmlFor="mass_count">Nombre de messes</Label>
           <div className="flex gap-4">
             <Input 
-              id="massCount" 
+              id="mass_count" 
               type="number" 
               min="1" 
               className="w-24"
-              value={massCount}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onMassCountChange(parseInt(e.target.value))}
+              value={formData.mass_count}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ mass_count: parseInt(e.target.value) })}
+              disabled={formData.mass_type === "neuvaine" || formData.mass_type === "trentain"}
             />
             <Select 
-              onValueChange={(value: string) => onMassTypeChange(value)}
-              value={massType}
+              onValueChange={(value: string) => {
+                // Mettre à jour automatiquement le nombre de messes en fonction du type
+                let newMassCount = formData.mass_count;
+                if (value === "neuvaine") {
+                  newMassCount = 9;
+                } else if (value === "trentain") {
+                  newMassCount = 30;
+                } else {
+                  newMassCount = 1;
+                }
+                updateFormData({ mass_type: value, mass_count: newMassCount });
+              }}
+              value={formData.mass_type}
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Type de messe" />
@@ -124,8 +117,8 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
         <div className="space-y-4">
           <Label>Type de date</Label>
           <RadioGroup 
-            value={dateType}
-            onValueChange={(value: string) => onDateTypeChange(value)}
+            value={formData.date_type}
+            onValueChange={(value: string) => updateFormData({ date_type: value })}
             className="flex flex-col space-y-2"
           >
             <div className="flex items-center space-x-2">
@@ -143,12 +136,12 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
           </RadioGroup>
 
           {/* Date avec conditionnelle pour l'affichage */}
-          {dateType !== "indifferente" && (
+          {formData.date_type !== "indifferente" && (
             <div className="flex items-end gap-2">
               <div className="flex-grow">
                 <CalendarSelector
                   selectedDate={selectedDate}
-                  onDateChange={onDateChange}
+                  onDateChange={(date: Date | undefined) => setSelectedDate(date)}
                 />
               </div>
               <Button
@@ -169,10 +162,10 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
           <Label>Célébrant</Label>
           <DropdownSearch
             options={celebrantOptions}
-            value={selectedCelebrant}
-            onChange={onCelebrantChange}
+            value={formData.celebrant_id}
+            onChange={(value: string) => updateFormData({ celebrant_id: value })}
             placeholder="Sélectionner un célébrant"
-            defaultValue={selectedCelebrant}
+            defaultValue={formData.celebrant_id}
           />
         </div>
       </div>

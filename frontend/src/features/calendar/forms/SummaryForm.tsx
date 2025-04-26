@@ -1,20 +1,11 @@
 import React from 'react';
-import { Mass, MassPreview } from '../../../api/massService';
 import { Button } from '@/components/ui/button';
+import { Intention, Masses } from '../../../api/intentionService';
 
 interface SummaryFormProps {
-  previewData: MassPreview;
+  previewData: Masses[];
   isLoading: boolean;
-  formData: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    address: string;
-    postalCode: string;
-    city: string;
-    wantsCelebrationDate: boolean;
-  };
+  formData: Partial<Intention>;
   celebrantOptions: { value: string; label: string }[];
   onValidate: () => void;
   onEdit: () => void;
@@ -49,15 +40,15 @@ const SummaryForm: React.FC<SummaryFormProps> = ({
       <div>
         <h3 className="font-semibold text-lg mb-2">Récapitulatif</h3>
         <div className="bg-muted p-3 rounded-md">
-          <p><span className="font-medium">Nombre de messes:</span> {previewData.massCount}</p>
-          <p><span className="font-medium">Don total:</span> {previewData.totalAmount} €</p>
+          <p><span className="font-medium">Nombre de messes:</span> {previewData.length}</p>
+          <p><span className="font-medium">Don total:</span> {formData.amount} €</p>
         </div>
       </div>
       
       <div>
         <h3 className="font-semibold text-lg mb-2">Messes planifiées</h3>
         <div className="space-y-2 max-h-[250px] overflow-y-auto">
-          {previewData.masses.map((mass, index) => (
+          {previewData.map((mass, index) => (
             <div key={index} className="border p-3 rounded-md">
               <p><span className="font-medium">Date:</span> {mass.date || "Date à déterminer"}</p>
               <p><span className="font-medium">Intention:</span> {mass.intention}</p>
@@ -71,14 +62,14 @@ const SummaryForm: React.FC<SummaryFormProps> = ({
       <div>
         <h3 className="font-semibold text-lg mb-2">Détails du donateur</h3>
         <div className="bg-muted p-3 rounded-md">
-          <p><span className="font-medium">Nom:</span> {formData.firstName} {formData.lastName}</p>
+          <p><span className="font-medium">Nom:</span> {formData.first_name} {formData.last_name}</p>
           <p><span className="font-medium">Email:</span> {formData.email}</p>
           {formData.phone && <p><span className="font-medium">Téléphone:</span> {formData.phone}</p>}
           {formData.address && 
-            <p><span className="font-medium">Adresse:</span> {formData.address}, {formData.postalCode} {formData.city}</p>
+            <p><span className="font-medium">Adresse:</span> {formData.address}, {formData.postal_code} {formData.city}</p>
           }
           <p>
-            <span className="font-medium">Souhaite date de célébration:</span> {formData.wantsCelebrationDate ? 'Oui' : 'Non'}
+            <span className="font-medium">Souhaite date de célébration:</span> {formData.wants_celebration_date ? 'Oui' : 'Non'}
           </p>
         </div>
       </div>

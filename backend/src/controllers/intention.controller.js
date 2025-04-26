@@ -1,6 +1,8 @@
 const Intention = require('../models/intention.model');
 const Donor = require('../models/donor.model');
 const db = require('../../config/database');
+const MassService = require('../services/mass.service');
+const MassModel = require('../models/mass.model');
 
 exports.getIntentions = async (req, res) => {
   try {
@@ -24,50 +26,66 @@ exports.getIntention = async (req, res) => {
 };
 
 exports.createIntention = async (req, res) => {
+  
   try {
-      // Créer ou récupérer le donateur
-      let donorId = null;
+    const intentionData = req.body;
+    let donorId;
     
-      const donorData = {
-        firstname: req.body.firstName,
-        lastname: req.body.lastName,
-        email: req.body.email,
-        phone: req.body.phone,
-        address: req.body.address,
-        city: req.body.city,
-        zip_code: req.body.zip_code
-      };
-    
+    // Préparer les données du donateur
+    const donorData = {
+      firstname: intentionData.donor.first_name,
+      lastname: intentionData.donor.last_name,
+      email: intentionData.donor.email || null,
+      phone: intentionData.donor.phone || null,
+      address: intentionData.donor.address || null,
+      zip_code: intentionData.donor.postal_code || null,
+      city: intentionData.donor.city || null
+    };
+
+    // Vérifier si le donateur existe déjà
+    const existingDonor = await Donor.findByEmail(intentionData.donor.email);
+    if (existingDonor) {
+      donorId = existingDonor.id;
+    } else {
+      // Si le donateur n'existe pas, le créer
       donorId = await Donor.create(donorData);
+    }
 
-
-      // Créer l'intention
-      const intention = {
-        donor_id: donorId,
-        intention_text: req.body.intention_text,
-        type: req.body.type || 'defunts',
-        amount: req.body.amount,
-        payment_method: req.body.payment_method,
-        brother_name: req.body.brother_name,
-        wants_celebration_date: req.body.wants_celebration_date || false,
-        date_type: req.body.date_type || 'indifferente',
+    // Créer l'intention
+    const intention = {
+      donor_id: donorId,
+      intention_text: intentionData.masses[0]?.intention || "Intention de messe",
+      deceased: intentionData.deceased || false,
+      amount: parseFloat(intentionData.payment.amount),
+      payment_method: intentionData.payment.payment_method,
+      brother_name: intentionData.payment.brother_name || null,
+      wants_celebration_date: intentionData.donor.wants_celebration_date,
+      date_type: intentionData.donor.wants_celebration_date ? 'specifique' : 'indifferente'
+    };
+    
+    const intentionId = await Intention.create(intention);
+    
+    // Traiter les messes associées
+    if (intentionData.masses && intentionData.masses.length > 0) {
+      for (const mass of intentionData.masses) {
+        const massData = {
+          date: mass.date,
+          intention_id: intentionId,
+          celebrant_id: mass.celebrant_id || null,
+          status: 'pending'
+        };
         
-        // Propriétés de récurrence
-        is_recurrent: req.body.is_recurrent || false,
-        recurrence_type: req.body.recurrence_type,
-        occurrences: req.body.occurrences,
-        start_date: req.body.start_date,
-        end_type: req.body.end_type,
-        end_date: req.body.end_date
-      };
-      
-      // Utiliser le modèle Intention avec la transaction
-      await Intention.create(intention);
-
-    res.status(201).send('Intention enregistrée');
+        await MassModel.create(massData);
+      }
+    }
+    
+    // Récupérer les données complètes pour la réponse
+    const result = await Intention.findById(intentionId);
+    
+    res.status(201).json(result);
   } catch (error) {
-    console.error(error);
-    res.status(500).send('Erreur lors de l\'enregistrement de l\'intention');
+    console.error('Erreur lors de la création de l\'intention:', error);
+    res.status(500).json({ message: 'Erreur lors de la création de l\'intention' });
   }
 };
 
@@ -116,5 +134,49 @@ exports.getPendingIntentions = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send('Erreur lors de la récupération des intentions en attente');
+  }
+};
+
+exports.previewIntention = async (req, res) => {
+  try {
+    const preview = await MassService.generateMassPreview({
+      intention_text: req.body.intention_text,
+      deceased: req.body.deceased,
+      dates: req.body.dates,
+      mass_count: req.body.mass_count,
+      date_type: req.body.date_type,
+      is_recurrent: req.body.is_recurrent,
+      recurrence_type: req.body.recurrence_type,
+      occurrences: req.body.occurrences,
+      start_date: req.body.start_date,
+      end_date: req.body.end_date,
+      end_type: req.body.end_type
+    });
+    res.status(200).json(preview);
+  } catch (error) {
+    console.error('Erreur lors de la prévisualisation de l\'intention:', error);
+    res.status(500).json({ message: 'Erreur lors de la prévisualisation de l\'intention' });
+  }
+};
+
+exports.getIntentionMasses = async (req, res) => {
+  try {
+    const intentionId = req.params.id;
+    const masses = await MassModel.getMassesByIntentionId(intentionId);
+    
+    // Transformer les données pour correspondre au format attendu par le frontend
+    const formattedMasses = masses.map(mass => ({
+      date: mass.date ? new Date(mass.date).toISOString().split('T')[0] : null,
+      intention: mass.intention || '',
+      type: mass.deceased ? 'defunts' : 'vivants',
+      celebrant_id: mass.celebrant_id || null,
+      celebrant_name: mass.celebrant_name || '',
+      status: mass.status || 'pending'
+    }));
+    
+    res.json(formattedMasses);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des messes associées:', error);
+    res.status(500).json({ message: 'Erreur lors de la récupération des messes associées' });
   }
 };

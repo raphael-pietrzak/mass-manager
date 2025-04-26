@@ -3,11 +3,12 @@ import { MassCalendar } from '../features/calendar/views/MassCalendar';
 import { MassList } from '../features/calendar/views/MassList';
 import { FilterBar } from '../features/calendar/filters/FilterBar';
 import { DateFilterBar } from '../features/calendar/filters/DateFilterBar';
-import { MassModal } from '../features/calendar/MassModal';
+import { IntentionModal } from '../features/calendar/IntentionModal';
 import { DaySlider } from '../features/calendar/DaySlider';
-import { Mass, MassSubmission } from '../api/massService';
+import { Mass } from '../api/massService';
 import { massService } from '../api/massService';
 import { exportService } from '../api/exportService';
+import { IntentionSubmission, intentionService } from '../api/intentionService';
 import { SpecialDaysModal } from '../features/special_days/SpecialDaysModal';
 
 export type ViewMode = 'calendar' | 'list';
@@ -54,12 +55,12 @@ function CalendarPage() {
     setIsSliderOpen(true);
   };
 
-  const handleSaveMass = async (updatedMass: MassSubmission ) => {
+  const handleSaveMass = async (updatedMass: IntentionSubmission ) => {
     try {
       if (updatedMass.id) {
-        await massService.updateMass(updatedMass.id, updatedMass);
+        await intentionService.updateMass(updatedMass.id, updatedMass);
       } else {
-        await massService.createMass(updatedMass);
+        await intentionService.createMass(updatedMass);
       }
       const newMasses = await massService.getMasses();
       setMasses(newMasses);
@@ -172,8 +173,8 @@ function CalendarPage() {
           )}
         </div>
 
-        <MassModal
-          mass={selectedMass}
+        <IntentionModal
+          intention={null}
           isOpen={isMassModalOpen}
           onClose={() => setIsMassModalOpen(false)}
           onSave={handleSaveMass}
@@ -191,28 +192,6 @@ function CalendarPage() {
           isOpen={isSpecialDayModalOpen}
           onClose={() => setIsSpecialDayModalOpen(false)}
         />
-
-        {!isMassModalOpen && !isSpecialDayModalOpen && (
-          <button
-            onClick={handleAddMass}
-            className="fixed bottom-6 right-6 p-4 bg-gray-900 text-white rounded-full shadow-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 z-50"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-              />
-            </svg>
-          </button>
-        )}
       </main>
     </div>
   );
