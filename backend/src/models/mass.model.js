@@ -114,13 +114,64 @@ class Mass {
         return await Mass.getRandomAvailableCelebrant(targetDate);
     }
 
-    static async findNextAvailableSlot() {
+    static async findNextAvailableSlotForCelebrant(celebrantId, usedCelebrantsByDate = {}) {
+        // Commencer à partir du jour suivant
+        let currentDate = new Date();
+        currentDate.setDate(currentDate.getDate() + 1);
+        
+        // Rechercher sur les 60 prochains jours
+        for (let i = 0; i < 60; i++) {
+            const dateToCheck = new Date(currentDate);
+            dateToCheck.setDate(currentDate.getDate() + i);
+            
+            // Formater la date pour les comparaisons
+            const formattedDate = dateToCheck.toISOString().split('T')[0];
+            
+            // Vérifier s'il s'agit d'un jour spécial à exclure
+            const specialDay = await db('SpecialDays')
+                .where(db.raw('DATE(date) = DATE(?)', [dateToCheck]))
+                .first();
+                
+            if (specialDay) {
+                continue;
+            }
+            
+            // Vérifier si ce célébrant est déjà utilisé pour cette date dans usedCelebrantsByDate
+            if (usedCelebrantsByDate[formattedDate] && 
+                usedCelebrantsByDate[formattedDate].has(parseInt(celebrantId))) {
+                continue;
+            }
+            
+            // Vérifier si le célébrant est disponible à cette date
+            const isAvailable = await Mass.isCelebrantAvailable(celebrantId, formattedDate);
+            
+            if (isAvailable) {
+                const celebrant = await db('Celebrants')
+                    .select('id', 'religious_name', 'title')
+                    .where('id', celebrantId)
+                    .first();
+                
+                return {
+                    date: dateToCheck,
+                    celebrant: celebrant
+                };
+            }
+        }
+        
+        // Aucun créneau disponible trouvé pour ce célébrant
+        return null;
+    }
+
+    static async findNextAvailableSlot(usedCelebrantsByDate = {}) {
         let currentDate = new Date();
         currentDate.setDate(currentDate.getDate() + 1);
         
         for (let i = 0; i < 30; i++) {
             const dateToCheck = new Date(currentDate);
             dateToCheck.setDate(currentDate.getDate() + i);
+            
+            // Formater la date pour les comparaisons
+            const formattedDate = dateToCheck.toISOString().split('T')[0];
             
             const specialDay = await db('SpecialDays')
                 .where(db.raw('DATE(date) = DATE(?)', [dateToCheck]))
@@ -130,7 +181,16 @@ class Mass {
                 continue;
             }
 
-            const availableCelebrant = await Mass.findNextAvailableCelebrant(dateToCheck);
+            // Récupérer les célébrants déjà utilisés pour cette date
+            const usedCelebrantsForDate = usedCelebrantsByDate[formattedDate] 
+                ? Array.from(usedCelebrantsByDate[formattedDate]) 
+                : [];
+
+            // Trouver un célébrant disponible en excluant ceux déjà utilisés
+            const availableCelebrant = await Mass.getRandomAvailableCelebrant(
+                dateToCheck, 
+                usedCelebrantsForDate
+            );
             
             if (availableCelebrant) {
                 return {

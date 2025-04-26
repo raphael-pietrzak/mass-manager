@@ -29,7 +29,7 @@ export interface Intention {
     // Données de masse
     mass_count?: number;
     mass_type?: string;
-    date_type?: string;
+    date_type?: 'imperative' | 'preferred' | 'indifferent';
     
     // Données de récurrence
     is_recurrent?: boolean;
