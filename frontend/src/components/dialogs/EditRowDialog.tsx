@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import CalendarSelector from '../CalendarSelector';
 import { X } from 'lucide-react';
+import { format } from 'date-fns';
 
 type FormatterOption = {
   label: string;
@@ -93,7 +94,11 @@ export const EditRowDialog: React.FC<EditRowDialogProps> = ({
               }
               // Gestion spéciale du champ "donor"
               if (column.key === 'donor') {
-                const donor = formData.donor || { firstname: '', lastname: '' };
+                const donor = {
+                  firstname: formData.donor_firstname || '',
+                  lastname: formData.donor_lastname || ''
+                };
+              
                 return (
                   <div key="donor" className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -102,19 +107,16 @@ export const EditRowDialog: React.FC<EditRowDialogProps> = ({
                     <input
                       type="text"
                       readOnly
-                      className="w-full border border-gray-300 rounded-md p-2 mb-2 bg-gray-100"
+                      className="w-full border border-gray-300 rounded-md p-2 bg-gray-100"
                       value={donor.firstname}
                       onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          donor: {
-                            ...donor,
-                            firstname: e.target.value,
-                          },
-                        })
+                        setFormData((prev: any) => ({
+                          ...prev,
+                          donor_firstname: e.target.value,
+                        }))
                       }
                     />
-
+              
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Donateur - Nom
                     </label>
@@ -124,13 +126,10 @@ export const EditRowDialog: React.FC<EditRowDialogProps> = ({
                       className="w-full border border-gray-300 rounded-md p-2 bg-gray-100"
                       value={donor.lastname}
                       onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          donor: {
-                            ...donor,
-                            lastname: e.target.value,
-                          },
-                        })
+                        setFormData((prev: any) => ({
+                          ...prev,
+                          donor_lastname: e.target.value,
+                        }))
                       }
                     />
                   </div>
@@ -161,7 +160,7 @@ export const EditRowDialog: React.FC<EditRowDialogProps> = ({
                         if (newDate) {
                           setFormData({
                             ...formData,
-                            [column.key]: newDate.toISOString(),
+                            [column.key]: format(newDate, 'yyyy-MM-dd'),
                           });
                         }
                       }}

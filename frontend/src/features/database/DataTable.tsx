@@ -9,7 +9,7 @@ interface DataTableProps {
   handleDeleteClick: (id: number) => void;
 }
 
-const formatValue = (value: any, columnKey: string, formatters: Record<string, any>) => {
+const formatValue = (value: any, columnKey: string, formatters: Record<string, any>, row: any) => {
   const formatter = formatters[columnKey];
 
   if (!formatter) return value; // Si pas de formatteur, retourner la valeur brute
@@ -30,15 +30,19 @@ const formatValue = (value: any, columnKey: string, formatters: Record<string, a
     return isNaN(date.getTime()) ? value : date.toLocaleDateString('fr-FR');
   }
 
-   // Vérification si la valeur est un objet (par exemple un donateur avec firstname et lastname ou un célébrant avec religious_name)
-   if (typeof value === 'object' && value !== null) {
-    if (value.firstname && value.lastname) {
-      return `${value.firstname} ${value.lastname}`;  // Afficher le prénom et le nom du donateur
-    }
-    if (value.religious_name) {
-      return value.religious_name;
-    }
-    return JSON.stringify(value);  // Convertir l'objet en chaîne si pas de prénom/nom
+  // Vérification si la valeur est un objet (par exemple un donateur avec firstname et lastname ou un célébrant avec religious_name)
+  // if (typeof value === 'object' && value !== null) {
+  //   if (value.firstname && value.lastname) {
+  //     return `${value.firstname} ${value.lastname}`;  // Afficher le prénom et le nom du donateur
+  //   }
+  //   if (value.religious_name) {
+  //     return value.religious_name;
+  //   }
+  //   return JSON.stringify(value);  // Convertir l'objet en chaîne si pas de prénom/nom
+  // }
+
+  if (columnKey === "donor") {
+    return `${row.donor_firstname} ${row.donor_lastname}`;
   }
 
   return value; // Retourner la valeur brute pour les autres cas
@@ -78,7 +82,7 @@ export const DataTable: React.FC<DataTableProps> = ({ data, activeTab, handleEdi
           <tr key={row.id}>
             {columns.map((column: string | { key: string; label: string }) => {
               const columnKey = typeof column === 'string' ? column : column.key;
-              const cellValue = formatValue(row[columnKey], columnKey, formatters);
+              const cellValue = formatValue(row[columnKey], columnKey, formatters, row);
 
               return (
                 <td key={typeof column === 'string' ? column : column.key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

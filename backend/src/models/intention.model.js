@@ -3,10 +3,10 @@ const db = require('../../config/database');
 const Intention = {
     getAll: () => db('Intentions')
         .select(
-            'Intentions.*',
-            'Donors.firstname',
-            'Donors.lastname',
-            'Donors.email'
+        'Intentions.*',
+        'Donors.firstname as donor_firstname',
+        'Donors.lastname as donor_lastname',
+        'Donors.email as donor_email'
         )
         .leftJoin('Donors', 'Intentions.donor_id', 'Donors.id'),
         

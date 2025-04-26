@@ -1,7 +1,7 @@
-type FormatterFunction = (value: any) => string;
+type FormatterFunction = (value: any, row?: any) => string;
 
 type FormatterConfig = {
-  type: 'boolean' | 'enum' | 'date';
+  type: 'boolean' | 'enum' | 'date' | 'string';
   options?: { label: string; value: any }[];
   display?: FormatterFunction;
 };
@@ -48,27 +48,11 @@ export const tabs: TabColumn[] = [
     columns: [
       { key: "date", label: "Date" },
       { key: "celebrant", label: "Célébrant" },
-      { key: "donor", label: "Donateur" },
       { key: "intention", label: "Intention" },
-      { key: "amount", label: "Montant" },
       { key: "deceased", label: "Pour un défunt" },
       { key: "status", label: "Statut" },   
     ],
     formatters: {
-      donor: {
-        type: 'string' as 'enum',
-        display: (value) => {
-          // Si 'value' est un objet avec des propriétés 'firstname' et 'lastname'
-          if (value && value.firstname && value.lastname) {
-            return `${value.firstname} ${value.lastname}`;  // Retourne le nom complet du donateur
-          }
-          // Si 'value' est une simple chaîne (par exemple un ID ou un nom)
-          if (typeof value === 'string') {
-            return value;  // Retourne la chaîne telle quelle
-          }
-          return 'Donateur inconnu';  // Si les données sont manquantes ou invalides
-        }
-      },
       date: {
         type: 'date',
         display: (value: string) => new Date(value).toLocaleDateString("fr-FR")
@@ -80,14 +64,6 @@ export const tabs: TabColumn[] = [
           { label: 'En attente', value: 'pending' },
           { label: 'Annulée', value: 'cancelled' }
         ],
-        display: (value: string) => {
-          switch (value) {
-            case "scheduled": return "Planifiée";
-            case "pending": return "En attente";
-            case "cancelled": return "Annulée";
-            default: return value;
-          }
-        }
       },
       deceased: {
         type: 'boolean',
@@ -95,10 +71,6 @@ export const tabs: TabColumn[] = [
           { label: 'Oui', value: 1 },
           { label: 'Non', value: 0 }
         ],
-        display: (value: number) => {
-          console.log('Valeur deceased:', value);
-          return value ? "Oui" : "Non";
-        }
       }
     }
   },
@@ -123,7 +95,6 @@ export const tabs: TabColumn[] = [
           { label: 'Oui', value: 1 },
           { label: 'Non', value: 0 }
         ],
-        display: (value: number) => value ? "Oui" : "Non"
       }
     }
   },
@@ -133,39 +104,35 @@ export const tabs: TabColumn[] = [
     endpoint: "http://localhost:3001/api/data/intentions",
     columns: [
       { key: "donor", label: "Donateur" },
-      { key: "mass", label: "Messe" },
-      { key: "intention", label: "Intention" },
+      { key: "intention_text", label: "Intention" },
       { key: "amount", label: "Montant" },
-      { key: "status", label: "Statut" },
+      { key: "deceased", label: "Pour un défunt" },
+      { key: "payment_method", label: "Méthode de paiement" },
     ],
     formatters: {
       donor: {
-        type: 'string' as 'enum',
-        display: (value) => {
-          if (value && value.firstname && value.lastname) {
-            return `${value.firstname} ${value.lastname}`;
-          }
-          if (typeof value === 'string') {
-            return value;
-          }
-          return 'Donateur inconnu';
+        type: 'string',
+        display: (_value: any, row: any) => {
+          const firstname = row.donor_firstname || '';
+          const lastname = row.donor_lastname || '';
+          return `${firstname} ${lastname}`.trim() || 'Donateur inconnu';
         }
       },
-      status: {
+      deceased: {
+        type: 'boolean',
+        options: [
+          { label: 'Oui', value: 1 },
+          { label: 'Non', value: 0 }
+        ],
+        display: (value: number) => value ? "Oui" : "Non"
+      },
+      payment_method: {
         type: 'enum',
         options: [
-          { label: 'Planifiée', value: 'scheduled' },
-          { label: 'En attente', value: 'pending' },
-          { label: 'Annulée', value: 'cancelled' }
+          { label: 'Espèces', value: 'cash' },
+          { label: 'Chèque', value: 'cheque' },
+          { label: 'Virement', value: 'transfer' }
         ],
-        display: (value) => {
-          switch (value) {
-            case "scheduled": return "Planifiée";
-            case "pending": return "En attente";
-            case "cancelled": return "Annulée";
-            default: return value;
-          }
-        }
       }
     }
   }
