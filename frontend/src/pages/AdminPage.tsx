@@ -13,7 +13,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Save, Trash2, UserPlus, Lock, Mail, Database } from 'lucide-react';
+import { Save, Trash2, UserPlus, Lock, Mail, Database, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { CelebrantManager } from '../features/admin/CelebrantManager';
 import axios from 'axios';
@@ -47,8 +47,12 @@ const AdminPage = () => {
   };
 
   const handlePasswordChange = async () => {
-    // Réinitialiser les messages d'erreur avant chaque nouvelle tentative
     setErrorMessage("");
+    setSuccessMessage("");
+    if(!newPassword) {
+      setErrorMessage("Nouveau mot de passe obligatoire pour confirmer");
+      return;
+    }
     try {
       // Envoyer la requête pour changer le mot de passe
       const response = await axios.post(`${API_BASE_URL}/api/auth/change_password`, {
@@ -229,11 +233,12 @@ const AdminPage = () => {
                 </AlertDialogAction>
               </AlertDialogFooter>
               {errorMessage && (
-                  <Alert className="bg-red-50 border-red-300 text-red-800">
-                    <AlertTitle>✖ Erreur</AlertTitle>
-                    <AlertDescription>{errorMessage}</AlertDescription>
-                  </Alert>
-                )}
+                // <Alert className="bg-green-50 border-green-300 text-green-800"></Alert>
+                <Alert className="bg-red-50 border-red-300 text-red-800">
+                  <AlertTitle className="flex items-center space-x-2"><X color="red" size={22} /> Erreur</AlertTitle>
+                  <AlertDescription>{errorMessage}</AlertDescription>
+                </Alert>
+              )}
             </AlertDialogContent>
           </AlertDialog>
 
