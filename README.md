@@ -87,3 +87,11 @@ Page 4
 
 Page 5
 ![alt text](<frontend/public/Capture d’écran 2025-01-10 à 22.27.23.png>)
+
+## Deployment
+
+```bash
+git clone https://github.com/raphael-pietrzak/mass-manager.git
+cd mass-manager
+docker-compose up -d
+```

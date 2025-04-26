@@ -26,32 +26,117 @@ const RegularityForm: React.FC<RegularityFormProps> = ({
   onValidate
 }) => {
   // Convertir les chaînes de dates en objets Date pour l'interface utilisateur
-  const startDate = formData.startDate ? parseApiDate(formData.startDate) : null;
-  const endDate = formData.endDate ? parseApiDate(formData.endDate) : null;
+  const startDate = formData.start_date ? parseApiDate(formData.start_date) : null;
+  const endDate = formData.end_date ? parseApiDate(formData.end_date) : null;
   
   const recurrenceOptions = [
     { value: 'daily', label: 'Quotidien' },
     { value: 'weekly', label: 'Hebdomadaire' },
     { value: 'monthly', label: 'Mensuel' },
+    { value: 'relative_position', label: 'Position relative mensuelle' },
     { value: 'yearly', label: 'Annuel' }
   ];
 
-  const getExplanation = () => {
-    if (!startDate || !formData.recurrenceType) return "Veuillez remplir les champs requis";
+  const positionOptions = [
+    { value: 'first', label: '1er' },
+    { value: 'second', label: '2ème' },
+    { value: 'third', label: '3ème' },
+    { value: 'fourth', label: '4ème' },
+    { value: 'last', label: 'Dernier' },
+  ];
 
-    let explanation = `Paiement ${formData.recurrenceType === 'daily' ? 'quotidien' :
-      formData.recurrenceType === 'weekly' ? 'hebdomadaire' :
-      formData.recurrenceType === 'monthly' ? 'mensuel' : 'annuel'}`;
+  const weekdayOptions = [
+    { value: 'monday', label: 'Lundi' },
+    { value: 'tuesday', label: 'Mardi' },
+    { value: 'wednesday', label: 'Mercredi' },
+    { value: 'thursday', label: 'Jeudi' },
+    { value: 'friday', label: 'Vendredi' },
+    { value: 'saturday', label: 'Samedi' },
+    { value: 'sunday', label: 'Dimanche' },
+  ];
+
+  const getExplanation = () => {
+    if (!startDate || !formData.recurrence_type) return "Veuillez remplir les champs requis";
+
+    let explanation = "";
+    
+    switch(formData.recurrence_type) {
+      case 'daily':
+        explanation = ' Quotidien';
+        break;
+      case 'weekly':
+        explanation = 'Hebdomadaire';
+        break;
+      case 'monthly':
+        explanation = 'Mensuel';
+        break;
+      case 'yearly':
+        explanation = 'Annuel';
+        break;
+      case 'relative_position':
+        const position = positionOptions.find(p => p.value === formData.position)?.label || '?';
+        const weekday = weekdayOptions.find(w => w.value === formData.weekday)?.label || '?';
+        explanation = `Le ${position} ${weekday} de chaque mois`;
+        break;
+    }
 
     explanation += ` à partir du ${formatDateForDisplay(startDate)}`;
 
-    if (formData.endType === 'occurrences') {
+    if (formData.end_type === 'occurrences') {
       explanation += ` pour ${formData.occurrences} occurrences`;
     } else if (endDate) {
       explanation += ` jusqu'au ${formatDateForDisplay(endDate)}`;
     }
 
     return explanation;
+  };
+
+  // Affiche des champs additionnels en fonction du type de récurrence
+  const renderRecurrenceTypeFields = () => {
+    if (formData.recurrence_type === 'relative_position') {
+      return (
+        <div className="space-y-4 mt-4">
+          <div className="space-y-2">
+            <Label>Position</Label>
+            <Select
+              value={formData.position || ''}
+              onValueChange={(value: string) => updateFormData({ position: value })}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Sélectionner la position" />
+              </SelectTrigger>
+              <SelectContent>
+                {positionOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="space-y-2">
+            <Label>Jour de la semaine</Label>
+            <Select
+              value={formData.weekday || ''}
+              onValueChange={(value: string) => updateFormData({ weekday: value })}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Sélectionner le jour" />
+              </SelectTrigger>
+              <SelectContent>
+                {weekdayOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      );
+    }
+    return null;
   };
 
   return (
@@ -74,7 +159,7 @@ const RegularityForm: React.FC<RegularityFormProps> = ({
               mode="single"
               selected={startDate}
               onSelect={(date: Date | null) => {
-                updateFormData({ startDate: formatDateForApi(date) });
+                updateFormData({ start_date: formatDateForApi(date) });
               }}
               initialFocus
               locale={fr}
@@ -86,14 +171,14 @@ const RegularityForm: React.FC<RegularityFormProps> = ({
       <div className="space-y-2">
         <Label>Type de récurrence</Label>
         <Select
-          value={formData.recurrenceType}
-          onValueChange={(value: string) => updateFormData({ recurrenceType: value })}
+          value={formData.recurrence_type || ''}
+          onValueChange={(value: string) => updateFormData({ recurrence_type: value })}
         >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Sélectionner la récurrence" />
           </SelectTrigger>
           <SelectContent>
-            {recurrenceOptions.map((option: { value: string; label: string }) => (
+            {recurrenceOptions.map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
@@ -102,12 +187,14 @@ const RegularityForm: React.FC<RegularityFormProps> = ({
         </Select>
       </div>
 
+      {renderRecurrenceTypeFields()}
+
       <div className="space-y-2">
         <Label>Fin de la récurrence</Label>
         <RadioGroup
-          value={formData.endType}
+          value={formData.end_type || ''}
           onValueChange={(value: 'occurrences' | 'date') => 
-            updateFormData({ endType: value })}
+            updateFormData({ end_type: value })}
           className="space-y-2"
         >
           <div className="flex items-center space-x-2">
@@ -116,7 +203,7 @@ const RegularityForm: React.FC<RegularityFormProps> = ({
             <Input
               type="number"
               min="1"
-              value={formData.occurrences}
+              value={formData.occurrences || ''}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ 
                 occurrences: parseInt(e.target.value) || 1 
               })}
@@ -131,7 +218,7 @@ const RegularityForm: React.FC<RegularityFormProps> = ({
           </div>
         </RadioGroup>
 
-        {formData.endType === 'date' && (
+        {formData.end_type === 'date' && (
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" className="w-full justify-start text-left font-normal">
@@ -148,7 +235,7 @@ const RegularityForm: React.FC<RegularityFormProps> = ({
                 mode="single"
                 selected={endDate}
                 onSelect={(date: Date | null) => {
-                  updateFormData({ endDate: formatDateForApi(date) });
+                  updateFormData({ end_date: formatDateForApi(date) });
                 }}
                 initialFocus
                 locale={fr}

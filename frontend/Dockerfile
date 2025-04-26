@@ -1,5 +1,5 @@
 # frontend/Dockerfile
-FROM node:18
+FROM node:20.11.0-alpine3.19
 
 WORKDIR /app
 

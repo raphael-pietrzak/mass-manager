@@ -38,6 +38,10 @@ export interface Intention {
     start_date?: string | null; 
     end_date?: string | null;
     end_type?: string | null;
+
+    // Options de récurrence avancées
+    position?: string | null;        // Pour "Position relative" (1er, 2eme, 3eme, 4eme, dernier)
+    weekday?: string | null;         // Pour "Position relative" (lundi, mardi, etc.)
     
     // Horodatage
     created_at?: string;
