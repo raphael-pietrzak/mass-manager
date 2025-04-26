@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -52,6 +52,27 @@ const CalendarSelector: React.FC<CalendarSelectorProps> = ({
             selected={selectedDate}
             onSelect={handleSelect}
             locale={fr}
+            captionLayout="dropdown-buttons"
+            fromYear={2020}
+            toYear={2100}
+            classNames={{
+              caption_label: "hidden",
+              dropdown: "flex justify-center", // <-- Ajoute un espace entre mois et année
+              dropdown_month: "rounded-md border bg-background text-sm px-2 py-1 font-bold",
+              dropdown_year: "rounded-md border bg-background text-sm px-2 py-1 font-bold",
+            }}
+            components={{
+              IconLeft: () => <ChevronLeft className="h-4 w-4" />,
+              IconRight: () => <ChevronRight className="h-4 w-4" />,
+              Dropdown: (props: any) => (
+                <select
+                  {...props}
+                  className="rounded-md border bg-background text-sm px-2 py-1 font-bold focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  {props.children}
+                </select>
+              ),
+            }}
           />
         </div>
       )}
