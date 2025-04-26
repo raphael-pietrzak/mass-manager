@@ -18,6 +18,9 @@ const MassService = {
             const { intention_text, dates, mass_count = 1, celebrant_id } = params;
             const masses = [];
             
+            // Pour suivre les célébrants déjà utilisés par date
+            const usedCelebrantsByDate = {};
+            
             // Si des dates spécifiques sont fournies, utiliser ces dates
             if (dates && dates.length > 0) {
                 for (let i = 0; i < Math.min(dates.length, mass_count); i++) {
@@ -26,23 +29,45 @@ const MassService = {
                     let alternativeCelebrant = null;
                     let celebrantAvailable = true;
                     
+                    // Initialiser le tracking pour cette date si nécessaire
+                    if (!usedCelebrantsByDate[date]) {
+                        usedCelebrantsByDate[date] = new Set();
+                    }
+                    
                     // Si un célébrant spécifique est sélectionné
                     if (celebrant_id) {
                         // Vérifier si le célébrant sélectionné est disponible à cette date
-                        celebrantAvailable = await Mass.isCelebrantAvailable(celebrant_id, date);
+                        // et qu'il n'a pas déjà été utilisé pour cette date
+                        celebrantAvailable = await Mass.isCelebrantAvailable(celebrant_id, date) && 
+                                             !usedCelebrantsByDate[date].has(celebrant_id);
                         
                         if (celebrantAvailable) {
                             // Récupérer les infos du célébrant sélectionné
                             celebrant = await MassService.getCelebrantById(celebrant_id);
+                            // Marquer le célébrant comme utilisé pour cette date
+                            usedCelebrantsByDate[date].add(celebrant_id);
                         } else {
                             // Trouver un autre célébrant disponible pour cette date
-                            alternativeCelebrant = await Mass.getRandomAvailableCelebrant(date);
+                            // en excluant ceux déjà utilisés
+                            alternativeCelebrant = await Mass.getRandomAvailableCelebrant(date, Array.from(usedCelebrantsByDate[date]));
+                            
+                            if (alternativeCelebrant) {
+                                // Marquer ce célébrant comme utilisé pour cette date
+                                usedCelebrantsByDate[date].add(alternativeCelebrant.id);
+                            }
+                            
                             // Récupérer quand même les infos du célébrant sélectionné pour le retourner
                             celebrant = await MassService.getCelebrantById(celebrant_id);
                         }
                     } else {
                         // Aucun célébrant spécifique demandé, chercher un disponible
-                        celebrant = await Mass.getRandomAvailableCelebrant(date);
+                        // en excluant ceux déjà utilisés
+                        celebrant = await Mass.getRandomAvailableCelebrant(date, Array.from(usedCelebrantsByDate[date]));
+                        
+                        if (celebrant) {
+                            // Marquer ce célébrant comme utilisé pour cette date
+                            usedCelebrantsByDate[date].add(celebrant.id);
+                        }
                     }
                     
                     // Préparation des données pour la réponse
@@ -74,12 +99,21 @@ const MassService = {
                     // Si un célébrant spécifique est sélectionné
                     if (celebrant_id) {
                         // Trouver le prochain créneau disponible pour ce célébrant
-                        slot = await Mass.findNextAvailableSlotForCelebrant(celebrant_id);
+                        // en tenant compte des dates où il est déjà assigné
+                        slot = await Mass.findNextAvailableSlotForCelebrant(celebrant_id, usedCelebrantsByDate);
                         
-                        if (!slot) {
+                        if (slot) {
+                            // Initialiser le tracking pour cette date si nécessaire
+                            const slotDate = slot.date.toISOString().split('T')[0];
+                            if (!usedCelebrantsByDate[slotDate]) {
+                                usedCelebrantsByDate[slotDate] = new Set();
+                            }
+                            // Marquer ce célébrant comme utilisé pour cette date
+                            usedCelebrantsByDate[slotDate].add(celebrant_id);
+                        } else {
                             // Si pas de créneau disponible pour le célébrant sélectionné,
                             // chercher un créneau avec n'importe quel célébrant
-                            const alternativeSlot = await Mass.findNextAvailableSlot();
+                            const alternativeSlot = await Mass.findNextAvailableSlot(usedCelebrantsByDate);
                             const celebrant = await MassService.getCelebrantById(celebrant_id);
                             
                             masses.push({
@@ -97,7 +131,18 @@ const MassService = {
                         }
                     } else {
                         // Trouver un créneau disponible à partir de la date actuelle
-                        slot = await Mass.findNextAvailableSlot();
+                        // en tenant compte des célébrants déjà utilisés
+                        slot = await Mass.findNextAvailableSlot(usedCelebrantsByDate);
+                        
+                        if (slot) {
+                            // Initialiser le tracking pour cette date si nécessaire
+                            const slotDate = slot.date.toISOString().split('T')[0];
+                            if (!usedCelebrantsByDate[slotDate]) {
+                                usedCelebrantsByDate[slotDate] = new Set();
+                            }
+                            // Marquer ce célébrant comme utilisé pour cette date
+                            usedCelebrantsByDate[slotDate].add(slot.celebrant.id);
+                        }
                     }
                     
                     if (slot) {
