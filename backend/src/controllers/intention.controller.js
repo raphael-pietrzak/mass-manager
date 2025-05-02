@@ -170,6 +170,7 @@ exports.getPendingIntentions = async (req, res) => {
 exports.previewIntention = async (req, res) => {
   try {
     const preview = await MassService.generateMassPreview({
+      celebrant_id: req.body.celebrant_id,
       intention_text: req.body.intention_text,
       deceased: req.body.deceased,
       dates: req.body.dates,
