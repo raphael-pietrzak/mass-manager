@@ -2,18 +2,20 @@
 const jwt = require('jsonwebtoken');
 
 exports.authenticateToken = (req, res, next) => {
-  const token = req.cookies.token;  // Lire le token des cookies
-
+  // Vérifier d'abord l'en-tête d'autorisation
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1]; // Format: "Bearer TOKEN"
+  
   if (!token) {
-    return res.status(403).json({ error: 'Token manquant' });  // Si aucun token, retour 403
+    return res.status(401).json({ error: 'Access token manquant' });
   }
 
-  jwt.verify(token, process.env.JWT_SECRET_KEY, (err, user) => {
+  jwt.verify(token, process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET_KEY, (err, user) => {
     if (err) {
-      console.error('Token invalide ou expiré:', err);  // Afficher l'erreur
-      return res.status(403).json({ error: 'Token invalide ou expiré' });  // Si le token est invalide
+      console.error('Access token invalide ou expiré:', err);
+      return res.status(403).json({ error: 'Access token invalide ou expiré' });
     }
-    req.user = user;  // Ajouter l'utilisateur à la requête
-    next();  // Passer à la prochaine étape
+    req.user = user;
+    next();
   });
 };
