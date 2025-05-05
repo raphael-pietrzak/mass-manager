@@ -8,9 +8,11 @@ import ProtectedRoute from './ProtectedRoute';
 import LoginPage from '../pages/LoginPage';
 import DonorsPage from '../pages/DonorsPage';
 import IntentionPage from '../pages/IntentionPage';
+import Navbar from '../components/Navbar';
 
 const AppRouter: React.FC = () => (
   <Router>
+    <Navbar />
     <Routes>
       <Route path="/" element={<CalendarPage />} />
       <Route path="/calendar" element={<CalendarPage />} />
