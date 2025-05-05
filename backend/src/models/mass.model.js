@@ -115,9 +115,9 @@ class Mass {
     }
 
     static async findNextAvailableSlotForCelebrant(celebrantId, usedCelebrantsByDate = {}) {
-        // Commencer à partir du jour suivant
+        // Commencer à partir d'un mois après la date actuelle
         let currentDate = new Date();
-        currentDate.setDate(currentDate.getDate() + 1);
+        currentDate.setMonth(currentDate.getMonth() + 1);
         
         // Rechercher sur les 60 prochains jours
         for (let i = 0; i < 60; i++) {
@@ -163,8 +163,9 @@ class Mass {
     }
 
     static async findNextAvailableSlot(usedCelebrantsByDate = {}) {
+        // Commencer à partir d'un mois après la date actuelle
         let currentDate = new Date();
-        currentDate.setDate(currentDate.getDate() + 1);
+        currentDate.setMonth(currentDate.getMonth() + 1);
         
         for (let i = 0; i < 30; i++) {
             const dateToCheck = new Date(currentDate);

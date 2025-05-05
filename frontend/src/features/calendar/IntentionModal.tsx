@@ -122,6 +122,7 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
     try {
       setIsLoading(true);
       const preview = await intentionService.previewMasses({
+        celebrant_id: formData.celebrant_id,
         intention_text: formData.intention_text,
         date: formData.date || formatDateForApi(selectedDate),
         deceased: formData.deceased,
