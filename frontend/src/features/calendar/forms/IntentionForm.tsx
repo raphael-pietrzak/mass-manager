@@ -118,16 +118,16 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
           <Label>Type de date</Label>
           <RadioGroup 
             value={formData.date_type}
-            onValueChange={(value: string) => updateFormData({ date_type: value })}
+            onValueChange={(value: 'imperative' | 'preferred' | 'indifferent') => updateFormData({ date_type: value })}
             className="flex flex-col space-y-2"
           >
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="indifferente" id="indifferente" />
-              <Label htmlFor="indifferente">Indifférente</Label>
+              <RadioGroupItem value="indifferent" id="indifferent" />
+              <Label htmlFor="indifferent">Indifférente</Label>
             </div>
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="souhaitee" id="souhaitee" />
-              <Label htmlFor="souhaitee">Souhaitée</Label>
+              <RadioGroupItem value="preferred" id="preferred" />
+              <Label htmlFor="preferred">Souhaitée</Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="imperative" id="imperative" />
@@ -136,22 +136,22 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
           </RadioGroup>
 
           {/* Date avec conditionnelle pour l'affichage */}
-          {formData.date_type !== "indifferente" && (
+          {formData.date_type !== "indifferent" && (
             <div className="flex items-end gap-2">
               <div className="flex-grow">
-                <CalendarSelector
-                  selectedDate={selectedDate}
-                  onDateChange={(date: Date | undefined) => setSelectedDate(date)}
-                />
+          <CalendarSelector
+            selectedDate={selectedDate}
+            onDateChange={(date: Date | undefined) => setSelectedDate(date)}
+          />
               </div>
               <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={onRecurrenceClick}
-                title="Programmer une récurrence"
+          type="button"
+          variant="outline"
+          size="icon"
+          onClick={onRecurrenceClick}
+          title="Programmer une récurrence"
               >
-                <RotateCw className="w-5 h-5" />
+          <RotateCw className="w-5 h-5" />
               </Button>
             </div>
           )}

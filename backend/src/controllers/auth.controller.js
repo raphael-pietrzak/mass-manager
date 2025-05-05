@@ -20,24 +20,32 @@ const loginUser = async (req, res) => {
       return res.status(401).json({ error: 'Mot de passe incorrect' });
     }
 
-    // Créer un token JWT
-    const token = jwt.sign(
+    // Créer un access token (courte durée)
+    const accessToken = jwt.sign(
       { userId: user.id, login_name: user.login_name },
-      process.env.JWT_SECRET_KEY,
-      { expiresIn: '1d' }
+      process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET_KEY,
+      { expiresIn: '15m' }
     );
 
-    // Envoyer le token dans un cookie HttpOnly
-    res.cookie('token', token, {
+    // Créer un refresh token (longue durée)
+    const refreshToken = jwt.sign(
+      { userId: user.id },
+      process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET_KEY,
+      { expiresIn: '7d' }
+    );
+
+    // Envoyer le refresh token dans un cookie HttpOnly
+    res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: 'Lax',
-      maxAge: 86400000, // 3600000 = 1h , pour 1 jour -> maxAge: 86400000
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 jours
+      path: '/'
     });
 
     res.status(200).json({
       message: 'Authentification réussie',
-      token: token
+      accessToken
     });
 
   } catch (error) {
@@ -48,13 +56,59 @@ const loginUser = async (req, res) => {
 
 // Fonction de logout
 const logoutUser = (req, res) => {
-  res.clearCookie("token", {
+  res.clearCookie("refreshToken", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "Strict",
+    sameSite: "Lax",
     path: "/",       
   });
   res.status(200).json({ message: 'Déconnexion réussie' });
+};
+
+// Fonction pour rafraîchir l'access token
+const refreshToken = async (req, res) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+    
+    if (!refreshToken) {
+      return res.status(401).json({ error: 'Refresh token manquant' });
+    }
+
+    // Vérifier le refresh token
+    jwt.verify(
+      refreshToken, 
+      process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET_KEY, 
+      async (err, decoded) => {
+        if (err) {
+          return res.status(403).json({ error: 'Refresh token invalide ou expiré' });
+        }
+
+        try {
+          // Récupérer l'utilisateur depuis la base de données
+          const user = await User.getById(decoded.userId);
+          
+          if (!user) {
+            return res.status(404).json({ error: 'Utilisateur non trouvé' });
+          }
+
+          // Générer un nouveau access token
+          const accessToken = jwt.sign(
+            { userId: user.id, login_name: user.login_name },
+            process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET_KEY,
+            { expiresIn: '15m' }
+          );
+
+          res.status(200).json({ accessToken });
+        } catch (error) {
+          console.error(error);
+          res.status(500).json({ error: 'Erreur serveur lors du rafraîchissement du token' });
+        }
+      }
+    );
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Erreur lors du rafraîchissement du token' });
+  }
 };
 
 const changeUserPassword = async (req, res) => {
@@ -98,5 +152,6 @@ const changeUserPassword = async (req, res) => {
 module.exports = {
   loginUser,
   logoutUser,
+  refreshToken,
   changeUserPassword
 };
