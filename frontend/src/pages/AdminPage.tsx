@@ -13,12 +13,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Save, Trash2, UserPlus, Lock, Mail, Database } from 'lucide-react';
+import { Save, Trash2, UserPlus, Lock, Mail, Database, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { CelebrantManager } from '../features/admin/CelebrantManager';
 import axios from 'axios';
 import { API_BASE_URL } from '../api';
 import { Alert, AlertDescription, AlertTitle } from '../components/ui/alert';
+import CalendarSelector from '../components/CalendarSelector';
 
 
 const AdminPage = () => {
@@ -33,22 +34,29 @@ const AdminPage = () => {
   const [errorMessage, setErrorMessage] = useState<string>();
 
   const navigate = useNavigate();
-  const [deleteBeforeDate, setDeleteBeforeDate] = useState(() => {
-    const today = new Date();
-    return today.toISOString().split('T')[0]; // format 'YYYY-MM-DD'
-  });
+  const [deleteBeforeDate, setDeleteBeforeDate] = useState(new Date());
+  const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false); // Ajoute cet état
+
+  const handleDateChange = (date: Date | undefined) => {
+    setDeleteBeforeDate(date || new Date()); // Si aucune date n'est sélectionnée, on prend la date actuelle
+  };
   
   const handleSave = () => {
     console.log('Sauvegarde effectuée');
   };
 
-  const handleDeleteHistory = (date: string) => {
-    console.log('Historique supprimé avant la date:', date);
+  const handleDeleteHistory = (date: Date) => {
+    axios.delete(`${API_BASE_URL}/api/data/masses`, { params: { date: date } })
+    setSuccessMessage('Les messes antérieures à cette date ont bien été supprimées.');
   };
 
   const handlePasswordChange = async () => {
-    // Réinitialiser les messages d'erreur avant chaque nouvelle tentative
     setErrorMessage("");
+    setSuccessMessage("");
+    if(!newPassword) {
+      setErrorMessage("Nouveau mot de passe obligatoire pour confirmer");
+      return;
+    }
     try {
       // Envoyer la requête pour changer le mot de passe
       const response = await axios.post(`${API_BASE_URL}/api/auth/change_password`, {
@@ -153,21 +161,41 @@ const AdminPage = () => {
               <AlertDialogHeader>
                 <AlertDialogTitle>Supprimer les intentions de messe antérieures à :</AlertDialogTitle>
                 <div className="mt-4">
-                  <input
-                    type="date"
-                    name="deleteBeforeDate"
-                    value={deleteBeforeDate}
-                    onChange={(e) => setDeleteBeforeDate(e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded"
+                  <CalendarSelector
+                    selectedDate={deleteBeforeDate}
+                    onDateChange={handleDateChange}
                   />
                 </div>
                 <AlertDialogDescription className="mt-4">
-                  ⚠ Cette action va supprimer définitivement toutes les intentions de messe antérieures à cette date.
+                  ⚠ Cette action va supprimer définitivement toutes les messes antérieures à cette date.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Annuler</AlertDialogCancel>
-                <AlertDialogAction onClick={() => handleDeleteHistory(deleteBeforeDate)}>
+                <AlertDialogAction onClick={() => setShowDeleteConfirmDialog(true)}>
+                  Supprimer
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
+          {/* Confirmation de suppression */}
+          <AlertDialog open={showDeleteConfirmDialog} onOpenChange={setShowDeleteConfirmDialog}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Êtes-vous sûr de vouloir supprimer toutes les messes antérieures à cette date ?
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setShowDeleteConfirmDialog(false)}>Annuler</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => {
+                    handleDeleteHistory(deleteBeforeDate); // Appelle la fonction pour supprimer les données
+                    setShowDeleteConfirmDialog(false); // Ferme la confirmation de suppression
+                  }}
+                >
                   Confirmer
                 </AlertDialogAction>
               </AlertDialogFooter>
@@ -229,11 +257,11 @@ const AdminPage = () => {
                 </AlertDialogAction>
               </AlertDialogFooter>
               {errorMessage && (
-                  <Alert className="bg-red-50 border-red-300 text-red-800">
-                    <AlertTitle>✖ Erreur</AlertTitle>
-                    <AlertDescription>{errorMessage}</AlertDescription>
-                  </Alert>
-                )}
+                <Alert className="bg-red-50 border-red-300 text-red-800">
+                  <AlertTitle className="flex items-center space-x-2"><X color="red" size={22} /> Erreur</AlertTitle>
+                  <AlertDescription>{errorMessage}</AlertDescription>
+                </Alert>
+              )}
             </AlertDialogContent>
           </AlertDialog>
 

@@ -131,6 +131,9 @@ const changeUserPassword = async (req, res) => {
     if (newPassword !== confirmPassword) {
       return res.status(400).json({ error: 'Les nouveaux mots de passe ne correspondent pas' });
     }
+    if(newPassword === confirmPassword && oldPassword === newPassword) {
+      return res.status(200).json({ success: 'Aucun changement' });
+    }
 
     // Hacher le nouveau mot de passe
     const hashedPassword = await bcrypt.hash(newPassword, 10);

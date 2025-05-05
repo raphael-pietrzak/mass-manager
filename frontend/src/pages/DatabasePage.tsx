@@ -25,15 +25,15 @@ const DatabaseTabs: React.FC = () => {
   const selectedTab = tabs.find(tab => tab.key === activeTab);
   const formatters = selectedTab?.formatters || {};
 
-  const sanitizedFormatters: Record<string, FormatterConfig> = Object.fromEntries(
+  const sanitizedFormatters = Object.fromEntries(
     Object.entries(formatters).map(([key, value]) => {
       // Si la valeur est une fonction (FormatterFunction), transforme-la en FormatterConfig
       if (typeof value === 'function') {
-        return [key, { type: 'enum', options: [], display: value }];
+        return [key, { type: 'enum', options: [], display: value } as FormatterConfig];
       }
-      return [key, value];
+      return [key, value as FormatterConfig];
     })
-  );
+  ) as Record<string, FormatterConfig>;
 
   const handleDeleteClick = (id: number) => {
     setDeleteId(id);
@@ -41,7 +41,6 @@ const DatabaseTabs: React.FC = () => {
 
   const handleConfirmDelete = async () => {
     if (deleteId === null) return;
-
     try {
       await handleDelete(deleteId);
     } finally {

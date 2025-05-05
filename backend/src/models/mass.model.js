@@ -63,6 +63,12 @@ class Mass {
         return db('Masses').where('id', id).del();
     }
 
+    static async deleteBeforeDate(date) {
+        const formattedDate = new Date(date).toISOString().split('T')[0];
+        console.log("Date reçue : ", formattedDate);
+        return db('Masses').where(db.raw('DATE(date) < DATE(?)', [formattedDate])).del();
+    }
+
     static async getMassesByCelebrantAndDate(celebrantId, date) {
         return db('Masses')
             .where('celebrant_id', celebrantId)

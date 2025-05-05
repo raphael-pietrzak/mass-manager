@@ -3,7 +3,7 @@ import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, A
 import { Button } from "@/components/ui/button";
 import { DropdownSearch } from "../../components/DropdownSearch";
 import { Input } from "@/components/ui/input";
-import { Plus } from "lucide-react";
+import { AlertTriangle, Plus } from "lucide-react";
 import { Celebrant, celebrantService } from '../../api/celebrantService';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { X } from "lucide-react";
@@ -24,20 +24,17 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
     religious_name: '',
     civil_firstname: '',
     civil_lastname: '',
-    title: '',
+    title: 'P',
     role: ''
   });
   const [celebrants, setCelebrants] = useState<Celebrant[]>([]);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const celebrantOptions = celebrants.map((celebrant) => ({
     value: celebrant.id.toString(),
     label: `${celebrant.title} ${celebrant.religious_name}`
   }));
-
-//   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     setNewCelebrant({ ...newCelebrant, [e.target.name]: e.target.value });
-//   };
 
   // Charger les célébrants depuis l'API
   useEffect(() => {
@@ -63,6 +60,25 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
     }
   }, [successMessage]);
 
+  useEffect(() => {
+    if (!open) {
+      // Réinitialiser les valeurs lorsque la modal est fermée
+      setSelectedCelebrant(UNASSIGNED_VALUE);
+      setFormMode('create');
+      setSelectedCelebrantData(null);
+      setNewCelebrant({
+        religious_name: '',
+        civil_firstname: '',
+        civil_lastname: '',
+        title: 'P', // Remettre 'P' par défaut
+        role: ''
+      });
+      setValidationError(null); // Réinitialiser l'erreur de validation
+      setSuccessMessage(null); // Réinitialiser le message de succès
+    }
+  }, [open]); // Cette fonction s'exécute chaque fois que l'état 'open' change
+  
+
   const refreshCelebrants = async () => {
     try {
       const data = await celebrantService.getCelebrants();
@@ -86,8 +102,26 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
   };
 
   const handleAddCelebrant = async () => {
+    if(!newCelebrant.religious_name.trim()) {
+      setValidationError("Le nom religieux est obligatoire");
+      return;
+    }
+    if(!newCelebrant.civil_lastname.trim()) {
+      setValidationError("Le nom civil est obligatoire");
+      return;
+    }
+    if(!newCelebrant.civil_firstname.trim()) {
+      setValidationError("Le prénom civil est obligatoire");
+      return;
+    }
+    if(!newCelebrant.title.trim()) {
+      setValidationError("Le titre est obligatoire (P, RP, TRP...)");
+      return;
+    }
+    // Réinitialiser l'erreur si validation OK
+    setValidationError(null);
     try {
-        const response = await celebrantService.addCelebrant(newCelebrant); // Appel au service pour ajouter
+        const response = await celebrantService.addCelebrant({ ...newCelebrant, id: '' }); // Appel au service pour ajouter
         setSuccessMessage(response);
         await refreshCelebrants(); // Rafraîchit la liste des célébrants
         setNewCelebrant({ religious_name: '', civil_firstname: '', civil_lastname: '', title: '', role: '' }); // Réinitialise le formulaire
@@ -113,7 +147,7 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
 
   const handleSelectCelebrant = (value: string) => {
     setSelectedCelebrant(value);
-    const celebrant = celebrants.find(c => c.id === value);
+    const celebrant = celebrants.find(c => c.id.toString() === value);
     if (celebrant) {
       setSelectedCelebrantData(celebrant);
       setFormMode('edit'); // Passer en mode édition
@@ -172,8 +206,17 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
         {/* Message de succès */}
         {successMessage && (
           <Alert className="bg-green-50 border-green-300 text-green-800">
+            
             <AlertTitle>✓ Succès</AlertTitle>
             <AlertDescription>{successMessage}</AlertDescription>
+          </Alert>
+        )}
+
+        {/* Message d'erreur */}
+        {validationError && (
+          <Alert variant="destructive" className="mt-2">
+            <AlertTriangle className="h-4 w-4 mr-2" />
+            <AlertDescription>{validationError}</AlertDescription>
           </Alert>
         )}
 
@@ -183,8 +226,9 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
             <div className="font-semibold text-lg">{formMode === 'create' ? 'Formulaire d\'ajout' : 'Formulaire de modification'}</div>
 
             <div>
-              <label htmlFor="religious_name" className="block text-sm font-medium text-gray-700 mb-1">Nom religieux</label>
+              <label htmlFor="religious_name" className="block text-sm font-medium text-gray-700 mb-1">Nom religieux<span className="text-red-500"> *</span></label>
               <Input
+                required
                 name="religious_name"
                 value={formMode === 'edit' ? selectedCelebrantData?.religious_name : newCelebrant.religious_name}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -195,12 +239,14 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
                   }
                 }}
                 placeholder="Nom religieux"
+                className={validationError && !newCelebrant.religious_name.trim() ? "border-red-500" : ""}
               />
             </div>
 
             <div>
-              <label htmlFor="civil_firstname" className="block text-sm font-medium text-gray-700 mb-1">Prénom civil</label>
+              <label htmlFor="civil_firstname" className="block text-sm font-medium text-gray-700 mb-1">Prénom civil<span className="text-red-500"> *</span></label>
               <Input
+                required
                 name="civil_firstname"
                 value={formMode === 'edit' ? selectedCelebrantData?.civil_firstname : newCelebrant.civil_firstname}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -211,12 +257,14 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
                   }
                 }}
                 placeholder="Prénom civil"
+                className={validationError && !newCelebrant.civil_firstname.trim() ? "border-red-500" : ""}
               />
             </div>
 
             <div>
-              <label htmlFor="civil_lastname" className="block text-sm font-medium text-gray-700 mb-1">Nom civil</label>
+              <label htmlFor="civil_lastname" className="block text-sm font-medium text-gray-700 mb-1">Nom civil<span className="text-red-500"> *</span></label>
               <Input
+                required
                 name="civil_lastname"
                 value={formMode === 'edit' ? selectedCelebrantData?.civil_lastname : newCelebrant.civil_lastname}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -227,13 +275,15 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
                   }
                 }}
                 placeholder="Nom civil"
+                className={validationError && !newCelebrant.civil_lastname.trim() ? "border-red-500" : ""}
               />
             </div>
 
             <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">Titre</label>
+              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">Titre<span className="text-red-500"> *</span></label>
               <Input
                 name="title"
+                
                 value={formMode === 'edit' ? selectedCelebrantData?.title : newCelebrant.title}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   if (formMode === 'edit') {
@@ -243,6 +293,7 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
                   }
                 }}
                 placeholder="Titre"
+                className={validationError && !newCelebrant.title.trim() ? "border-red-500" : ""}
               />
             </div>
 

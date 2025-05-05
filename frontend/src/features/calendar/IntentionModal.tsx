@@ -104,7 +104,7 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
     { value: '', label: "Aléatoire" },
     ...celebrants.map(c => ({
       value: c.id,
-      label: `${c.title} ${c.religious_name || `${c.civil_firstname} ${c.civil_lastname}`}`
+      label: `${c.title} ${c.religious_name}`
     }))
   ];
 
