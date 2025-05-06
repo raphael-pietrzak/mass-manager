@@ -61,6 +61,7 @@ exports.up = function(knex) {
       table.string('login_name', 100).notNullable();
       table.string('password', 100).notNullable();
       table.string('email', 100).notNullable();
+      table.enu('role', ['admin', 'secretary', 'celebrant'])
     });
 };
 

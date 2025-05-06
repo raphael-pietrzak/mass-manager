@@ -71,7 +71,7 @@ const changeUserPassword = async (req, res) => {
     // Vérifier si le mot de passe actuel est correct
     const isMatch = await bcrypt.compare(oldPassword, user.password);
     if (!isMatch) {
-      return res.status(401).json({ error: 'Mot de passe actuel incorrect' });
+      return res.status(401).json({ error: 'Ancien mot de passe incorrect' });
     }
 
     if (newPassword !== confirmPassword) {
