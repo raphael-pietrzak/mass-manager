@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, Calendar as CalendarIcon, Clock } from 'lucide-react';
-import { Mass } from './types';
+import { Mass } from '../../api/massService';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -61,13 +61,13 @@ export const DaySlider: React.FC<DaySliderProps> = ({
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center space-x-2">
                         <Clock className="w-4 h-4 text-gray-500" />
-                        <span className="font-medium">{mass.time}</span>
+                        <span className="font-medium">{mass.date}</span>
                       </div>
                     </div>
 
                     <div className="space-y-1">
                       <p className="text-sm text-gray-600">
-                        Célébrant: {mass.celebrant}
+                        Célébrant: {mass.celebrant_title} {mass.celebrant_name}
                       </p>
                       {mass.intention && (
                         <p className="text-sm text-gray-600 italic">

@@ -65,7 +65,7 @@ export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ inte
                 <p className="text-sm text-gray-500">Préférence de date</p>
                 <p className="font-medium">
                   {intention.wants_celebration_date ? (
-                    intention.date_type === 'indifferente' ? 'Date indifférente' : intention.date_type
+                    intention.date_type === 'indifferent' ? 'Date indifférente' : intention.date_type
                   ) : 'Aucune préférence'}
                 </p>
               </div>

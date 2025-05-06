@@ -21,7 +21,7 @@ const testFormData: Partial<Intention> = {
   intention_text: 'Intention test',
   mass_count: 1,
   mass_type: 'unite',
-  date_type: 'indifferente',
+  date_type: 'indifferent',
   date: undefined,
   celebrant_name: '',
   celebrant_id: '',
@@ -122,6 +122,7 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
     try {
       setIsLoading(true);
       const preview = await intentionService.previewMasses({
+        celebrant_id: formData.celebrant_id,
         intention_text: formData.intention_text,
         date: formData.date || formatDateForApi(selectedDate),
         deceased: formData.deceased,

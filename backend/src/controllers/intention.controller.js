@@ -67,7 +67,37 @@ exports.createIntention = async (req, res) => {
     
     // Traiter les messes associées
     if (intentionData.masses && intentionData.masses.length > 0) {
+      // Map pour suivre les célébrants déjà assignés par date
+      const assignedCelebrantsByDate = new Map();
+      
       for (const mass of intentionData.masses) {
+        const massDate = mass.date;
+        const celebrantId = mass.celebrant_id;
+        
+        // Vérifier si un célébrant est déjà assigné pour cette date
+        if (celebrantId && massDate) {
+          const dateKey = new Date(massDate).toISOString().split('T')[0];
+          
+          // Si un célébrant est déjà assigné pour cette date et que c'est le même
+          if (assignedCelebrantsByDate.has(dateKey) && 
+              assignedCelebrantsByDate.get(dateKey) === celebrantId) {
+            // Ne pas permettre la création de cette messe avec ce célébrant
+            continue;
+          }
+          
+          // Vérifier également si ce célébrant n'est pas déjà assigné à une autre messe ce jour-là
+          const isCelebrantAvailable = await MassModel.isCelebrantAvailable(celebrantId, dateKey);
+          if (!isCelebrantAvailable) {
+            // Le célébrant est déjà assigné à une autre messe ce jour-là
+            // On pourrait soit sauter cette messe, soit lui assigner un autre célébrant
+            // Dans cet exemple, on continue sans assigner de célébrant
+            mass.celebrant_id = null;
+          } else {
+            // Marquer ce célébrant comme assigné pour cette date
+            assignedCelebrantsByDate.set(dateKey, celebrantId);
+          }
+        }
+        
         const massData = {
           date: mass.date,
           intention_id: intentionId,
@@ -140,6 +170,7 @@ exports.getPendingIntentions = async (req, res) => {
 exports.previewIntention = async (req, res) => {
   try {
     const preview = await MassService.generateMassPreview({
+      celebrant_id: req.body.celebrant_id,
       intention_text: req.body.intention_text,
       deceased: req.body.deceased,
       dates: req.body.dates,

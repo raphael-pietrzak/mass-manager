@@ -75,7 +75,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               <option value="all">Tous célébrants</option>
               {celebrants.map(celebrant => (
                 <option key={celebrant.id} value={celebrant.id}>
-                  {celebrant.title} {celebrant.religious_name || `${celebrant.civil_first_name} ${celebrant.civil_last_name}`}
+                  {celebrant.title} {celebrant.religious_name || `${celebrant.civil_firstname} ${celebrant.civil_lastname}`}
                 </option>
               ))}
             </select>
