@@ -30,6 +30,8 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
   const [celebrants, setCelebrants] = useState<Celebrant[]>([]);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
   const celebrantOptions = celebrants.map((celebrant) => ({
     value: celebrant.id.toString(),
@@ -55,7 +57,7 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
       const timer = setTimeout(() => {
         setSuccessMessage(null);
       }, 4000);
-  
+
       return () => clearTimeout(timer);
     }
   }, [successMessage]);
@@ -77,7 +79,7 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
       setSuccessMessage(null); // Réinitialiser le message de succès
     }
   }, [open]); // Cette fonction s'exécute chaque fois que l'état 'open' change
-  
+
 
   const refreshCelebrants = async () => {
     try {
@@ -102,47 +104,58 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
   };
 
   const handleAddCelebrant = async () => {
-    if(!newCelebrant.religious_name.trim()) {
+    if (!newCelebrant.religious_name.trim()) {
       setValidationError("Le nom religieux est obligatoire");
       return;
     }
-    if(!newCelebrant.civil_lastname.trim()) {
+    if (!newCelebrant.civil_lastname.trim()) {
       setValidationError("Le nom civil est obligatoire");
       return;
     }
-    if(!newCelebrant.civil_firstname.trim()) {
+    if (!newCelebrant.civil_firstname.trim()) {
       setValidationError("Le prénom civil est obligatoire");
       return;
     }
-    if(!newCelebrant.title.trim()) {
+    if (!newCelebrant.title.trim()) {
       setValidationError("Le titre est obligatoire (P, RP, TRP...)");
       return;
     }
     // Réinitialiser l'erreur si validation OK
     setValidationError(null);
     try {
-        const response = await celebrantService.addCelebrant({ ...newCelebrant, id: '' }); // Appel au service pour ajouter
-        setSuccessMessage(response);
-        await refreshCelebrants(); // Rafraîchit la liste des célébrants
-        setNewCelebrant({ religious_name: '', civil_firstname: '', civil_lastname: '', title: '', role: '' }); // Réinitialise le formulaire
+      const response = await celebrantService.addCelebrant({ ...newCelebrant, id: '' }); // Appel au service pour ajouter
+      setSuccessMessage(response);
+      await refreshCelebrants(); // Rafraîchit la liste des célébrants
+      setNewCelebrant({ religious_name: '', civil_firstname: '', civil_lastname: '', title: '', role: '' }); // Réinitialise le formulaire
     } catch (error) {
-        console.error("Erreur lors de l'ajout du célébrant", error);
+      console.error("Erreur lors de l'ajout du célébrant", error);
     }
-}
+  }
+
+  const handleDeleteCelebrant = (id: string) => {
+    setIsDeleting(id);
+    setIsConfirmingDelete(true);
+  };
 
   // Fonction de suppression
-  const handleDeleteCelebrant = async () => {
-    if (selectedCelebrant) {
+  const handleConfirmDeleteCelebrant = async () => {
+    if (selectedCelebrant && isDeleting) {
       try {
         const response = await celebrantService.deleteCelebrant(selectedCelebrant); // Appel au service pour supprimer
         setSuccessMessage(response);
         await refreshCelebrants(); // Rafraîchit la liste des célébrants
         setSelectedCelebrant(undefined); // Réinitialise la sélection
         setFormMode('create'); // Après la suppression, revenir en mode création
+        setIsDeleting(null);
+        setIsConfirmingDelete(false);
       } catch (error) {
         console.error("Erreur lors de la suppression du célébrant", error);
       }
     }
+  };
+
+  const handleCloseConfirmDelete = () => {
+    setIsConfirmingDelete(false); // Ferme la fenêtre de confirmation
   };
 
   const handleSelectCelebrant = (value: string) => {
@@ -160,27 +173,27 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent className="w-full max-w-lg mx-auto p-4 max-h-[95vh] overflow-y-auto">
-      <AlertDialogHeader>
-        <div className="flex justify-between items-center">
-          <AlertDialogTitle className="text-lg font-semibold">
-            {formMode === 'create' ? 'Ajouter un célébrant' : 'Mettre à jour un célébrant'}
-          </AlertDialogTitle>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="ml-2 text-gray-500 hover:text-black"
-            onClick={() => onOpenChange(false)}
-            aria-label="Fermer"
-          >
-            <X className="h-5 w-5" />
-          </Button>
-        </div>
-        <AlertDialogDescription className="mt-1 text-sm text-muted-foreground">
-          {formMode === 'create'
-            ? 'Ajoutez un nouveau célébrant ou sélectionnez-en un pour la mise à jour.'
-            : 'Mettez à jour les informations du célébrant sélectionné.'}
-        </AlertDialogDescription>
-      </AlertDialogHeader>
+        <AlertDialogHeader>
+          <div className="flex justify-between items-center">
+            <AlertDialogTitle className="text-lg font-semibold">
+              {formMode === 'create' ? 'Ajouter un célébrant' : 'Mettre à jour un célébrant'}
+            </AlertDialogTitle>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="ml-2 text-gray-500 hover:text-black"
+              onClick={() => onOpenChange(false)}
+              aria-label="Fermer"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
+          <AlertDialogDescription className="mt-1 text-sm text-muted-foreground">
+            {formMode === 'create'
+              ? 'Ajoutez un nouveau célébrant ou sélectionnez-en un pour la mise à jour.'
+              : 'Mettez à jour les informations du célébrant sélectionné.'}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
         <div className="space-y-3">
           <label className="block text-sm font-medium text-gray-700 mb-1">Célébrant</label>
           <DropdownSearch
@@ -206,7 +219,6 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
         {/* Message de succès */}
         {successMessage && (
           <Alert className="bg-green-50 border-green-300 text-green-800">
-            
             <AlertTitle>✓ Succès</AlertTitle>
             <AlertDescription>{successMessage}</AlertDescription>
           </Alert>
@@ -217,6 +229,31 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
           <Alert variant="destructive" className="mt-2">
             <AlertTriangle className="h-4 w-4 mr-2" />
             <AlertDescription>{validationError}</AlertDescription>
+          </Alert>
+        )}
+
+        {/* Delete confirmation */}
+        {isConfirmingDelete && (
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4 mr-2" />
+            <AlertTitle>Confirmer la suppression</AlertTitle>
+            <AlertDescription className="mt-2">
+              <p className="mb-3">Êtes-vous sûr de vouloir supprimer ce jour particulier ? Cette action est irréversible.</p>
+              <div className="flex justify-end space-x-2">
+                <Button
+                  variant="outline"
+                  onClick={handleCloseConfirmDelete}
+                >
+                  Annuler
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={handleConfirmDeleteCelebrant}
+                >
+                  Supprimer
+                </Button>
+              </div>
+            </AlertDescription>
           </Alert>
         )}
 
@@ -283,7 +320,7 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
               <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">Titre<span className="text-red-500"> *</span></label>
               <Input
                 name="title"
-                
+
                 value={formMode === 'edit' ? selectedCelebrantData?.title : newCelebrant.title}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   if (formMode === 'edit') {
@@ -314,8 +351,8 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
             </div>
 
             {formMode === 'create' ? (
-              <Button className="w-full mt-3 bg-blue-600 text-white" onClick={() => {   
-                handleAddCelebrant(); 
+              <Button className="w-full mt-3 bg-blue-600 text-white" onClick={() => {
+                handleAddCelebrant();
                 setSelectedCelebrant(UNASSIGNED_VALUE); // Réinitialiser la sélection après l'ajout
               }}>
                 Ajouter le célébrant
