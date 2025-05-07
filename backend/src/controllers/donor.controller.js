@@ -44,8 +44,9 @@ exports.createDonor = async (req, res) => {
 
 exports.updateDonor = async (req, res) => {
   try {
+    const id = req.params.id;
     const donorData = {
-      id: req.params.id,
+      //id: req.params.id,
       firstname: req.body.firstname,
       lastname: req.body.lastname,
       email: req.body.email,
@@ -55,7 +56,7 @@ exports.updateDonor = async (req, res) => {
       zip_code: req.body.zip_code
     };
 
-    await Donor.update(donorData);
+    await Donor.update(id, donorData);
     res.status(201).send("Donateur mis à jour !");
   } catch (error) {
     console.error(error);
