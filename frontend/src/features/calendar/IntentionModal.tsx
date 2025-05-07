@@ -88,6 +88,7 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
   }, [isOpen, intention]);
 
   if (!isOpen) return null;
+  
 
   const handleRecurrenceClick = () => {
     setShowRecurrenceModal(true);
