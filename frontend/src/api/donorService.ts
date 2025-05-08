@@ -1,44 +1,63 @@
-import axios from 'axios';
-import { API_BASE_URL } from '.';
+import axios from "axios"
+import { API_BASE_URL } from "."
 
 export interface Donor {
-    id: number;
-    firstname: string;
-    lastname: string;
-    email?: string;
-    phone?: string;
-    address?: string;
-    city?: string;
-    zip_code?: string;
+	id: number
+	firstname: string
+	lastname: string
+	email?: string
+	phone?: string
+	address?: string
+	city?: string
+	zip_code?: string
 }
 
-const API_URL = `${API_BASE_URL}/api/data`;
+const API_URL = `${API_BASE_URL}/api/data`
 
 class DonorService {
-    async getDonors(): Promise<Donor[]> {
-      const response = await axios.get(`${API_URL}/donors`);
-      return response.data;
-    }
+	async getDonors(): Promise<Donor[]> {
+		const response = await axios.get(`${API_URL}/donors`)
+		return response.data
+	}
 
-    async createDonor(donor: Donor): Promise<string> {
-      const response = await axios.post(`${API_URL}/donors`, donor);
-      return response.data;
-    }
+	async getDonorsPaginated(limit: number, page: number): Promise<{ donors: Donor[]; totalPages: number }> {
+		try {
+		  // Envoi de la requête GET avec limit et page dans les paramètres de la query
+		  const response = await axios.get(`${API_URL}/donors`, {
+			params: { limit, page }
+		  });
+		  return response.data; // Les données retournées contiennent les donateurs et les informations de pagination
+		} catch (error) {
+		  console.error('Erreur lors de la récupération des donateurs', error);
+		  throw new Error('Erreur lors de la récupération des donateurs');
+		}
+	  }
 
-    async getDonorById(id: number): Promise<Donor> {
-      const response = await axios.get(`${API_URL}/donors/${id}`);
-      return response.data;
-    }
+	async createDonor(donor: Donor): Promise<string> {
+		try {
+			const response = await axios.post(`${API_URL}/donors`, donor)
+			return response.data // "Donateur enregistré !" si tout va bien
+		} catch (error: any) {
+			if (axios.isAxiosError(error) && error.response) {
+				throw new Error(error.response.data) // renvoie "Un donateur avec cet email existe déjà !"
+			}
+			throw new Error("Erreur réseau.")
+		}
+	}
 
-    async updateDonor(id: number, donor: Donor): Promise<string> {
-      const response = await axios.put(`${API_URL}/donors/${id}`, donor);
-      return response.data;
-    }
+	async getDonorById(id: number): Promise<Donor> {
+		const response = await axios.get(`${API_URL}/donors/${id}`)
+		return response.data
+	}
 
-    async deleteDonor(id: number): Promise<void> {
-      await axios.delete(`${API_URL}/donors/${id}`);
-    }
+	async updateDonor(id: number, donor: Donor): Promise<string> {
+		const response = await axios.put(`${API_URL}/donors/${id}`, donor)
+		return response.data
+	}
+
+	async deleteDonor(id: number): Promise<void> {
+		await axios.delete(`${API_URL}/donors/${id}`)
+	}
 }
-  
-export const donorsService = new DonorService();
-  
+
+export const donorsService = new DonorService()

@@ -15,6 +15,7 @@ function DonorsPage() {
   const exportMenuRef = useRef<HTMLDivElement>(null);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string>();
 
@@ -23,7 +24,7 @@ function DonorsPage() {
       const timer = setTimeout(() => {
         setSuccessMessage(undefined);
       }, 4000);
-  
+
       return () => clearTimeout(timer);
     }
   }, [successMessage]);
@@ -34,12 +35,13 @@ function DonorsPage() {
 
   useEffect(() => {
     fetchDonors();
-  }, []);
+  }, [currentPage, itemsPerPage, searchQuery]);
 
   const fetchDonors = async () => {
     try {
-      const data = await donorsService.getDonors();
-      setDonors(data);
+      const data = await donorsService.getDonorsPaginated(itemsPerPage, currentPage);
+      setDonors(data.donors);
+      setTotalPages(data.totalPages);
       setLoading(false);
     } catch (err) {
       setError('Erreur lors du chargement des donateurs');
@@ -67,21 +69,9 @@ function DonorsPage() {
     }
   };
 
-  const filteredDonors = donors.filter(donor => {
-    const fullName = `${donor.firstname} ${donor.lastname}`.toLowerCase();
-    return fullName.includes(searchQuery.toLowerCase());
-  });
-
-  const totalPages = Math.ceil(filteredDonors.length / itemsPerPage);
-
-  const paginatedDonors = filteredDonors.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
   const handleItemsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setItemsPerPage(Number(e.target.value));
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset to page 1 when items per page changes
   };
 
   const handlePageChange = (page: number) => {
@@ -96,7 +86,7 @@ function DonorsPage() {
   };
 
   if (loading) return <div>Chargement...</div>;
-  if (error) return <div>Erreur: {error}</div>;
+  if (error) return <div>Erreur : {error}</div>;
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -189,7 +179,7 @@ function DonorsPage() {
 
         <div className="mt-6">
           <DonorList
-            donors={paginatedDonors}
+            donors={donors} // No need for paginatedDonors anymore
             onDonorClick={handleDonorClick}
           />
         </div>
@@ -206,7 +196,7 @@ function DonorsPage() {
           <span>Page {currentPage} sur {totalPages}</span>
           <button
             onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
+            disabled={currentPage === totalPages || totalPages === 0}
             className="px-3 py-1 border rounded disabled:opacity-50"
           >
             &gt;

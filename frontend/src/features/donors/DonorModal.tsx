@@ -1,7 +1,8 @@
 // DonorModal2.tsx
 import React, { useState, useEffect } from 'react';
 import { Donor, donorsService } from '../../api/donorService';
-import { X } from 'lucide-react';
+import { AlertTriangle, X } from 'lucide-react';
+import { Alert, AlertDescription } from '../../components/ui/alert';
 
 interface DonorModalProps {
   isOpen: boolean;
@@ -24,6 +25,11 @@ const DonorModal: React.FC<DonorModalProps> = ({ isOpen, onClose, donor, mode, o
     city: '',
     zip_code: ''
   });
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setValidationError(null);  // Réinitialise l'erreur dès que la modal est ouverte
+  }, [isOpen]);
 
   useEffect(() => {
     if (donor && mode === 'edit') {
@@ -58,6 +64,7 @@ const DonorModal: React.FC<DonorModalProps> = ({ isOpen, onClose, donor, mode, o
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setValidationError(null); // Réinitialiser le message d'erreur
     try {
       if (mode === 'edit' && donor) {
         const response = await donorsService.updateDonor(donor.id, { ...formData, id: donor.id });
@@ -70,6 +77,15 @@ const DonorModal: React.FC<DonorModalProps> = ({ isOpen, onClose, donor, mode, o
       onClose();
     } catch (error) {
       console.error("Erreur lors de la sauvegarde du donateur", error);
+      if (error instanceof Error) {
+        setValidationError(error.message);
+
+      } else {
+        setValidationError('Une erreur inconnue est survenue.');
+      }
+      setTimeout(() => {
+        setValidationError(null);  // Supprime l'erreur après 5 secondes
+      }, 5000);
     }
   };
 
@@ -77,7 +93,7 @@ const DonorModal: React.FC<DonorModalProps> = ({ isOpen, onClose, donor, mode, o
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg relative">    
+      <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg relative">
         <div className="p-1 flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold">
             {mode === 'edit' ? 'Modifier un Donateur' : 'Ajouter un Donateur'}
@@ -89,18 +105,26 @@ const DonorModal: React.FC<DonorModalProps> = ({ isOpen, onClose, donor, mode, o
             <X className="w-5 h-5" />
           </button>
         </div>
+
+        {/* Message d'erreur */}
+        {validationError && (
+          <Alert variant="destructive" className="mt-2">
+            <AlertTriangle className="h-4 w-4 mr-2" />
+            <AlertDescription>{validationError}</AlertDescription>
+          </Alert>
+        )}
         <form onSubmit={handleSubmit} className="space-y-4">
           <label className="block">
             <span className="text-sm font-medium text-gray-700">Prénom<span className="text-red-500"> *</span></span>
-              <input
-                type="text"
-                name="firstname"
-                placeholder="Prénom"
-                value={formData.firstname}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded"
-                required
-              />
+            <input
+              type="text"
+              name="firstname"
+              placeholder="Prénom"
+              value={formData.firstname}
+              onChange={handleChange}
+              className="w-full p-2 border border-gray-300 rounded"
+              required
+            />
           </label>
           <label className="block">
             <span className="text-sm font-medium text-gray-700">Nom<span className="text-red-500"> *</span></span>
@@ -171,7 +195,7 @@ const DonorModal: React.FC<DonorModalProps> = ({ isOpen, onClose, donor, mode, o
                 className="w-full p-2 border border-gray-300 rounded"
               />
             </label>
-          </div>         
+          </div>
           <div className="flex justify-end gap-2">
             <button
               type="button"

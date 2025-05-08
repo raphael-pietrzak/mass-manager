@@ -6,6 +6,15 @@ const Donor = {
     return db.select().from('Donors').orderBy('lastname', 'asc');
   },
 
+  getPaginated: async (limit, offset) => {
+    return db.select().from('Donors').orderBy('lastname', 'asc').limit(limit).offset(offset);
+  },
+
+  getCount: async () => {
+    const result = await db('Donors').count('id as count').first();
+    return parseInt(result.count, 10);
+  },
+
   create: async (donor) => {
     const [id] = await db('Donors').insert(donor).returning('id');
     return id?.id ?? id;
