@@ -14,18 +14,22 @@ const AppRouter: React.FC = () => (
   <Router>
     <Navbar />
     <Routes>
-      <Route path="/" element={<CalendarPage />} />
-      <Route path="/calendar" element={<CalendarPage />} />
+      {/* Route publique */}
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/donors" element={<DonorsPage/>} />
-      <Route path="/intentions" element={<IntentionPage/>} />
 
-       {/* Routes protégées */}
-      <Route path="/database" element={<ProtectedRoute><DatabaseTabs/> </ProtectedRoute>} />
-      <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>}/>
-      {/* <Route path="*" element={<div>404 Not Found</div>} /> */}
+      {/* Routes accessibles à admin ou secretary */}
+      <Route path="/" element={<ProtectedRoute requiredRole={['admin', 'secretary']}><CalendarPage /></ProtectedRoute>} />
+      <Route path="/calendar" element={<ProtectedRoute requiredRole={['admin', 'secretary']}> <CalendarPage /></ProtectedRoute>} />
+      <Route path="/donors" element={<ProtectedRoute requiredRole={['admin', 'secretary']}> <DonorsPage /> </ProtectedRoute>} />
+      <Route path="/intentions" element={<ProtectedRoute requiredRole={['admin', 'secretary']}> <IntentionPage /> </ProtectedRoute>} />
+
+      {/* Routes réservées à admin uniquement */}
+      <Route path="/database" element={<ProtectedRoute requiredRole={['admin']}> <DatabaseTabs /> </ProtectedRoute>} />
+      <Route path="/admin" element={<ProtectedRoute requiredRole={['admin']}> <AdminPage /> </ProtectedRoute>} />
     </Routes>
   </Router>
+
+
 );
 
 export default AppRouter;

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from "react";
 import axios from "axios";
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -8,16 +8,19 @@ interface AuthContextType {
   checkAuth: () => Promise<void>;
   logout: () => Promise<void>;
   loading: boolean;
+  userRole: UserRole | null;
   getAccessToken: () => Promise<string | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+type UserRole = 'admin' | 'secretary' | 'celebrant';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [accessToken, setAccessToken] = useState<string | null>(null);
-  
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
+
   // Fonction pour obtenir un nouveau accessToken en utilisant le refreshToken
   const refreshAccessToken = async (): Promise<string | null> => {
     try {
@@ -28,6 +31,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       );
       const newAccessToken = response.data.accessToken;
       setAccessToken(newAccessToken);
+      const decoded: any = jwtDecode(newAccessToken);
+      setUserRole((decoded.role as string).toLowerCase() as UserRole);
       return newAccessToken;
     } catch (error) {
       console.error("Erreur lors du rafraîchissement du token:", error);
@@ -52,7 +57,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (accessToken && !isTokenExpired(accessToken)) {
       return accessToken;
     }
-    
     // Sinon on demande un nouveau token
     return await refreshAccessToken();
   };
@@ -71,7 +75,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       },
       (error) => Promise.reject(error)
     );
-    
+
     return () => {
       axios.interceptors.request.eject(interceptor);
     };
@@ -85,7 +89,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLoading(false);
         return;
       }
-      
+      const decoded: any = jwtDecode(token);
+      setUserRole((decoded.role as string).toLowerCase() as UserRole);
       await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/check_login`, {
         headers: {
           Authorization: `Bearer ${token}`
@@ -117,19 +122,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log("Réponse logout :", response.data);
       setAccessToken(null);
       setIsAuthenticated(false);
+      setUserRole(null);
     } catch (err) {
       console.error("Erreur de déconnexion", err);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      isAuthenticated, 
-      setIsAuthenticated, 
-      checkAuth, 
-      logout, 
+    <AuthContext.Provider value={{
+      isAuthenticated,
+      setIsAuthenticated,
+      checkAuth,
+      logout,
       loading,
-      getAccessToken 
+      userRole, 
+      getAccessToken
     }}>
       {children}
     </AuthContext.Provider>
