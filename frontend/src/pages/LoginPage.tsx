@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
@@ -8,19 +8,25 @@ import { useAuth } from '../auth/AuthContext';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate(); // Utiliser useNavigate pour la redirection
-  const location = useLocation();
   const [loginName, setLoginName] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const { setIsAuthenticated } = useAuth();
-
-  // Récupérer la route d'origine avant la redirection vers /login
-  const from = location.state?.from?.pathname || '/admin';  // Si aucun 'from', rediriger vers /admin par défaut
+  const { setIsAuthenticated, checkAuth, userRole, isAuthenticated } = useAuth();
+  
+  useEffect(() => {
+    if (isAuthenticated) {
+      const lastPage = sessionStorage.getItem('lastPage');
+      if (lastPage) {
+        navigate(lastPage); // Redirige vers la dernière page visitée
+      } else {
+        navigate('/calendar'); // Si aucune dernière page, redirige vers une page par défaut
+      }
+    }
+  }, [isAuthenticated, navigate]); // Exécuter l'effet si isAuthenticated change
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
-
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/auth/login`,
@@ -35,7 +41,7 @@ const LoginPage: React.FC = () => {
 
       if (response.status === 200) {
         setIsAuthenticated(true);
-        navigate(from);
+        await checkAuth(); // On vérifie ensuite l'authentification et met à jour le rôle
       }
     } catch (error: any) {
       if (error.response?.data?.error) {
@@ -45,6 +51,20 @@ const LoginPage: React.FC = () => {
       }
     }
   };
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    if (userRole === null) return; // Ne pas rediriger tant que userRole n'est pas encore défini
+    // Redirection en fonction du rôle
+    //console.log("role utilisateur depuis loginPage : ", userRole);
+    if (userRole === 'admin') {
+      navigate('/admin');
+    } else if (userRole === 'secretary') {
+      navigate('/calendar');
+    } else {
+      navigate('/');
+    }
+  }, [userRole, navigate, isAuthenticated]);
 
   // Fonction pour gérer la soumission du formulaire quand "Entrée" est pressée
   const handleKeyDown = (e: React.KeyboardEvent) => {

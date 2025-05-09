@@ -22,7 +22,7 @@ const loginUser = async (req, res) => {
 
     // Créer un access token (courte durée)
     const accessToken = jwt.sign(
-      { userId: user.id, login_name: user.login_name },
+      { userId: user.id, login_name: user.login_name, role: user.role },
       process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET_KEY,
       { expiresIn: '15m' }
     );
@@ -37,7 +37,7 @@ const loginUser = async (req, res) => {
     // Envoyer le refresh token dans un cookie HttpOnly
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: process.env.NODE_ENV === "development",
       sameSite: 'Lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 jours
       path: '/'
@@ -58,7 +58,7 @@ const loginUser = async (req, res) => {
 const logoutUser = (req, res) => {
   res.clearCookie("refreshToken", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: process.env.NODE_ENV === "development",
     sameSite: "Lax",
     path: "/",       
   });
@@ -93,7 +93,7 @@ const refreshToken = async (req, res) => {
 
           // Générer un nouveau access token
           const accessToken = jwt.sign(
-            { userId: user.id, login_name: user.login_name },
+            { userId: user.id, login_name: user.login_name, role: user.role },
             process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET_KEY,
             { expiresIn: '15m' }
           );

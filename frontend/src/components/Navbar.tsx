@@ -24,7 +24,7 @@ const NAV_LINKS: NavLink[] = [
 
 const Navbar: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, userRole } = useAuth();
   const location = useLocation();
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -34,8 +34,8 @@ const Navbar: React.FC = () => {
   };
 
   const isActive = (path: string) => {
-    return location.pathname === path || 
-           (location.pathname === "/" && path === "/calendar");
+    return location.pathname === path ||
+      (location.pathname === "/" && path === "/calendar");
   };
 
   return (
@@ -46,19 +46,18 @@ const Navbar: React.FC = () => {
           Lagrasse.org
         </a>
 
-         {/* Desktop Navigation */}
-         <nav className="hidden md:flex space-x-6 items-center">
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex space-x-6 items-center">
           {NAV_LINKS.map((link) => (
             // Ajouter une condition pour "Database"
-            (link.label === "Base de données" && isAuthenticated) || link.label !== "Base de données" ? (
+            (link.label === "Administrateur" && isAuthenticated && userRole === "admin") || link.label !== "Administrateur" ? (
               <a
                 key={link.href}
                 href={link.href}
-                className={`text-gray-700 hover:text-primary transition-colors py-2 ${
-                  isActive(link.href) 
-                    ? "text-primary font-medium border-b-2 border-primary" 
+                className={`text-gray-700 hover:text-primary transition-colors py-2 ${isActive(link.href)
+                    ? "text-primary font-medium border-b-2 border-primary"
                     : ""
-                }`}
+                  }`}
               >
                 {link.label}
               </a>
@@ -92,16 +91,15 @@ const Navbar: React.FC = () => {
                 <a
                   key={link.href}
                   href={link.href}
-                  className={`text-gray-700 hover:text-primary py-2 ${
-                    isActive(link.href) ? "text-primary font-medium" : ""
-                  }`}
+                  className={`text-gray-700 hover:text-primary py-2 ${isActive(link.href) ? "text-primary font-medium" : ""
+                    }`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {link.label}
                 </a>
               ) : null
             ))}
-            
+
             {isAuthenticated && (
               <Button
                 variant="outline"
