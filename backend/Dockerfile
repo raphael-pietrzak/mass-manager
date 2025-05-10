@@ -8,5 +8,8 @@ RUN npm install
 
 COPY . .
 
-# Exécuter les migrations et les seeds au démarrage
-CMD ["sh", "-c", "npm run migrate && npm run seed && npm start"]
+# Rendre le script exécutable
+RUN chmod +x ./start.sh
+
+# Utiliser le script pour vérifier les migrations au démarrage
+CMD ["./start.sh"]

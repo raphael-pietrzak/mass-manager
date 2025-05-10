@@ -1,21 +1,17 @@
 // Navbar component
 
-// Navbar.tsx
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MenuIcon } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
-import { useLocation } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
-interface NavLink {
+interface NavLinkItem {
   label: string;
   href: string;
 }
 
-// intention regularity calendar admin
-
-const NAV_LINKS: NavLink[] = [
+const NAV_LINKS: NavLinkItem[] = [
   { label: "Calendrier", href: "/calendar" },
   { label: "Intentions", href: "/intentions" },
   { label: "Donateurs", href: "/donors" },
@@ -25,7 +21,7 @@ const NAV_LINKS: NavLink[] = [
 const Navbar: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { isAuthenticated, logout, userRole } = useAuth();
-  const location = useLocation();
+  const navigate = useNavigate();
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
@@ -51,16 +47,17 @@ const Navbar: React.FC = () => {
           {NAV_LINKS.map((link) => (
             // Ajouter une condition pour "Administrateur"
             (link.label === "Administrateur" && isAuthenticated && userRole === "admin") || link.label !== "Administrateur" ? (
-              <a
+              <NavLink
                 key={link.href}
-                href={link.href}
-                className={`text-gray-700 hover:text-primary transition-colors py-2 ${isActive(link.href)
-                    ? "text-primary font-medium border-b-2 border-primary"
-                    : ""
-                  }`}
+                to={link.href}
+                className={({ isActive }) => 
+                  `text-gray-700 hover:text-primary transition-colors py-2 ${
+                    isActive ? "text-primary font-medium border-b-2 border-primary" : ""
+                  }`
+                }
               >
                 {link.label}
-              </a>
+              </NavLink>
             ) : null
           ))}
 
@@ -87,16 +84,19 @@ const Navbar: React.FC = () => {
         <div className="md:hidden bg-white shadow-lg rounded-b-lg">
           <nav className="flex flex-col p-4 space-y-3">
             {NAV_LINKS.map((link) => (
-              (link.label === "Base de données" && isAuthenticated) || link.label !== "Base de données" ? (
-                <a
+              (link.label === "Administrateur" && isAuthenticated) || link.label !== "Administrateur" ? (
+                <NavLink
                   key={link.href}
-                  href={link.href}
-                  className={`text-gray-700 hover:text-primary py-2 ${isActive(link.href) ? "text-primary font-medium" : ""
-                    }`}
+                  to={link.href}
+                  className={({ isActive }) => 
+                    `text-gray-700 hover:text-primary py-2 ${
+                      isActive ? "text-primary font-medium" : ""
+                    }`
+                  }
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {link.label}
-                </a>
+                </NavLink>
               ) : null
             ))}
 

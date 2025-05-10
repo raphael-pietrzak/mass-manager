@@ -3,7 +3,7 @@ import { MassCalendar } from '../features/calendar/views/MassCalendar';
 import { MassList } from '../features/calendar/views/MassList';
 import { FilterBar } from '../features/calendar/filters/FilterBar';
 import { DateFilterBar } from '../features/calendar/filters/DateFilterBar';
-import { IntentionModal } from '../features/calendar/IntentionModal';
+import { IntentionModal } from '../features/intentions/IntentionModal';
 import { DaySlider } from '../features/calendar/DaySlider';
 import { Mass } from '../api/massService';
 import { massService } from '../api/massService';
