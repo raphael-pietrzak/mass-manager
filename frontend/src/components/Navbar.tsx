@@ -49,7 +49,7 @@ const Navbar: React.FC = () => {
         {/* Desktop Navigation */}
         <nav className="hidden md:flex space-x-6 items-center">
           {NAV_LINKS.map((link) => (
-            // Ajouter une condition pour "Database"
+            // Ajouter une condition pour "Administrateur"
             (link.label === "Administrateur" && isAuthenticated && userRole === "admin") || link.label !== "Administrateur" ? (
               <a
                 key={link.href}
