@@ -72,7 +72,7 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
         religious_name: '',
         civil_firstname: '',
         civil_lastname: '',
-        title: 'P', // Remettre 'P' par défaut
+        title: 'P',
         role: ''
       });
       setValidationError(null); // Réinitialiser l'erreur de validation
