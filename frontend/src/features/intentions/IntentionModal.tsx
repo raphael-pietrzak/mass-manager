@@ -29,8 +29,8 @@ const testFormData: Partial<Intention> = {
   payment_method: 'card',
   brother_name: '',
   wants_celebration_date: false,
-  first_name: 'John',
-  last_name: 'Doe',
+  firstname: 'John',
+  lastname: 'Doe',
   email: 'example@email.com',
   phone: '1234567890',
   address: '123 Main St',
@@ -154,8 +154,8 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
       await intentionService.createMass({
         masses: previewData,
         donor: {
-          first_name: formData.first_name || '',
-          last_name: formData.last_name || '',
+          firstname: formData.firstname || '',
+          lastname: formData.lastname || '',
           email: formData.email || '',
           phone: formData.phone,
           address: formData.address,

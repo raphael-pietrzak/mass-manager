@@ -12,47 +12,45 @@ interface DonorFormProps {
   onValidate: () => void;
 }
 
-const DonorForm: React.FC<DonorFormProps> = ({ 
-  formData, 
-  updateFormData, 
-  prevStep, 
-  onValidate 
+const DonorForm: React.FC<DonorFormProps> = ({
+  formData,
+  updateFormData,
+  prevStep,
+  onValidate
 }) => {
   return (
     <div className="flex flex-col flex-1 h-[550px]">
       <div className="flex-grow space-y-6 overflow-y-auto">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="first_name">Prénom</Label>
-            <Input
-              id="first_name"
-              placeholder="Prénom"
-              value={formData.first_name}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ first_name: e.target.value })}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="last_name">Nom</Label>
-            <Input
-              id="last_name"
-              placeholder="Nom"
-              value={formData.last_name}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ last_name: e.target.value })}
-            />
-          </div>
-        </div>
-
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input
             id="email"
             type="email"
             placeholder="email@exemple.com"
-            value={formData.email}
+            //value={formData.email}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ email: e.target.value })}
           />
         </div>
-
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="firstname">Prénom</Label>
+            <Input
+              id="firstname"
+              placeholder="Prénom"
+              value={formData.firstname}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ firstname: e.target.value })}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="lastname">Nom</Label>
+            <Input
+              id="last_name"
+              placeholder="Nom"
+              //value={formData.lastname}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ lastname: e.target.value })}
+            />
+          </div>
+        </div>
         <div className="space-y-2">
           <Label htmlFor="phone">Téléphone</Label>
           <Input
@@ -96,10 +94,10 @@ const DonorForm: React.FC<DonorFormProps> = ({
         </div>
 
         <div className="flex items-center space-x-2 mt-4">
-          <Checkbox 
-            id="wants_celebration_date" 
-            checked={formData.wants_celebration_date} 
-            onCheckedChange={(checked: boolean | "indeterminate") => 
+          <Checkbox
+            id="wants_celebration_date"
+            checked={formData.wants_celebration_date}
+            onCheckedChange={(checked: boolean | "indeterminate") =>
               updateFormData({ wants_celebration_date: checked as boolean })
             }
           />

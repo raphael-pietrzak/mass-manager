@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MenuIcon } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 interface NavLinkItem {
   label: string;
@@ -21,17 +21,11 @@ const NAV_LINKS: NavLinkItem[] = [
 const Navbar: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { isAuthenticated, logout, userRole } = useAuth();
-  const navigate = useNavigate();
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
   const handleLogout = async () => {
     await logout();
-  };
-
-  const isActive = (path: string) => {
-    return location.pathname === path ||
-      (location.pathname === "/" && path === "/calendar");
   };
 
   return (

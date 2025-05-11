@@ -20,18 +20,18 @@ class DonorService {
 		return response.data
 	}
 
-	async getDonorsPaginated(limit: number, page: number): Promise<{ donors: Donor[]; totalPages: number }> {
+	async getDonorsPaginated(limit: number, page: number, searchQuery?: string): Promise<{ donors: Donor[]; totalPages: number }> {
 		try {
-		  // Envoi de la requête GET avec limit et page dans les paramètres de la query
-		  const response = await axios.get(`${API_URL}/donors`, {
-			params: { limit, page }
-		  });
-		  return response.data; // Les données retournées contiennent les donateurs et les informations de pagination
+			// Envoi de la requête GET avec limit et page dans les paramètres de la query
+			const response = await axios.get(`${API_URL}/donors`, {
+				params: { limit, page, searchQuery },
+			})
+			return response.data // Les données retournées contiennent les donateurs et les informations de pagination
 		} catch (error) {
-		  console.error('Erreur lors de la récupération des donateurs', error);
-		  throw new Error('Erreur lors de la récupération des donateurs');
+			console.error("Erreur lors de la récupération des donateurs", error)
+			throw new Error("Erreur lors de la récupération des donateurs")
 		}
-	  }
+	}
 
 	async createDonor(donor: Donor): Promise<string> {
 		try {
@@ -49,6 +49,13 @@ class DonorService {
 		const response = await axios.get(`${API_URL}/donors/${id}`)
 		return response.data
 	}
+
+	// async getDonorsBySearch(searchQuery: string): Promise<Donor[]> {
+	// 	const response = await axios.get(`${API_URL}/donors/search`, {
+	// 		params: { searchQuery }
+	// 	});
+	// 	return response.data;
+	// }
 
 	async updateDonor(id: number, donor: Donor): Promise<string> {
 		const response = await axios.put(`${API_URL}/donors/${id}`, donor)
