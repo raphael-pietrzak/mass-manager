@@ -5,9 +5,7 @@ interface DropdownSearchProps {
   value?: string;
   onChange: (value: string) => void;
   placeholder?: string;
-  defaultValue?: string;
   inlineSearch?: boolean;
-  onInputChange?: (input: string) => void;
 }
 
 export const DropdownSearch: React.FC<DropdownSearchProps> = ({
@@ -15,24 +13,15 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
   value,
   onChange,
   placeholder = 'Sélectionner...',
-  defaultValue = '',
   inlineSearch = false,
-  onInputChange,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredOptions, setFilteredOptions] = useState(options);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  const effectiveValue = value || defaultValue;
-  const selectedOption = options.find((opt) => opt.value === effectiveValue);
-
-  useEffect(() => {
-    const filtered = options.filter((option) =>
-      option.label.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredOptions(filtered);
-  }, [searchTerm, options]);
+  const selectedOption = options.find((opt) => opt.value === value);
+  const filteredOptions = options.filter((option) =>
+    option.label.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -47,18 +36,9 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
     };
   }, []);
 
-  useEffect(() => {
-    if (!isOpen && selectedOption) {
-      setSearchTerm(selectedOption.label);
-    }
-  }, [selectedOption, isOpen]);
-
   const handleSelect = (value: string, label: string) => {
     onChange(value);
-    if (inlineSearch) {
-      setSearchTerm(label);
-    }
-    setSearchTerm('');
+    setSearchTerm(label);
     setIsOpen(false);
   };
 
@@ -73,7 +53,6 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
           onChange={(e) => {
             setSearchTerm(e.target.value);
             setIsOpen(true);
-            onInputChange?.(e.target.value);
           }}
           onClick={() => setIsOpen(true)}
           className="w-full px-4 py-2 bg-white border rounded-md shadow-sm focus:outline-none"
@@ -107,7 +86,7 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
-                onInputChange?.(e.target.value);
+                //onInputChange?.(e.target.value);
               }}
               onClick={(e) => e.stopPropagation()}
             />
@@ -116,7 +95,7 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
             filteredOptions.map((option) => (
               <div
                 key={option.value}
-                className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${effectiveValue === option.value ? 'bg-gray-100' : ''}`}
+                className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${value === option.value ? 'bg-gray-100' : ''}`}
                 onClick={() => {
                   onChange(option.value);
                   setSearchTerm(option.label);
@@ -126,7 +105,7 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
                 {option.label}
               </div>
             ))
-          ) : searchTerm.trim() !== '' && onInputChange ? (
+          ) : searchTerm.trim() !== '' ? (
             <div
               className="px-4 py-2 cursor-pointer hover:bg-gray-100 text-blue-600"
               onClick={() => handleSelect(searchTerm, searchTerm)}

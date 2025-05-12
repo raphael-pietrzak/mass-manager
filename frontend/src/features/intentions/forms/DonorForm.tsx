@@ -28,7 +28,6 @@ const DonorForm: React.FC<DonorFormProps> = ({
   }));
   const UNASSIGNED_VALUE = "unassigned";
   const [selectedDonor, setSelectedDonor] = useState<string | undefined>(UNASSIGNED_VALUE);
-  const [searchInput, setSearchInput] = useState<string>('');
 
   const handleSelectDonor = (value: string) => {
     setSelectedDonor(value);
@@ -93,9 +92,7 @@ const DonorForm: React.FC<DonorFormProps> = ({
             value={selectedDonor}
             onChange={handleSelectDonor}
             placeholder="Sélectionner un donateur ou ajouter un nouveau"
-            defaultValue={UNASSIGNED_VALUE}
             inlineSearch={true}
-            onInputChange={(input) => setSearchInput(input)}
           />
         </div>
         <div className="grid grid-cols-2 gap-4">

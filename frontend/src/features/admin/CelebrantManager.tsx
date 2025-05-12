@@ -32,7 +32,6 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
-  const [searchInput, setSearchInput] = useState<string>('');
   const celebrantOptions = celebrants.map((celebrant) => ({
     value: celebrant.id.toString(),
     label: `${celebrant.title} ${celebrant.religious_name}`
@@ -160,7 +159,6 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
 
   const handleSelectCelebrant = (value: string) => {
     setSelectedCelebrant(value);
-    setSearchInput('');
     const celebrant = celebrants.find(c => c.id.toString() === value);
     if (celebrant) {
       setSelectedCelebrantData(celebrant);
@@ -202,8 +200,6 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
             value={selectedCelebrant}
             onChange={handleSelectCelebrant}
             placeholder="Sélectionner un célébrant"
-            defaultValue={UNASSIGNED_VALUE}
-            onInputChange={(val) => setSearchInput(val)}
           />
         </div>
 
@@ -212,7 +208,6 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
           onClick={() => {
             setFormMode('create'); // Passer en mode création
             setSelectedCelebrant(""); // Réinitialiser la sélection
-            setSearchInput(""); // Réinitialiser le champ de recherche
           }}
         >
           <Plus className="h-4 w-4" />
