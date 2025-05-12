@@ -16,8 +16,26 @@ const API_URL = `${API_BASE_URL}/api/data`
 
 class DonorService {
 	async getDonors(): Promise<Donor[]> {
-		const response = await axios.get(`${API_URL}/donors`)
-		return response.data
+		try {
+			const response = await axios.get(`${API_URL}/donors`)
+			// Vérifier si les données sont un tableau
+			if (Array.isArray(response.data)) {
+				return response.data
+			} else if (response.data && typeof response.data === "object") {
+				// Si c'est un objet qui contient un tableau (par exemple { donors: [...] })
+				const possibleArrays = Object.values(response.data).filter(Array.isArray)
+				if (possibleArrays.length > 0) {
+					return possibleArrays[0] as Donor[]
+				}
+			}
+
+			// Si on ne trouve pas de tableau, on renvoie un tableau vide
+			console.error("Format de données inattendu:", response.data)
+			return []
+		} catch (error) {
+			console.error("Erreur lors de la récupération des donateurs:", error)
+			return []
+		}
 	}
 
 	async getDonorsPaginated(limit: number, page: number, searchQuery?: string): Promise<{ donors: Donor[]; totalPages: number }> {
@@ -49,13 +67,6 @@ class DonorService {
 		const response = await axios.get(`${API_URL}/donors/${id}`)
 		return response.data
 	}
-
-	// async getDonorsBySearch(searchQuery: string): Promise<Donor[]> {
-	// 	const response = await axios.get(`${API_URL}/donors/search`, {
-	// 		params: { searchQuery }
-	// 	});
-	// 	return response.data;
-	// }
 
 	async updateDonor(id: number, donor: Donor): Promise<string> {
 		const response = await axios.put(`${API_URL}/donors/${id}`, donor)

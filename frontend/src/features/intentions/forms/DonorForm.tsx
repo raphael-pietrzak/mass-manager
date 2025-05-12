@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Intention } from '../../../api/intentionService';
+import { Donor, donorsService } from '../../../api/donorService';
+import { DropdownSearch } from '../../../components/DropdownSearch';
 
 interface DonorFormProps {
   formData: Partial<Intention>;
@@ -18,17 +20,82 @@ const DonorForm: React.FC<DonorFormProps> = ({
   prevStep,
   onValidate
 }) => {
+
+  const [donors, setDonors] = useState<Donor[]>([]);
+  const donorOptions = donors.filter((donor) => donor.email).map((donor) => ({
+    value: donor.id.toString(),
+    label: `${donor.email}`
+  }));
+  const UNASSIGNED_VALUE = "unassigned";
+  const [selectedDonor, setSelectedDonor] = useState<string | undefined>(UNASSIGNED_VALUE);
+  const [searchInput, setSearchInput] = useState<string>('');
+
+  const handleSelectDonor = (value: string) => {
+    setSelectedDonor(value);
+    const existingDonor = donors.find((donor) => donor.id.toString() === value);
+    if (value === UNASSIGNED_VALUE || value === '') {
+      updateFormData({
+        firstname: '',
+        lastname: '',
+        email: '',
+        phone: '',
+        address: '',
+        city: '',
+        postal_code: ''
+      });
+      return;
+    }
+    if (existingDonor) {
+      updateFormData({
+        firstname: existingDonor.firstname,
+        lastname: existingDonor.lastname,
+        email: existingDonor.email,
+        phone: existingDonor.phone,
+        address: existingDonor.address,
+        city: existingDonor.city,
+        postal_code: existingDonor.zip_code
+      });
+    } else {
+      // Saisie libre : on garde l'email et on vide le reste
+      updateFormData({
+        firstname: '',
+        lastname: '',
+        email: value,
+        phone: '',
+        address: '',
+        city: '',
+        postal_code: ''
+      });
+    }
+  };
+
+
+  useEffect(() => {
+    const fetchDonors = async () => {
+      try {
+        const data = await donorsService.getDonors();
+        setDonors(data); // Mettre à jour l'état avec les données récupérées
+      } catch (error) {
+        console.error("Erreur lors du chargement des donateurs:", error);
+      }
+    };
+
+    fetchDonors(); // Appel de la fonction pour récupérer les données
+  }, []);
+
   return (
     <div className="flex flex-col flex-1 h-[550px]">
       <div className="flex-grow space-y-6 overflow-y-auto">
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="email@exemple.com"
-            //value={formData.email}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ email: e.target.value })}
+          <DropdownSearch
+            options={donorOptions}
+            value={selectedDonor}
+            onChange={handleSelectDonor}
+            placeholder="Sélectionner un donateur ou ajouter un nouveau"
+            defaultValue={UNASSIGNED_VALUE}
+            inlineSearch={true}
+            onInputChange={(input) => setSearchInput(input)}
           />
         </div>
         <div className="grid grid-cols-2 gap-4">
@@ -37,7 +104,7 @@ const DonorForm: React.FC<DonorFormProps> = ({
             <Input
               id="firstname"
               placeholder="Prénom"
-              value={formData.firstname}
+              value={formData.firstname || ''}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ firstname: e.target.value })}
             />
           </div>
@@ -46,7 +113,7 @@ const DonorForm: React.FC<DonorFormProps> = ({
             <Input
               id="last_name"
               placeholder="Nom"
-              //value={formData.lastname}
+              value={formData.lastname || ''}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ lastname: e.target.value })}
             />
           </div>
@@ -57,7 +124,7 @@ const DonorForm: React.FC<DonorFormProps> = ({
             id="phone"
             type="tel"
             placeholder="Numéro de téléphone"
-            value={formData.phone}
+            value={formData.phone || ''}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ phone: e.target.value })}
           />
         </div>
@@ -67,7 +134,7 @@ const DonorForm: React.FC<DonorFormProps> = ({
           <Input
             id="address"
             placeholder="Adresse"
-            value={formData.address}
+            value={formData.address || ''}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ address: e.target.value })}
           />
         </div>
@@ -78,7 +145,7 @@ const DonorForm: React.FC<DonorFormProps> = ({
             <Input
               id="postal_code"
               placeholder="Code postal"
-              value={formData.postal_code}
+              value={formData.postal_code || ''}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ postal_code: e.target.value })}
             />
           </div>
@@ -87,7 +154,7 @@ const DonorForm: React.FC<DonorFormProps> = ({
             <Input
               id="city"
               placeholder="Ville"
-              value={formData.city}
+              value={formData.city || ''}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ city: e.target.value })}
             />
           </div>

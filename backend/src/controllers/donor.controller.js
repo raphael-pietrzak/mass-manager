@@ -104,3 +104,17 @@ exports.deleteDonor = async (req, res) => {
 		res.status(500).send("Erreur lors de la suppression du donateur")
 	}
 }
+
+exports.getDonorByEmail = async (req, res) => {
+	try {
+		const email = req.params.email
+		const donor = await Donor.findByEmail(email)
+		if (!donor) {
+			return res.status(404).send("Donateur non trouvé")
+		}
+		res.json(donor)
+	} catch (error) {
+		console.error(error)
+		res.status(500).send("Erreur lors de la récupération du donateur")
+	}
+}
