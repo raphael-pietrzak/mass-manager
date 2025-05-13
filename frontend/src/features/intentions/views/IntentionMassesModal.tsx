@@ -16,8 +16,8 @@ export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ inte
       <div className="bg-white rounded-lg shadow-lg max-w-4xl w-full mx-4 max-h-[90vh] flex flex-col">
         <div className="p-4 flex justify-between items-center border-b">
           <h3 className="font-medium text-lg">Détails de l'intention</h3>
-          <button 
-            onClick={onClose} 
+          <button
+            onClick={onClose}
             className="p-1 hover:bg-gray-100 rounded-full"
           >
             <X className="w-5 h-5" />
@@ -38,7 +38,7 @@ export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ inte
               </div>
               <div>
                 <p className="text-sm text-gray-500">Donateur</p>
-                <p className="font-medium">{`${intention.first_name || ''} ${intention.last_name || ''}`}</p>
+                <p className="font-medium">{`${intention.donor_firstname || ''} ${intention.donor_lastname || ''}`}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Montant</p>
@@ -55,10 +55,10 @@ export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ inte
                   </p>
                 </div>
               )}
-              {intention.email && (
+              {intention.donor_email && (
                 <div>
                   <p className="text-sm text-gray-500">Email</p>
-                  <p className="font-medium">{intention.email}</p>
+                  <p className="font-medium">{intention.donor_email}</p>
                 </div>
               )}
               <div>
@@ -174,7 +174,7 @@ export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ inte
             )}
           </div>
         </div>
-        
+
         <div className="p-4 border-t mt-auto">
           <div className="flex justify-end">
             <button

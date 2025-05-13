@@ -33,8 +33,8 @@ exports.createIntention = async (req, res) => {
     
     // Préparer les données du donateur
     const donorData = {
-      firstname: intentionData.donor.first_name,
-      lastname: intentionData.donor.last_name,
+      firstname: intentionData.donor.firstname,
+      lastname: intentionData.donor.lastname,
       email: intentionData.donor.email || null,
       phone: intentionData.donor.phone || null,
       address: intentionData.donor.address || null,

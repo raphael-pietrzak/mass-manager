@@ -39,9 +39,17 @@ function DonorsPage() {
 
   const fetchDonors = async () => {
     try {
-      const data = await donorsService.getDonorsPaginated(itemsPerPage, currentPage);
-      setDonors(data.donors);
-      setTotalPages(data.totalPages);
+      if (searchQuery) {
+        // Si une recherche est effectuée, on cherche tous les donateurs sans limite de pagination
+        const data = await donorsService.getDonorsPaginated(itemsPerPage, currentPage, searchQuery);
+        setDonors(data.donors);
+        setTotalPages(data.totalPages);
+      } else {
+        // Sinon, on charge les donateurs avec la pagination
+        const data = await donorsService.getDonorsPaginated(itemsPerPage, currentPage);
+        setDonors(data.donors);
+        setTotalPages(data.totalPages);
+      }
       setLoading(false);
     } catch (err) {
       setError('Erreur lors du chargement des donateurs');

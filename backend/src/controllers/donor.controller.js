@@ -4,24 +4,38 @@ const Donor = require("../models/donor.model")
 exports.getDonors = async (req, res) => {
 	try {
 		// Récupérer les paramètres de pagination depuis la requête
-		const limit = parseInt(req.query.limit) || 10
-		const page = parseInt(req.query.page) || 1
-		const offset = (page - 1) * limit
+		const limit = parseInt(req.query.limit) || 10;
+		const page = parseInt(req.query.page) || 1;
+		const offset = (page - 1) * limit;
+		
+		// Récupérer la recherche depuis la requête
+		const searchQuery = req.query.searchQuery || null;  // Paramètre optionnel pour la recherche
+		
+		// Si un searchQuery est fourni, on applique la recherche en plus de la pagination
+		let donors, totalCount;
 
-		// Récupérer les donateurs avec pagination
-		const [donors, totalCount] = await Promise.all([
-			Donor.getPaginated(limit, offset), // La méthode getPaginated est utilisée pour retourner les donateurs paginés
-			Donor.getCount(), // Récupérer le nombre total de donateurs
-		])
+		if (searchQuery) {
+			// Recherche les donateurs qui correspondent à searchQuery
+			[donors, totalCount] = await Promise.all([
+				Donor.getBySearch(searchQuery), // Une méthode pour filtrer selon le searchQuery
+				Donor.getCountBySearch(searchQuery)  // Nombre total de donateurs pour cette recherche
+			]);
+		} else {
+			// Pagination classique sans recherche
+			[donors, totalCount] = await Promise.all([
+				Donor.getPaginated(limit, offset), // Pagination classique
+				Donor.getCount()  // Nombre total de donateurs
+			]);
+		}
 
 		// Calculer le nombre total de pages
-		const totalPages = Math.ceil(totalCount / limit)
+		const totalPages = Math.ceil(totalCount / limit);
 
 		// Retourner les donateurs et les informations de pagination
-		res.json({ donors, totalPages, currentPage: page })
+		res.json({ donors, totalPages, currentPage: page });
 	} catch (error) {
-		console.error(error)
-		res.status(500).send("Erreur lors de la récupération des données")
+		console.error(error);
+		res.status(500).send("Erreur lors de la récupération des données");
 	}
 }
 
@@ -88,5 +102,19 @@ exports.deleteDonor = async (req, res) => {
 	} catch (error) {
 		console.error(error)
 		res.status(500).send("Erreur lors de la suppression du donateur")
+	}
+}
+
+exports.getDonorByEmail = async (req, res) => {
+	try {
+		const email = req.params.email
+		const donor = await Donor.findByEmail(email)
+		if (!donor) {
+			return res.status(404).send("Donateur non trouvé")
+		}
+		res.json(donor)
+	} catch (error) {
+		console.error(error)
+		res.status(500).send("Erreur lors de la récupération du donateur")
 	}
 }

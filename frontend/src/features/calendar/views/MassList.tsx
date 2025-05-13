@@ -3,11 +3,13 @@ import { Mass } from '../../../api/massService';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Calendar, User, Trash2, AlertTriangle, X } from 'lucide-react';
+import { MassModal } from '../MassModal';
 
 interface MassListProps {
   masses: Mass[];
   onMassClick: (mass: Mass) => void;
   onDeleteMass: (mass: Mass) => void;
+  onUpdateMass: (mass: Mass) => void;
   filters: {
     celebrant: string;
     startDate: Date | null;
@@ -16,16 +18,20 @@ interface MassListProps {
   };
 }
 
-export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDeleteMass, filters }) => {
+export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDeleteMass, onUpdateMass, filters }) => {
   // État pour la modale de confirmation
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [massToDelete, setMassToDelete] = useState<Mass | null>(null);
+  
+  // État pour la modale d'édition
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedMass, setSelectedMass] = useState<Mass | null>(null);
 
   const filteredMasses = masses.filter(mass => {
     const massDate = new Date(mass.date);
     
     // Filter by celebrant
-    const celebrantMatch = filters.celebrant === 'all' || mass.celebrant === filters.celebrant;
+    const celebrantMatch = filters.celebrant === 'all' || mass.celebrant_id === filters.celebrant;
     
     // Filter by date range
     const startDateMatch = !filters.startDate || massDate >= filters.startDate;
@@ -61,6 +67,22 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
     setMassToDelete(null);
   };
 
+  const handleMassClick = (mass: Mass) => {
+    setSelectedMass(mass);
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveMass = (updatedMass: Mass) => {
+    onUpdateMass(updatedMass);
+    setIsEditModalOpen(false);
+    setSelectedMass(null);
+  };
+
+  const handleCloseModal = () => {
+    setIsEditModalOpen(false);
+    setSelectedMass(null);
+  };
+
   return (
     <>
       <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -93,7 +115,7 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
               {sortedMasses.map(mass => (
                 <tr 
                   key={mass.id} 
-                  onClick={() => onMassClick(mass)} 
+                  onClick={() => handleMassClick(mass)} 
                   className="hover:bg-gray-50 cursor-pointer"
                 >
                   <td className="px-3 py-2 whitespace-nowrap text-sm">
@@ -105,11 +127,11 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
                   <td className="px-3 py-2 whitespace-nowrap text-sm">
                     <div className="flex items-center">
                       <User className="w-3 h-3 text-gray-400 mr-1.5" />
-                      <span>{mass.celebrant}</span>
+                      <span>{mass.celebrant_title} {mass.celebrant_religious_name}</span>
                     </div>
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap text-sm">
-                    {mass.type === 'defunts' && (
+                    {mass.deceased === 1 && (
                       <span className="px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-700">
                         Défunts
                       </span>
@@ -178,6 +200,14 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
           </div>
         </div>
       )}
+
+      {/* Modale d'édition de messe */}
+      <MassModal 
+        isOpen={isEditModalOpen} 
+        onClose={handleCloseModal} 
+        onSave={handleSaveMass} 
+        mass={selectedMass} 
+      />
     </>
   );
 };

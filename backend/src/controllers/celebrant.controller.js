@@ -83,3 +83,14 @@ exports.deleteCelebrant = async (req, res) => {
     res.status(500).send('Erreur lors de la suppression du célébrant');
   }
 };
+
+exports.getUnavailableDates = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const dates = await Celebrant.getUnavailableDates(id);
+    res.json(dates);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erreur lors de la récupération des dates d\'indisponibilité' });
+  }
+};

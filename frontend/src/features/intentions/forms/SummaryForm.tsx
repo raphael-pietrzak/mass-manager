@@ -62,7 +62,7 @@ const SummaryForm: React.FC<SummaryFormProps> = ({
       <div>
         <h3 className="font-semibold text-lg mb-2">Détails du donateur</h3>
         <div className="bg-muted p-3 rounded-md">
-          <p><span className="font-medium">Nom:</span> {formData.first_name} {formData.last_name}</p>
+          <p><span className="font-medium">Nom:</span> {formData.firstname} {formData.lastname}</p>
           <p><span className="font-medium">Email:</span> {formData.email}</p>
           {formData.phone && <p><span className="font-medium">Téléphone:</span> {formData.phone}</p>}
           {formData.address && 

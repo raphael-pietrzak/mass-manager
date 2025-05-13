@@ -6,8 +6,11 @@ class Mass {
             .select(
                 'Masses.id',
                 'Masses.date',
-                'Celebrants.religious_name as celebrant',
+                'Celebrants.religious_name as celebrant_religious_name',
+                'Celebrants.id as celebrant_id',
+                'Celebrants.title as celebrant_title',
                 'Intentions.intention_text as intention',
+                'Intentions.deceased as deceased',
                 'Masses.status',
                 'Intentions.deceased',
                 'Intentions.amount',

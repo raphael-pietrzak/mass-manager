@@ -32,7 +32,6 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
-
   const celebrantOptions = celebrants.map((celebrant) => ({
     value: celebrant.id.toString(),
     label: `${celebrant.title} ${celebrant.religious_name}`
@@ -201,7 +200,6 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
             value={selectedCelebrant}
             onChange={handleSelectCelebrant}
             placeholder="Sélectionner un célébrant"
-            defaultValue={UNASSIGNED_VALUE}
           />
         </div>
 

@@ -5,6 +5,7 @@ const celebrantController = require('../controllers/celebrant.controller');
 router.get('/', celebrantController.getCelebrants);
 router.get('/available', celebrantController.getAvailableCelebrants);
 router.get('/:id', celebrantController.getCelebrant);
+router.get('/:id/unavailable-dates', celebrantController.getUnavailableDates);
 router.post('/', celebrantController.createCelebrant);
 router.put('/:id', celebrantController.updateCelebrant);
 router.delete('/:id', celebrantController.deleteCelebrant);

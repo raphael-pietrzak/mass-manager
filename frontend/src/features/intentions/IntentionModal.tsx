@@ -29,13 +29,13 @@ const testFormData: Partial<Intention> = {
   payment_method: 'card',
   brother_name: '',
   wants_celebration_date: false,
-  first_name: 'John',
-  last_name: 'Doe',
-  email: 'example@email.com',
-  phone: '1234567890',
-  address: '123 Main St',
-  postal_code: '12345',
-  city: 'Paris',
+  firstname: '',
+  lastname: '',
+  email: '',
+  phone: '',
+  address: '',
+  postal_code: '',
+  city: '',
   is_recurrent: false,
   start_date: undefined,
   recurrence_type: 'weekly',
@@ -88,6 +88,7 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
   }, [isOpen, intention]);
 
   if (!isOpen) return null;
+  
 
   const handleRecurrenceClick = () => {
     setShowRecurrenceModal(true);
@@ -153,8 +154,8 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
       await intentionService.createMass({
         masses: previewData,
         donor: {
-          first_name: formData.first_name || '',
-          last_name: formData.last_name || '',
+          firstname: formData.firstname || '',
+          lastname: formData.lastname || '',
           email: formData.email || '',
           phone: formData.phone,
           address: formData.address,

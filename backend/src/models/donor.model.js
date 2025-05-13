@@ -1,53 +1,78 @@
 // models/Donor.js
-const db = require('../../config/database'); // Connexion Knex
+const db = require("../../config/database") // Connexion Knex
 
 const Donor = {
-  getAll: async () => {
-    return db.select().from('Donors').orderBy('lastname', 'asc');
-  },
+	getAll: async () => {
+		return db.select().from("Donors").orderBy("lastname", "asc")
+	},
 
-  getPaginated: async (limit, offset) => {
-    return db.select().from('Donors').orderBy('lastname', 'asc').limit(limit).offset(offset);
-  },
+	getPaginated: async (limit, offset) => {
+		return db.select().from("Donors").orderBy("lastname", "asc").limit(limit).offset(offset)
+	},
 
-  getCount: async () => {
-    const result = await db('Donors').count('id as count').first();
-    return parseInt(result.count, 10);
-  },
+	getBySearch: async (searchQuery) => {
+		return db("Donors")
+			.where(function () {
+				this.where("lastname", "like", `%${searchQuery.toLowerCase()}%`).orWhere("email", "like", `%${searchQuery.toLowerCase()}%`)
+			})
+			.orderBy("lastname", "asc")
+	},
 
-  create: async (donor) => {
-    const [id] = await db('Donors').insert(donor).returning('id');
-    return id?.id ?? id;
-  },
+	getCountBySearch: async (searchQuery) => {
+		try {
+			// Utiliser Knex pour compter le nombre de donateurs correspondant à la recherche
+			const countResult = await db("Donors")
+				.where(function () {
+					this.where("lastname", "like", `%${searchQuery.toLowerCase()}%`).orWhere("email", "like", `%${searchQuery.toLowerCase()}%`)
+				})
+				.count("* as count") // Utiliser `count(*)` pour compter les résultats
 
-  getById: async (id) => {
-    return db.select().from('Donors').where('id', id);
-  },
+			// Retourner le nombre de résultats
+			return countResult[0].count
+		} catch (error) {
+			console.error("Erreur lors du comptage des donateurs par recherche:", error)
+			throw error
+		}
+	},
 
-  update: async (id, donor) => {
-    return db('Donors').where('id', id).update(donor);
-  },
+	getCount: async () => {
+		const result = await db("Donors").count("id as count").first()
+		return parseInt(result.count, 10)
+	},
 
-  delete: async (id) => {
-    return db('Donors').where('id', id).del();
-  },
+	create: async (donor) => {
+		const [id] = await db("Donors").insert(donor).returning("id")
+		return id?.id ?? id
+	},
 
-  // Nouvelle fonction pour trouver un donateur par email
-  findByEmail: async (email) => {
-    return db.select().from('Donors')
-      .where('email', email)
-      .first();
-  },
+	getById: async (id) => {
+		return db.select().from("Donors").where("id", id)
+	},
 
-  // Nouvelle fonction pour trouver un donateur par nom et prénom
-  findByName: async (firstname, lastname) => {
-    return db.select().from('Donors')
-      .where({
-        'firstname': firstname,
-        'lastname': lastname
-      })
-      .first();
-  }
-};
+	update: async (id, donor) => {
+		return db("Donors").where("id", id).update(donor)
+	},
 
-module.exports = Donor;
+	delete: async (id) => {
+		return db("Donors").where("id", id).del()
+	},
+
+	// Nouvelle fonction pour trouver un donateur par email
+	findByEmail: async (email) => {
+		return db.select().from("Donors").where("email", email).first()
+	},
+
+	// Nouvelle fonction pour trouver un donateur par nom et prénom
+	findByName: async (firstname, lastname) => {
+		return db
+			.select()
+			.from("Donors")
+			.where({
+				firstname: firstname,
+				lastname: lastname,
+			})
+			.first()
+	},
+}
+
+module.exports = Donor

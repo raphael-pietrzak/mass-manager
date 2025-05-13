@@ -1,5 +1,4 @@
 const db = require('../../config/database');
-const { get } = require('../routes/auth.routes');
 
 const User = {
     // Récupérer un utilisateur par son login_name

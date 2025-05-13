@@ -11,9 +11,9 @@ export interface Intention {
     deceased?: boolean;
 
     // Données du donateur
-    first_name?: string;
-    last_name?: string;
-    email?: string;
+    donor_firstname?: string;
+    donor_lastname?: string;
+    donor_email?: string;
     phone?: string;
     address?: string;
     postal_code?: string;
@@ -61,8 +61,8 @@ export interface IntentionSubmission {
   id?: string;
   masses: Masses[];
   donor: {
-    first_name: string;
-    last_name: string;
+    firstname: string;
+    lastname: string;
     email: string;
     phone?: string;
     address?: string;

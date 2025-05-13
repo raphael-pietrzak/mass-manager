@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { IntentionList } from "../features/intentions/views/IntentionList";
-import { IntentionModal } from "../features/calendar/IntentionModal";
+import { IntentionModal } from "../features/intentions/IntentionModal";
 import { IntentionSubmission, intentionService } from "../api/intentionService";
 
 const IntentionPage: React.FC = () => {
