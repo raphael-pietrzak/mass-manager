@@ -11,9 +11,9 @@ export interface Intention {
     deceased?: boolean;
 
     // Données du donateur
-    firstname?: string;
-    lastname?: string;
-    email?: string;
+    donor_firstname?: string;
+    donor_lastname?: string;
+    donor_email?: string;
     phone?: string;
     address?: string;
     postal_code?: string;
