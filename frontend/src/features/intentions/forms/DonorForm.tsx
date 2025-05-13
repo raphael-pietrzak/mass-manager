@@ -27,7 +27,7 @@ const DonorForm: React.FC<DonorFormProps> = ({
     label: `${donor.email}`
   }));
   const UNASSIGNED_VALUE = "unassigned";
-  const [selectedDonor, setSelectedDonor] = useState<string | undefined>(UNASSIGNED_VALUE);
+  const [selectedDonor, setSelectedDonor] = useState<string | undefined>(undefined);
 
   const handleSelectDonor = (value: string) => {
     setSelectedDonor(value);

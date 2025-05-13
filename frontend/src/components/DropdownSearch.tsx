@@ -61,7 +61,15 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
         // Mode classique avec champ de recherche en dropdown
         <div
           className="w-full px-4 py-2 text-left bg-white border rounded-md shadow-sm cursor-pointer flex justify-between items-center"
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={() => {
+            setIsOpen((prev) => {
+              const newState = !prev;
+              if (newState && !inlineSearch) {
+                setSearchTerm('');
+              }
+              return newState;
+            });
+          }}
         >
           <span className={selectedOption ? 'text-black' : 'text-gray-500'}>
             {selectedOption ? selectedOption.label : placeholder}
@@ -83,10 +91,9 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
               type="text"
               className="w-full p-2 border-b"
               placeholder="Rechercher..."
-              value={searchTerm}
+              //value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
-                //onInputChange?.(e.target.value);
               }}
               onClick={(e) => e.stopPropagation()}
             />
