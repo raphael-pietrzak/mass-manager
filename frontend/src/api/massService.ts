@@ -82,10 +82,24 @@ export const massService = {
       date: mass.date ? new Date(mass.date).toISOString().split('T')[0] : null,
     }));
   },
-  // createMass: async (mass: MassSubmission): Promise<string> => {
-  //   const response = await axios.post(`${API_URL}`, mass);
-  //   return response.data;
-  // },
+
+  getMassesByFilter: async (
+    startDate?: string | null, 
+    endDate?: string | null, 
+    celebrantId?: string | null
+  ): Promise<Mass[]> => {
+    const params = new URLSearchParams();
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    if (celebrantId && celebrantId !== 'all') params.append('celebrantId', celebrantId);
+
+    const response = await axios.get(`${API_URL}/filter`, { params });
+    const data = response.data;
+    return data.map((mass: any) => ({
+      ...mass,
+      date: mass.date ? new Date(mass.date).toISOString().split('T')[0] : null,
+    }));
+  },
 
   updateMass: async (id: string, mass: any) => {
     const response = await axios.put(`${API_URL}/${id}`, mass);

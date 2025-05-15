@@ -233,7 +233,7 @@ class Mass {
             .orderBy('date');
     }
 
-    static async getMassesByDateRange(startDate, endDate) {
+    static async getMassesByDateRange(startDate, endDate, celebrantId = null) {
         let query = db('Masses')
             .leftJoin('Celebrants', 'Masses.celebrant_id', 'Celebrants.id')
             .leftJoin('Intentions', 'Masses.intention_id', 'Intentions.id')
@@ -254,6 +254,11 @@ class Mass {
         if (endDate) {
             const formattedEndDate = new Date(endDate).toISOString().split('T')[0];
             query = query.where(db.raw('DATE(Masses.date)'), '<=', formattedEndDate);
+        }
+        
+        // Ajouter le filtre par célébrant si spécifié
+        if (celebrantId && celebrantId !== 'all') {
+            query = query.where('Masses.celebrant_id', celebrantId);
         }
         
         return query;
