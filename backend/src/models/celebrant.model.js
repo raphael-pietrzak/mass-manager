@@ -22,17 +22,26 @@ const Celebrant = {
         return db('Celebrants').where('id', id).del();
     },
 
-    getUnavailableDates: async (celebrantId) => {
-        // Récupérer toutes les dates où le célébrant a déjà une messe avec une intention
-        const result = await db
-            .select(db.raw('DISTINCT DATE(date) as date'))
-            .from('Masses')
-            .where('celebrant_id', celebrantId)
-            .orderBy('date');
-        
-        // Formater les dates en tableau de chaînes
-        return result.map(row => row.date);
+    getAvailableByDate: async (date) => {
+        const dateString = date; // format attendu: '2025-03-01'
+
+        // Sous-requête pour trouver les ID des célébrants qui ont déjà une messe avec une intention à cette date
+        const ces =  db
+            .select('c.*')
+            .from('Celebrants as c')
+            .whereNotIn('c.id', function() {
+                this.select('m.celebrant_id')
+                    .from('Masses as m')
+                    .whereRaw('DATE(m.date) = ?', [dateString])
+                    .andWhere(function() {
+                        this.whereNotNull('m.intention')
+                            .andWhere('m.intention', '!=', '');
+                    });
+            });
+            console.log("dddddd", ces.toString());
+        return ces;
     }
 };
+
 
 module.exports = Celebrant;

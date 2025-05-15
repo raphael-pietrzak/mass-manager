@@ -134,16 +134,3 @@ exports.getMassesByIntention = async (req, res) => {
   }
 };
 
-exports.getMassesByDateRangeAndCelebrant = async (req, res) => {
-  try {
-    console.log("Requête reçue pour les messes entre deux dates");
-    const { startDate, endDate, celebrantId } = req.query;
-    const data = await Mass.getMassesByDateRange(startDate, endDate, celebrantId);
-    console.log("Données récupérées :", data);
-    res.json(data);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Erreur lors de la récupération des messes filtrées');
-  }
-};
-

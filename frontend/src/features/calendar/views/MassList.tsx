@@ -3,11 +3,13 @@ import { Mass } from '../../../api/massService';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Calendar, User, Trash2, AlertTriangle, X } from 'lucide-react';
+import { MassModal } from '../MassModal';
 
 interface MassListProps {
   masses: Mass[];
   onMassClick: (mass: Mass) => void;
   onDeleteMass: (mass: Mass) => void;
+  onUpdateMass: (mass: Mass) => void;
   filters: {
     celebrant: string;
     startDate: Date | null;
@@ -16,29 +18,33 @@ interface MassListProps {
   };
 }
 
-export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDeleteMass, filters }) => {
+export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDeleteMass, onUpdateMass, filters }) => {
   // État pour la modale de confirmation
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [massToDelete, setMassToDelete] = useState<Mass | null>(null);
+  
+  // État pour la modale d'édition
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedMass, setSelectedMass] = useState<Mass | null>(null);
 
   const filteredMasses = masses.filter(mass => {
     const massDate = new Date(mass.date);
-
+    
     // Filter by celebrant
     const celebrantMatch = filters.celebrant === 'all' || mass.celebrant_id === filters.celebrant;
-
+    
     // Filter by date range
     const startDateMatch = !filters.startDate || massDate >= filters.startDate;
     const endDateMatch = !filters.endDate || massDate <= filters.endDate;
-
+    
     // Filter future only
     const futureMatch = !filters.futureOnly || massDate >= new Date(new Date().setHours(0, 0, 0, 0));
-
+    
     return celebrantMatch && startDateMatch && endDateMatch && futureMatch;
   });
 
   // Trier les messes par date
-  const sortedMasses = [...filteredMasses].sort((a, b) =>
+  const sortedMasses = [...filteredMasses].sort((a, b) => 
     new Date(a.date).getTime() - new Date(b.date).getTime()
   );
 
@@ -62,7 +68,19 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
   };
 
   const handleMassClick = (mass: Mass) => {
-    onMassClick(mass);
+    setSelectedMass(mass);
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveMass = (updatedMass: Mass) => {
+    onUpdateMass(updatedMass);
+    setIsEditModalOpen(false);
+    setSelectedMass(null);
+  };
+
+  const handleCloseModal = () => {
+    setIsEditModalOpen(false);
+    setSelectedMass(null);
   };
 
   return (
@@ -95,9 +113,9 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {sortedMasses.map(mass => (
-                <tr
-                  key={mass.id}
-                  onClick={() => handleMassClick(mass)}
+                <tr 
+                  key={mass.id} 
+                  onClick={() => handleMassClick(mass)} 
                   className="hover:bg-gray-50 cursor-pointer"
                 >
                   <td className="px-3 py-2 whitespace-nowrap text-sm">
@@ -123,13 +141,13 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
                     {mass.intention}
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap text-sm">
-                    <button
-                      onClick={(e) => handleDeleteClick(e, mass)}
-                      className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100 transition-colors"
-                      title="Supprimer cette messe"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                      <button 
+                        onClick={(e) => handleDeleteClick(e, mass)}
+                        className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100 transition-colors"
+                        title="Supprimer cette messe"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                   </td>
                 </tr>
               ))}
@@ -144,8 +162,8 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
           <div className="bg-white rounded-lg shadow-lg max-w-md w-full mx-4">
             <div className="p-4 flex justify-between items-center border-b">
               <h3 className="font-medium">Confirmer la suppression</h3>
-              <button
-                onClick={cancelDelete}
+              <button 
+                onClick={cancelDelete} 
                 className="p-1 hover:bg-gray-100 rounded-full"
               >
                 <X className="w-5 h-5" />
@@ -163,7 +181,7 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
                   </p>
                 </div>
               </div>
-
+              
               <div className="mt-4 border-t pt-4 flex justify-end space-x-3">
                 <button
                   onClick={cancelDelete}
@@ -182,6 +200,14 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
           </div>
         </div>
       )}
+
+      {/* Modale d'édition de messe */}
+      <MassModal 
+        isOpen={isEditModalOpen} 
+        onClose={handleCloseModal} 
+        onSave={handleSaveMass} 
+        mass={selectedMass} 
+      />
     </>
   );
 };
