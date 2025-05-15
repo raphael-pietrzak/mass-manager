@@ -12,17 +12,30 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const { setIsAuthenticated, checkAuth, userRole, isAuthenticated } = useAuth();
-  
+
   useEffect(() => {
-    if (isAuthenticated) {
-      const lastPage = sessionStorage.getItem('lastPage');
-      if (lastPage) {
-        navigate(lastPage); // Redirige vers la dernière page visitée
-      } else {
-        navigate('/calendar'); // Si aucune dernière page, redirige vers une page par défaut
+    if (!isAuthenticated || userRole === null) return;
+
+    const lastPage = sessionStorage.getItem('lastPage');
+
+    if (lastPage) {
+      navigate(lastPage);
+    } else {
+      switch (userRole) {
+        case 'admin':
+          navigate('/admin');
+          break;
+        case 'secretary':
+          navigate('/calendar');
+          break;
+        case 'celebrant':
+          navigate('/'); // Ou une page spécifique à celebrant ?
+          break;
+        default:
+          navigate('/');
       }
     }
-  }, [isAuthenticated, navigate]); // Exécuter l'effet si isAuthenticated change
+  }, [isAuthenticated, userRole, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,20 +64,6 @@ const LoginPage: React.FC = () => {
       }
     }
   };
-
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    if (userRole === null) return; // Ne pas rediriger tant que userRole n'est pas encore défini
-    // Redirection en fonction du rôle
-    //console.log("role utilisateur depuis loginPage : ", userRole);
-    if (userRole === 'admin') {
-      navigate('/admin');
-    } else if (userRole === 'secretary') {
-      navigate('/calendar');
-    } else {
-      navigate('/');
-    }
-  }, [userRole, navigate, isAuthenticated]);
 
   // Fonction pour gérer la soumission du formulaire quand "Entrée" est pressée
   const handleKeyDown = (e: React.KeyboardEvent) => {
