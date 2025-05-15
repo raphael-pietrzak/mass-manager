@@ -8,6 +8,7 @@ router.post('/', massController.createMass);
 router.put('/:id', massController.updateMass);
 router.delete('/:id', massController.deleteMass);
 router.delete('/', massController.deleteMassBeforeDate); // Routes pour supprimer les messes avant une certaine date
+router.get('/filter', massController.getMassesByDateRangeAndCelebrant);
 
 // Les routes d'exportation ont été déplacées vers export.routes.js
 

@@ -33,17 +33,34 @@ function CalendarPage() {
   useEffect(() => {
     const fetchMasses = async () => {
       try {
-        const data = await massService.getMasses();
+        setLoading(true);
+        let startDateStr = null;
+        let endDateStr = null;
+        
+        if (filters.startDate) {
+          startDateStr = filters.startDate.toISOString().split('T')[0];
+        }
+        
+        if (filters.endDate) {
+          endDateStr = filters.endDate.toISOString().split('T')[0];
+        }
+        
+        const data = await massService.getMassesByFilter(
+          startDateStr,
+          endDateStr,
+          filters.celebrant === 'all' ? null : filters.celebrant
+        );
+        
         setMasses(data);
         setLoading(false);
       } catch (err) {
-        setError('Erreur lors du chargement des messes');
+        // setError('Erreur lors du chargement des messes');
         setLoading(false);
       }
     };
 
     fetchMasses();
-  }, []);
+  }, [filters]); // Dépendance aux filtres pour recharger quand les filtres changent
 
   const handleMassClick = (mass: Mass) => {
     setSelectedMass(mass);
@@ -74,7 +91,24 @@ function CalendarPage() {
     try {
       if (massToDelete.id) {
         await massService.deleteMass(massToDelete.id);
-        const newMasses = await massService.getMasses();
+        
+        // Utiliser getMassesByFilter au lieu de getMasses pour maintenir la cohérence avec les filtres
+        let startDateStr = null;
+        let endDateStr = null;
+        
+        if (filters.startDate) {
+          startDateStr = filters.startDate.toISOString().split('T')[0];
+        }
+        
+        if (filters.endDate) {
+          endDateStr = filters.endDate.toISOString().split('T')[0];
+        }
+        
+        const newMasses = await massService.getMassesByFilter(
+          startDateStr,
+          endDateStr,
+          filters.celebrant === 'all' ? null : filters.celebrant
+        );
         setMasses(newMasses);
       }
       setIsMassModalOpen(false);
