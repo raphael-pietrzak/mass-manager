@@ -1,42 +1,50 @@
 // donor.controller.js
 const Donor = require("../models/donor.model")
-const exportDonorService = require('../services/exportDonor.service');
+const exportDonorService = require("../services/exportDonor.service")
 
 exports.getDonors = async (req, res) => {
 	try {
 		// Récupérer les paramètres de pagination depuis la requête
-		const limit = parseInt(req.query.limit) || 10;
-		const page = parseInt(req.query.page) || 1;
-		const offset = (page - 1) * limit;
-		
+		const limit = parseInt(req.query.limit) || 10
+		const page = parseInt(req.query.page) || 1
+		const offset = (page - 1) * limit
+
 		// Récupérer la recherche depuis la requête
-		const searchQuery = req.query.searchQuery || null;  // Paramètre optionnel pour la recherche
-		
+		const searchQuery = req.query.searchQuery || null // Paramètre optionnel pour la recherche
+
 		// Si un searchQuery est fourni, on applique la recherche en plus de la pagination
-		let donors, totalCount;
+		let donors, totalCount
 
 		if (searchQuery) {
 			// Recherche les donateurs qui correspondent à searchQuery
-			[donors, totalCount] = await Promise.all([
+			;[donors, totalCount] = await Promise.all([
 				Donor.getBySearch(searchQuery), // Une méthode pour filtrer selon le searchQuery
-				Donor.getCountBySearch(searchQuery)  // Nombre total de donateurs pour cette recherche
-			]);
+				Donor.getCountBySearch(searchQuery), // Nombre total de donateurs pour cette recherche
+			])
 		} else {
 			// Pagination classique sans recherche
-			[donors, totalCount] = await Promise.all([
+			;[donors, totalCount] = await Promise.all([
 				Donor.getPaginated(limit, offset), // Pagination classique
-				Donor.getCount()  // Nombre total de donateurs
-			]);
+				Donor.getCount(), // Nombre total de donateurs
+			])
 		}
 
 		// Calculer le nombre total de pages
-		const totalPages = Math.ceil(totalCount / limit);
+		const totalPages = Math.ceil(totalCount / limit)
 
-		// Retourner les donateurs et les informations de pagination
-		res.json({ donors, totalPages, currentPage: page });
+		if (Object.keys(req.query).length > 0) {
+			// si la requete contient des query
+			res.json({ donors, totalPages, currentPage: page })
+		} else {
+			// siono retourner les donateurs et les informations de pagination
+			res.json(donors)
+			return 
+			
+		}
+
 	} catch (error) {
-		console.error(error);
-		res.status(500).send("Erreur lors de la récupération des données");
+		console.error(error)
+		res.status(500).send("Erreur lors de la récupération des données")
 	}
 }
 
@@ -121,37 +129,37 @@ exports.getDonorByEmail = async (req, res) => {
 }
 
 exports.exportToExcel = async (req, res) => {
-  try {
-    // Récupérer tous les doneurs
-    const donors = await Donor.getAll();
-    
-    // Générer le fichier Excel
-    const buffer = await exportDonorService.generateExcel(donors);
-    
-    // Envoyer le fichier
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', 'attachment; filename="liste des donateurs.xlsx"');
-    res.send(buffer);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Erreur lors de l\'exportation vers Excel');
-  }
-};
+	try {
+		// Récupérer tous les doneurs
+		const donors = await Donor.getAll()
+
+		// Générer le fichier Excel
+		const buffer = await exportDonorService.generateExcel(donors)
+
+		// Envoyer le fichier
+		res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+		res.setHeader("Content-Disposition", 'attachment; filename="liste des donateurs.xlsx"')
+		res.send(buffer)
+	} catch (error) {
+		console.error(error)
+		res.status(500).send("Erreur lors de l'exportation vers Excel")
+	}
+}
 
 exports.exportToPdf = async (req, res) => {
-  try {
-    // Récupérer tous les doneurs
-    const donors = await Donor.getAll();
-    
-    // Générer le PDF
-    const buffer = await exportDonorService.generatePDF(donors);
-    
-    // Envoyer le PDF
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename="liste des donateurs.pdf"');
-    res.send(buffer);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Erreur lors de l\'exportation vers PDF');
-  }
-};
+	try {
+		// Récupérer tous les doneurs
+		const donors = await Donor.getAll()
+
+		// Générer le PDF
+		const buffer = await exportDonorService.generatePDF(donors)
+
+		// Envoyer le PDF
+		res.setHeader("Content-Type", "application/pdf")
+		res.setHeader("Content-Disposition", 'attachment; filename="liste des donateurs.pdf"')
+		res.send(buffer)
+	} catch (error) {
+		console.error(error)
+		res.status(500).send("Erreur lors de l'exportation vers PDF")
+	}
+}
