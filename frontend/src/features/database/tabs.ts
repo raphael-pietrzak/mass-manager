@@ -47,7 +47,7 @@ export const tabs: TabColumn[] = [
     endpoint: "http://localhost:3001/api/data/masses",
     columns: [
       { key: "date", label: "Date" },
-      { key: "celebrant", label: "Célébrant" },
+      { key: "celebrant_religious_name", label: "Célébrant" },
       { key: "intention", label: "Intention" },
       { key: "deceased", label: "Pour un défunt" },
       { key: "status", label: "Statut" },   

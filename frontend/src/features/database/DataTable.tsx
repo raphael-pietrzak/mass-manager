@@ -30,7 +30,7 @@ const formatValue = (value: any, columnKey: string, formatters: Record<string, a
     return isNaN(date.getTime()) ? value : date.toLocaleDateString('fr-FR');
   }
 
-  // Vérification si la valeur est un objet (par exemple un donateur avec firstname et lastname ou un célébrant avec religious_name)
+  //Vérification si la valeur est un objet (par exemple un donateur avec firstname et lastname ou un célébrant avec religious_name)
   // if (typeof value === 'object' && value !== null) {
   //   if (value.firstname && value.lastname) {
   //     return `${value.firstname} ${value.lastname}`;  // Afficher le prénom et le nom du donateur
@@ -40,6 +40,9 @@ const formatValue = (value: any, columnKey: string, formatters: Record<string, a
   //   }
   //   return JSON.stringify(value);  // Convertir l'objet en chaîne si pas de prénom/nom
   // }
+  if (columnKey === "celebrant") {
+    return `${row.masse_celebrant_religious_name}`;
+  }
 
   if (columnKey === "donor") {
     return `${row.donor_firstname} ${row.donor_lastname}`;
