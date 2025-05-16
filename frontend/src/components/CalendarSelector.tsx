@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
-import { format } from "date-fns";
+import { format, isBefore, startOfDay } from "date-fns";
 import { fr } from "date-fns/locale";
 
 interface CalendarSelectorProps {
@@ -19,6 +19,7 @@ const CalendarSelector: React.FC<CalendarSelectorProps> = ({
   unavailableDates = []
 }) => {
   const [showCalendar, setShowCalendar] = useState(false);
+  const today = startOfDay(new Date()); // Date d'aujourd'hui sans les heures, minutes, etc.
 
   const toggleCalendar = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -38,6 +39,11 @@ const CalendarSelector: React.FC<CalendarSelectorProps> = ({
   const isDateUnavailable = (date: Date): boolean => {
     const dateString = format(date, 'yyyy-MM-dd');
     return unavailableDates.includes(dateString);
+  };
+
+  // Fonction pour déterminer si une date est dans le passé
+  const isDateInPast = (date: Date): boolean => {
+    return isBefore(date, today);
   };
 
   return (
@@ -64,12 +70,13 @@ const CalendarSelector: React.FC<CalendarSelectorProps> = ({
           <Calendar
             mode="single"
             selected={selectedDate}
-            defaultMonth={selectedDate}
+            defaultMonth={selectedDate || today}
             onSelect={handleSelect}
             locale={fr}
             captionLayout="dropdown-buttons"
             fromYear={2020}
             toYear={2100}
+            disabled={(date) => isDateInPast(date)}
             modifiers={{
               unavailable: (date) => isDateUnavailable(date)
             }}
@@ -81,6 +88,7 @@ const CalendarSelector: React.FC<CalendarSelectorProps> = ({
               dropdown: "flex justify-center", // <-- Ajoute un espace entre mois et année
               dropdown_month: "rounded-md border bg-background text-sm px-2 py-1 font-bold",
               dropdown_year: "rounded-md border bg-background text-sm px-2 py-1 font-bold",
+              day_disabled: "text-gray-300 cursor-not-allowed opacity-50",
             }}
             components={{
               IconLeft: () => <ChevronLeft className="h-4 w-4" />,
