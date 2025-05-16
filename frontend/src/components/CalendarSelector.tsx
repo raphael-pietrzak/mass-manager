@@ -9,12 +9,14 @@ interface CalendarSelectorProps {
   selectedDate?: Date;
   onDateChange: (date: Date | undefined) => void;
   disabled?: boolean; // si on veut empecher l'entrée du champ date
+  unavailableDates?: string[]; // Nouvelles dates indisponibles
 }
 
 const CalendarSelector: React.FC<CalendarSelectorProps> = ({
   selectedDate,
   onDateChange,
-  disabled = false
+  disabled = false,
+  unavailableDates = []
 }) => {
   const [showCalendar, setShowCalendar] = useState(false);
 
@@ -32,12 +34,20 @@ const CalendarSelector: React.FC<CalendarSelectorProps> = ({
     setShowCalendar(false);
   };
 
+  // Fonction pour déterminer si une date est indisponible
+  const isDateUnavailable = (date: Date): boolean => {
+    const dateString = format(date, 'yyyy-MM-dd');
+    return unavailableDates.includes(dateString);
+  };
+
   return (
     <div className="relative">
       <Button
         type="button"
         variant="outline"
-        className="w-full justify-start text-left font-normal"
+        className={`w-full justify-start text-left font-normal ${
+          selectedDate && isDateUnavailable(selectedDate) ? "border-red-500 text-red-500" : ""
+        }`}
         onClick={toggleCalendar}
         disabled={disabled}
       >
@@ -60,6 +70,12 @@ const CalendarSelector: React.FC<CalendarSelectorProps> = ({
             captionLayout="dropdown-buttons"
             fromYear={2020}
             toYear={2100}
+            modifiers={{
+              unavailable: (date) => isDateUnavailable(date)
+            }}
+            modifiersClassNames={{
+              unavailable: "bg-red-100 text-red-600 hover:bg-red-200"
+            }}
             classNames={{
               caption_label: "hidden",
               dropdown: "flex justify-center", // <-- Ajoute un espace entre mois et année
@@ -80,6 +96,10 @@ const CalendarSelector: React.FC<CalendarSelectorProps> = ({
             }}
           />
         </div>
+      )}
+
+      {selectedDate && isDateUnavailable(selectedDate) && (
+        <p className="text-sm text-red-500 mt-1">Le célébrant est indisponible à cette date.</p>
       )}
     </div>
   );
