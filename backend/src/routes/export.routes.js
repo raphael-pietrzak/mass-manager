@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const exportController = require('../controllers/export.controller');
-const exportDonorController = require('../exports/exportDonor.controller');
+const exportDonorController = require('../controllers/donor.controller');
 
 // Routes d'exportation des intentions de messes
 router.get('/masses/excel', exportController.exportToExcel);

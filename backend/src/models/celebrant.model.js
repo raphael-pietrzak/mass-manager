@@ -22,25 +22,20 @@ const Celebrant = {
         return db('Celebrants').where('id', id).del();
     },
 
-    getAvailableByDate: async (date) => {
-        const dateString = date; // format attendu: '2025-03-01'
 
-        // Sous-requête pour trouver les ID des célébrants qui ont déjà une messe avec une intention à cette date
-        const ces =  db
-            .select('c.*')
-            .from('Celebrants as c')
-            .whereNotIn('c.id', function() {
-                this.select('m.celebrant_id')
-                    .from('Masses as m')
-                    .whereRaw('DATE(m.date) = ?', [dateString])
-                    .andWhere(function() {
-                        this.whereNotNull('m.intention')
-                            .andWhere('m.intention', '!=', '');
-                    });
+
+    getUnavailableDates: async (id) => {
+        return db
+            .select('m.date')
+            .from('Masses as m')
+            .where('m.celebrant_id', id)
+            .andWhere('m.date', '>=', db.raw("DATETIME('now')"))
+            .orderBy('m.date', 'asc')
+            .then((rows) => {
+                return rows.map((row) => row.date);
             });
-            console.log("dddddd", ces.toString());
-        return ces;
     }
+
 };
 
 

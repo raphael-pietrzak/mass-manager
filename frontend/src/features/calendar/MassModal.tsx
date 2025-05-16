@@ -3,6 +3,7 @@ import { Mass } from '../../api/massService';
 import { format } from 'date-fns';
 import { X } from 'lucide-react';
 import { celebrantService, Celebrant } from '../../api/celebrantService';
+import CalendarSelector from '../../components/CalendarSelector';
 
 interface MassModalProps {
   isOpen: boolean;
@@ -99,12 +100,18 @@ export const MassModal: React.FC<MassModalProps> = ({ isOpen, onClose, onSave, m
     }
   };
 
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target;
-    setEditedMass((prev) => ({
-      ...prev,
-      date: value,
-    }));
+  const handleDateChange = (date: Date | undefined) => {
+    if (date) {
+      setEditedMass((prev) => ({
+        ...prev,
+        date: format(date, 'yyyy-MM-dd'),
+      }));
+    } else {
+      setEditedMass((prev) => ({
+        ...prev,
+        date: '',
+      }));
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -166,27 +173,15 @@ export const MassModal: React.FC<MassModalProps> = ({ isOpen, onClose, onSave, m
               <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
                 Date
               </label>
-              <div className="relative">
-                <input
-                  type="date"
-                  id="date"
-                  name="date"
-                  value={editedMass.date ? format(new Date(editedMass.date), 'yyyy-MM-dd') : ''}
-                  onChange={handleDateChange}
-                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 
-                    ${editedMass.date && isDateUnavailable(format(new Date(editedMass.date), 'yyyy-MM-dd'))
-                      ? 'border-red-300 bg-red-50'
-                      : 'border-gray-300'}`}
-                  required
-                  disabled={!editedMass.celebrant_id} // Désactiver jusqu'à ce qu'un célébrant soit sélectionné
-                />
-                {editedMass.date && isDateUnavailable(format(new Date(editedMass.date), 'yyyy-MM-dd')) && (
-                  <p className="text-sm text-red-500 mt-1">Le célébrant est indisponible à cette date.</p>
-                )}
-                {!editedMass.celebrant_id && (
-                  <p className="text-sm text-gray-500 mt-1">Veuillez d'abord sélectionner un célébrant</p>
-                )}
-              </div>
+              <CalendarSelector
+                selectedDate={editedMass.date ? new Date(editedMass.date) : undefined}
+                onDateChange={handleDateChange}
+                disabled={!editedMass.celebrant_id}
+                unavailableDates={unavailableDates}
+              />
+              {!editedMass.celebrant_id && (
+                <p className="text-sm text-gray-500 mt-1">Veuillez d'abord sélectionner un célébrant</p>
+              )}
             </div>
 
             <div>
@@ -233,7 +228,7 @@ export const MassModal: React.FC<MassModalProps> = ({ isOpen, onClose, onSave, m
             <button
               type="submit"
               className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700"
-              disabled={!!editedMass.date && isDateUnavailable(format(new Date(editedMass.date), 'yyyy-MM-dd'))}
+              disabled={!!editedMass.date && isDateUnavailable(editedMass.date)}
             >
               Enregistrer
             </button>

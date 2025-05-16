@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { EditRowDialog } from '../components/dialogs/EditRowDialog';
 import { FormatterConfig } from '../components/dialogs/EditRowDialog';
 import { useFetchData } from '../hooks/useFetchData';
@@ -76,12 +76,15 @@ const DatabaseTabs: React.FC = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);  // Nombre d'éléments par page
   const [currentPage, setCurrentPage] = useState(1);  // Page active
 
+  // S'assurer que c'est un tableau sinon prend un tableau vide
+  const safeData = Array.isArray(data) ? data : [];
+
   // Calcul des pages
-  const totalItems = data.length;
+  const totalItems = safeData.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   // Données paginées
-  const paginatedData = data.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const paginatedData = safeData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   // Gérer la sélection du nombre d'éléments par page
   const handleItemsPerPageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -95,13 +98,17 @@ const DatabaseTabs: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
+
   return (
     <div className="w-full bg-white shadow-xl rounded-lg p-6">
-      
+
       <div className="flex items-center justify-between mb-4">
         <TabsNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
-        
-        <button 
+
+        <button
           onClick={() => {
             setEditRowData(null);
             setEditColumns(selectedTab?.columns || []);
@@ -135,7 +142,7 @@ const DatabaseTabs: React.FC = () => {
           </div>
         )}
       </div>
-      
+
       {/* Pagination */}
       {data.length > 0 && (
         <div className="flex justify-between items-center mt-4 pt-4 border-t">
@@ -143,7 +150,7 @@ const DatabaseTabs: React.FC = () => {
             <div className="text-sm text-gray-700">
               Affichage de <span className="font-medium">{Math.min((currentPage - 1) * itemsPerPage + 1, totalItems)}</span> à <span className="font-medium">{Math.min(currentPage * itemsPerPage, totalItems)}</span> sur <span className="font-medium">{totalItems}</span> entrées
             </div>
-            
+
             <div className="flex items-center space-x-2">
               <span className="text-sm font-medium text-gray-700">Lignes par page:</span>
               <select
@@ -159,7 +166,7 @@ const DatabaseTabs: React.FC = () => {
               </select>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <button
               onClick={() => handlePageChange(1)}
@@ -175,11 +182,11 @@ const DatabaseTabs: React.FC = () => {
             >
               &lt;
             </button>
-            
+
             <span className="px-4 py-1 text-sm text-gray-700">
               Page <span className="font-medium">{currentPage}</span> sur <span className="font-medium">{totalPages}</span>
             </span>
-            
+
             <button
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
@@ -197,7 +204,7 @@ const DatabaseTabs: React.FC = () => {
           </div>
         </div>
       )}
-      
+
       {selectedTab && (
         <EditRowDialog
           isOpen={isEditDialogOpen}
