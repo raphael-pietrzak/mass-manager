@@ -10,6 +10,7 @@ import { massService } from '../api/massService';
 import { exportService } from '../api/exportService';
 import { IntentionSubmission, intentionService } from '../api/intentionService';
 import { SpecialDaysModal } from '../features/special_days/SpecialDaysModal';
+import { endOfMonth, startOfMonth } from 'date-fns';
 
 export type ViewMode = 'calendar' | 'list';
 
@@ -113,12 +114,9 @@ function CalendarPage() {
     setIsSpecialDayModalOpen(true);
   };
 
-  const handleExport = async (format: 'word' | 'excel' | 'pdf') => {
+  const handleExport = async (format: 'excel' | 'pdf') => {
     try {
       switch (format) {
-        case 'word':
-          await exportService.exportToWord(filters.startDate, filters.endDate);
-          break;
         case 'excel':
           await exportService.exportToExcel(filters.startDate, filters.endDate);
           break;

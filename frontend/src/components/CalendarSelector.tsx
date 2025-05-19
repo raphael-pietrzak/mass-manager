@@ -76,9 +76,9 @@ const CalendarSelector: React.FC<CalendarSelectorProps> = ({
             captionLayout="dropdown-buttons"
             fromYear={2020}
             toYear={2100}
-            disabled={(date) => isDateInPast(date)}
+            disabled={(date: Date) => isDateInPast(date)}
             modifiers={{
-              unavailable: (date) => isDateUnavailable(date)
+              unavailable: (date: Date) => isDateUnavailable(date)
             }}
             modifiersClassNames={{
               unavailable: "bg-red-100 text-red-600 hover:bg-red-200"
