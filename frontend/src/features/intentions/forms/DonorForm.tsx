@@ -176,7 +176,7 @@ const DonorForm: React.FC<DonorFormProps> = ({
           Précédent
         </Button>
         <Button type="button" onClick={onValidate}>
-          Prévisualiser
+          Finaliser
         </Button>
       </div>
     </div>

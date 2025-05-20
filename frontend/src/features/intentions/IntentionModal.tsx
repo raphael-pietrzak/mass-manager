@@ -138,7 +138,7 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
         end_type: formData.end_type,
       });
       setPreviewData(preview);
-      setStep(4); // Passer à l'étape de récapitulatif
+      setStep(2); // Passer à l'étape de récapitulatif
     } catch (error) {
       console.error("Erreur lors de la prévisualisation des messes:", error);
     } finally {
@@ -229,12 +229,27 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
                   setSelectedDate={setSelectedDate}
                   celebrantOptions={celebrantOptions}
                   onRecurrenceClick={handleRecurrenceClick}
-                  nextStep={nextStep}
+                  nextStep={previewMasses}
                 />
               </div>
             )}
 
             {step === 2 && (
+              <div className="space-y-4 flex-1 flex flex-col">
+                <SummaryForm
+                  previewData={previewData}
+                  isLoading={isLoading}
+                  formData={formData}
+                  celebrantOptions={celebrantOptions}
+                  onValidate={confirmAndSave}
+                  onEdit={() => setStep(1)}
+                  nextStep={nextStep}
+                  prevStep={prevStep}
+                />
+              </div>
+            )}
+
+            {step === 3 && (
               <div className="space-y-4 flex-1 flex flex-col">
                 <OfferingForm
                   formData={formData}
@@ -245,27 +260,17 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
               </div>
             )}
 
-            {step === 3 && (
+            {step === 4 && (
               <div className="space-y-4 flex-1 flex flex-col">
                 <DonorForm
                   formData={formData}
                   updateFormData={updateFormData}
                   prevStep={prevStep}
-                  onValidate={previewMasses}
+                  onValidate={confirmAndSave}
                 />
               </div>
             )}
 
-            {step === 4 && (
-              <SummaryForm
-                previewData={previewData!}
-                isLoading={isLoading}
-                formData={formData}
-                celebrantOptions={celebrantOptions}
-                onValidate={confirmAndSave}
-                onEdit={() => setStep(1)}
-              />
-            )}
           </CardContent>
         </Card>
       )}

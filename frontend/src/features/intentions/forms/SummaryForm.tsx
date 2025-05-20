@@ -9,6 +9,8 @@ interface SummaryFormProps {
   celebrantOptions: { value: string; label: string }[];
   onValidate: () => void;
   onEdit: () => void;
+  nextStep: () => void;
+  prevStep: () => void;
 }
 
 const SummaryForm: React.FC<SummaryFormProps> = ({
@@ -18,6 +20,8 @@ const SummaryForm: React.FC<SummaryFormProps> = ({
   celebrantOptions,
   onValidate,
   onEdit,
+  nextStep,
+  prevStep,
 }) => {
   if (isLoading) {
     return (
@@ -27,59 +31,82 @@ const SummaryForm: React.FC<SummaryFormProps> = ({
     );
   }
 
-  if (!previewData) {
+  if (!previewData || previewData.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <p>Une erreur s'est produite lors du chargement du récapitulatif.</p>
+      <div className="flex flex-col items-center justify-center h-full">
+        <p className="mb-4">Aucune messe n'a été générée. Veuillez vérifier vos critères.</p>
+        <Button variant="outline" onClick={prevStep}>
+          Retour
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 overflow-auto h-full">
-      <div>
-        <h3 className="font-semibold text-lg mb-2">Récapitulatif</h3>
-        <div className="bg-muted p-3 rounded-md">
-          <p><span className="font-medium">Nombre de messes:</span> {previewData.length}</p>
-          <p><span className="font-medium">Don total:</span> {formData.amount} €</p>
+    <div className="space-y-6 overflow-auto h-full flex flex-col">
+      <div className="flex-grow overflow-hidden">
+        <h3 className="font-semibold text-lg mb-2 mt-4">Messes planifiées</h3>
+        
+        {/* Informations communes à toutes les messes */}
+        <div className="border p-3 rounded-md mb-4 bg-gray-50">
+          <p><span className="font-medium">Intention:</span> {previewData[0]?.intention}</p>
+          <p><span className="font-medium">Type:</span> {previewData[0]?.type === 'defunts' ? 'Défunts' : 'Vivants'}</p>
+        </div>
+        
+        <div className="relative">
+          {/* Indicateur de défilement */}
+          {previewData.length > 5 && (
+            <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-gray-100 to-transparent pointer-events-none z-10 rounded-b-md"></div>
+          )}
+          
+          <div className="overflow-auto max-h-[250px] border rounded-md scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+            <table className="w-full table-fixed">
+              <thead className="bg-gray-50 sticky top-0 z-20">
+                <tr>
+                  <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[10%]">
+                    #
+                  </th>
+                  <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[45%]">
+                    Date
+                  </th>
+                  <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[45%]">
+                    Célébrant
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {previewData.map((mass, index) => (
+                  <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                    <td className="px-3 py-2 text-sm font-medium text-gray-900">
+                      {index + 1}
+                    </td>
+                    <td className="px-3 py-2 text-sm text-gray-500 truncate">
+                      {mass.date || "Date à déterminer"}
+                    </td>
+                    <td className="px-3 py-2 text-sm text-gray-500 truncate">
+                      {mass.celebrant_name || (celebrantOptions.find(c => c.value === mass.celebrant_id)?.label || 'Non assigné')}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          
+          {/* Texte d'indication de défilement si plusieurs éléments - Style amélioré */}
+          {previewData.length > 5 && (
+            <p className="text-sm text-gray-600 mt-2 text-center font-medium bg-gray-100 p-1 rounded border border-gray-200">
+              Faites défiler pour voir toutes les messes ({previewData.length} au total)
+            </p>
+          )}
         </div>
       </div>
       
-      <div>
-        <h3 className="font-semibold text-lg mb-2">Messes planifiées</h3>
-        <div className="space-y-2 max-h-[250px] overflow-y-auto">
-          {previewData.map((mass, index) => (
-            <div key={index} className="border p-3 rounded-md">
-              <p><span className="font-medium">Date:</span> {mass.date || "Date à déterminer"}</p>
-              <p><span className="font-medium">Intention:</span> {mass.intention}</p>
-              <p><span className="font-medium">Type:</span> {mass.type === 'defunts' ? 'Défunts' : 'Vivants'}</p>
-              <p><span className="font-medium">Célébrant:</span> {mass.celebrant_name || (celebrantOptions.find(c => c.value === mass.celebrant_id)?.label || 'Non assigné')}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-      
-      <div>
-        <h3 className="font-semibold text-lg mb-2">Détails du donateur</h3>
-        <div className="bg-muted p-3 rounded-md">
-          <p><span className="font-medium">Nom:</span> {formData.firstname} {formData.lastname}</p>
-          <p><span className="font-medium">Email:</span> {formData.email}</p>
-          {formData.phone && <p><span className="font-medium">Téléphone:</span> {formData.phone}</p>}
-          {formData.address && 
-            <p><span className="font-medium">Adresse:</span> {formData.address}, {formData.postal_code} {formData.city}</p>
-          }
-          <p>
-            <span className="font-medium">Souhaite date de célébration:</span> {formData.wants_celebration_date ? 'Oui' : 'Non'}
-          </p>
-        </div>
-      </div>
-      
-      <div className="flex justify-between mt-6">
-        <Button variant="outline" onClick={onEdit}>
-          Modifier
+      <div className="pt-6 flex justify-between space-x-4">
+        <Button variant="outline" type="button" onClick={prevStep}>
+          Précédent
         </Button>
-        <Button onClick={onValidate}>
-          Confirmer
+        <Button type="button" onClick={nextStep}>
+          Suivant
         </Button>
       </div>
     </div>

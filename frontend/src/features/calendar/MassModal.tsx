@@ -183,38 +183,6 @@ export const MassModal: React.FC<MassModalProps> = ({ isOpen, onClose, onSave, m
                 <p className="text-sm text-gray-500 mt-1">Veuillez d'abord sélectionner un célébrant</p>
               )}
             </div>
-
-            <div>
-              <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
-                Type
-              </label>
-              <select
-                id="type"
-                name="type"
-                value={editedMass.type || ''}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                required
-              >
-                <option value="">Sélectionner un type</option>
-                <option value="ordinaire">Ordinaire</option>
-                <option value="defunts">Défunts</option>
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="intention" className="block text-sm font-medium text-gray-700 mb-1">
-                Intention
-              </label>
-              <textarea
-                id="intention"
-                name="intention"
-                value={editedMass.intention || ''}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                rows={3}
-              />
-            </div>
           </div>
 
           <div className="mt-5 flex justify-end space-x-3">
