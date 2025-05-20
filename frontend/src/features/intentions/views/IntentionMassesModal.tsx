@@ -135,7 +135,7 @@ export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ inte
                         <td className="px-3 py-2 whitespace-nowrap text-sm">
                           <div className="flex items-center">
                             <User className="w-3 h-3 text-gray-400 mr-1.5" />
-                            <span>{mass.celebrant_name || "Non assigné"}</span>
+                            <span>{mass.celebrant_title} {mass.celebrant_name || "Non assigné"}</span>
                           </div>
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap text-sm">

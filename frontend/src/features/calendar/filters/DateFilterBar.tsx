@@ -27,7 +27,7 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   const [showStartCalendar, setShowStartCalendar] = useState(false);
   const [showEndCalendar, setShowEndCalendar] = useState(false);
-  
+
   const exportMenuRef = useRef<HTMLDivElement>(null);
   const datePickerRef = useRef<HTMLDivElement>(null);
   const startCalendarRef = useRef<HTMLDivElement>(null);
@@ -45,8 +45,8 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
         setShowEndCalendar(false);
       }
       if (datePickerRef.current && !datePickerRef.current.contains(event.target as Node) &&
-          !startCalendarRef.current?.contains(event.target as Node) &&
-          !endCalendarRef.current?.contains(event.target as Node)) {
+        !startCalendarRef.current?.contains(event.target as Node) &&
+        !endCalendarRef.current?.contains(event.target as Node)) {
         setShowDatePickers(false);
       }
     }
@@ -89,22 +89,21 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
   };
 
   const getButtonClass = (isActive: boolean) => {
-    return `transition-all duration-200 px-4 py-2 rounded-md text-sm font-medium ${
-      isActive 
-        ? 'bg-primary text-primary-foreground shadow-sm' 
-        : 'bg-background text-foreground border border-border hover:bg-muted'
-    }`;
+    return `transition-all duration-200 px-4 py-2 rounded-md text-sm font-medium ${isActive
+      ? 'bg-primary text-primary-foreground shadow-sm'
+      : 'bg-background text-foreground border border-border hover:bg-muted'
+      }`;
   };
 
-  const isTodayActive = !!(currentStartDate && currentEndDate && 
+  const isTodayActive = !!(currentStartDate && currentEndDate &&
     format(currentStartDate, 'yyyy-MM-dd') === format(startOfDay(new Date()), 'yyyy-MM-dd') &&
     format(currentEndDate, 'yyyy-MM-dd') === format(endOfDay(new Date()), 'yyyy-MM-dd'));
 
-  const isThisWeekActive = !!(currentStartDate && currentEndDate && 
+  const isThisWeekActive = !!(currentStartDate && currentEndDate &&
     format(currentStartDate, 'yyyy-MM-dd') === format(startOfWeek(new Date(), { locale: fr }), 'yyyy-MM-dd') &&
     format(currentEndDate, 'yyyy-MM-dd') === format(endOfWeek(new Date(), { locale: fr }), 'yyyy-MM-dd'));
 
-  const isThisMonthActive = !!(currentStartDate && currentEndDate && 
+  const isThisMonthActive = !!(currentStartDate && currentEndDate &&
     format(currentStartDate, 'yyyy-MM-dd') === format(startOfMonth(new Date()), 'yyyy-MM-dd') &&
     format(currentEndDate, 'yyyy-MM-dd') === format(endOfMonth(new Date()), 'yyyy-MM-dd'));
 
@@ -115,7 +114,7 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
       <div className="flex flex-col space-y-4">
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex space-x-1 rounded-lg bg-muted/50 p-1">
-            <button 
+            <button
               onClick={handleTodayClick}
               className={getButtonClass(isTodayActive)}
             >
@@ -124,7 +123,7 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
                 Aujourd'hui
               </div>
             </button>
-            <button 
+            <button
               onClick={handleThisWeekClick}
               className={getButtonClass(isThisWeekActive)}
             >
@@ -133,7 +132,7 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
                 Cette semaine
               </div>
             </button>
-            <button 
+            <button
               onClick={handleThisMonthClick}
               className={getButtonClass(isThisMonthActive)}
             >
@@ -142,7 +141,7 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
                 Ce mois
               </div>
             </button>
-            <button 
+            <button
               onClick={handleAllClick}
               className={getButtonClass(isAllActive)}
             >
@@ -152,7 +151,7 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
               </div>
             </button>
           </div>
-          
+
           <div className="ml-auto flex items-center space-x-2">
             <div className="flex items-center">
               <input
@@ -167,7 +166,7 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
               </label>
             </div>
           </div>
-          
+
           {onExport && (
             <div className="relative" ref={exportMenuRef}>
               <button
@@ -181,18 +180,18 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
                 <ChevronDownIcon className={`h-4 w-4 transition-transform duration-200 
                                            ${isExportMenuOpen ? 'rotate-180' : ''}`} />
               </button>
-              
+
               {isExportMenuOpen && (
                 <div className="absolute right-0 mt-1 w-48 bg-card rounded-md shadow-lg z-10 border border-border">
                   <div className="py-1.5">
-                    <button 
+                    <button
                       className="w-full px-4 py-2 text-sm text-card-foreground hover:bg-muted transition-colors duration-150 flex items-center"
                       onClick={() => { onExport('excel'); setIsExportMenuOpen(false); }}
                     >
                       <span className="w-3 h-3 bg-green-600 rounded-sm mr-3"></span>
                       <span className="font-medium">Format Excel</span>
                     </button>
-                    <button 
+                    <button
                       className="w-full px-4 py-2 text-sm text-card-foreground hover:bg-muted transition-colors duration-150 flex items-center"
                       onClick={() => { onExport('pdf'); setIsExportMenuOpen(false); }}
                     >
@@ -205,22 +204,22 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
             </div>
           )}
         </div>
-        
+
         <div className="flex items-center justify-between min-h-[40px]">
           <div className="relative" ref={datePickerRef}>
-            <button 
+            <button
               onClick={() => setShowDatePickers(!showDatePickers)}
               className={`transition-colors duration-200 px-4 py-2 text-sm font-medium rounded-md flex items-center gap-2
-                        ${showDatePickers 
-                          ? 'bg-primary text-primary-foreground' 
-                          : 'bg-background text-foreground border border-border hover:bg-muted'}`}
+                        ${showDatePickers
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-background text-foreground border border-border hover:bg-muted'}`}
             >
               <CalendarRangeIcon className="h-4 w-4" />
               <span>Période personnalisée</span>
               <ChevronDownIcon className={`h-4 w-4 transition-transform duration-200 
                                          ${showDatePickers ? 'rotate-180' : ''}`} />
             </button>
-            
+
             {showDatePickers && (
               <div className="absolute mt-2 p-4 bg-card border border-border rounded-md shadow-lg z-10 
                              animate-in fade-in-50 slide-in-from-top-5 w-[420px]">
@@ -254,6 +253,7 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
                                 setStartDate(date || null);
                                 setShowStartCalendar(false);
                               }}
+                              defaultMonth={startDate}
                               locale={fr}
                             />
                           </div>
@@ -296,7 +296,7 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
                     </div>
                   </div>
                   <div className="flex justify-end">
-                    <button 
+                    <button
                       onClick={handleApplyClick}
                       className="px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-md
                                hover:bg-primary/90 transition-colors duration-200 focus:outline-none 
@@ -309,7 +309,7 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
               </div>
             )}
           </div>
-          
+
           {currentStartDate && currentEndDate && (
             <div className="text-sm text-muted-foreground">
               <span className="font-medium">Période actuelle: </span>
@@ -326,8 +326,8 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
 
 // Icônes simplifiées pour le design
 const CalendarDayIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" 
-       stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
     <line x1="16" y1="2" x2="16" y2="6"></line>
     <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -337,8 +337,8 @@ const CalendarDayIcon = ({ className }: { className?: string }) => (
 );
 
 const CalendarWeekIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" 
-       stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
     <line x1="16" y1="2" x2="16" y2="6"></line>
     <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -347,8 +347,8 @@ const CalendarWeekIcon = ({ className }: { className?: string }) => (
 );
 
 const CalendarMonthIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" 
-       stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
     <line x1="16" y1="2" x2="16" y2="6"></line>
     <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -360,8 +360,8 @@ const CalendarMonthIcon = ({ className }: { className?: string }) => (
 );
 
 const CalendarAllIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" 
-       stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
     <line x1="16" y1="2" x2="16" y2="6"></line>
     <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -371,8 +371,8 @@ const CalendarAllIcon = ({ className }: { className?: string }) => (
 );
 
 const CalendarRangeIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" 
-       stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
     <line x1="16" y1="2" x2="16" y2="6"></line>
     <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -386,8 +386,8 @@ const CalendarRangeIcon = ({ className }: { className?: string }) => (
 );
 
 const ExportIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" 
-       stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
     <polyline points="7 10 12 15 17 10"></polyline>
     <line x1="12" y1="15" x2="12" y2="3"></line>
@@ -395,15 +395,15 @@ const ExportIcon = ({ className }: { className?: string }) => (
 );
 
 const ChevronDownIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" 
-       stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="6 9 12 15 18 9"></polyline>
   </svg>
 );
 
 const CheckIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" 
-       stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="20 6 9 17 4 12"></polyline>
   </svg>
 );

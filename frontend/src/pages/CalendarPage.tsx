@@ -20,6 +20,7 @@ function CalendarPage() {
   const [isMassModalOpen, setIsMassModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isSliderOpen, setIsSliderOpen] = useState(false);
+  
   const [filters, setFilters] = useState({
     celebrant: 'all',
     startDate: null as Date | null,
@@ -55,7 +56,7 @@ function CalendarPage() {
     setIsSliderOpen(true);
   };
 
-  const handleSaveMass = async (updatedMass: IntentionSubmission ) => {
+  const handleSaveMass = async (updatedMass: IntentionSubmission) => {
     try {
       if (updatedMass.id) {
         await intentionService.updateMass(updatedMass.id, updatedMass);
@@ -113,12 +114,9 @@ function CalendarPage() {
     setIsSpecialDayModalOpen(true);
   };
 
-  const handleExport = async (format: 'word' | 'excel' | 'pdf') => {
+  const handleExport = async (format: 'excel' | 'pdf') => {
     try {
       switch (format) {
-        case 'word':
-          await exportService.exportToWord(filters.startDate, filters.endDate);
-          break;
         case 'excel':
           await exportService.exportToExcel(filters.startDate, filters.endDate);
           break;
@@ -136,7 +134,7 @@ function CalendarPage() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8"><h1 className="text-2xl font-bold mb-6">Calendrier des messes</h1>     
+      <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8"><h1 className="text-2xl font-bold mb-6">Calendrier des messes</h1>
         <FilterBar
           viewMode={viewMode}
           onViewModeChange={setViewMode}
