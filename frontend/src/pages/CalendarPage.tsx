@@ -10,7 +10,6 @@ import { massService } from '../api/massService';
 import { exportService } from '../api/exportService';
 import { IntentionSubmission, intentionService } from '../api/intentionService';
 import { SpecialDaysModal } from '../features/special_days/SpecialDaysModal';
-import { endOfMonth, startOfMonth } from 'date-fns';
 
 export type ViewMode = 'calendar' | 'list';
 
@@ -21,6 +20,7 @@ function CalendarPage() {
   const [isMassModalOpen, setIsMassModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isSliderOpen, setIsSliderOpen] = useState(false);
+  
   const [filters, setFilters] = useState({
     celebrant: 'all',
     startDate: null as Date | null,
@@ -56,7 +56,7 @@ function CalendarPage() {
     setIsSliderOpen(true);
   };
 
-  const handleSaveMass = async (updatedMass: IntentionSubmission ) => {
+  const handleSaveMass = async (updatedMass: IntentionSubmission) => {
     try {
       if (updatedMass.id) {
         await intentionService.updateMass(updatedMass.id, updatedMass);
@@ -134,7 +134,7 @@ function CalendarPage() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8"><h1 className="text-2xl font-bold mb-6">Calendrier des messes</h1>     
+      <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8"><h1 className="text-2xl font-bold mb-6">Calendrier des messes</h1>
         <FilterBar
           viewMode={viewMode}
           onViewModeChange={setViewMode}

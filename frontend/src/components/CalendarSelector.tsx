@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
@@ -46,14 +46,33 @@ const CalendarSelector: React.FC<CalendarSelectorProps> = ({
     return isBefore(date, today);
   };
 
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setShowCalendar(false);
+      }
+    };
+    if (showCalendar) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showCalendar]);
+
+
   return (
-    <div className="relative">
+    <div className="relative" ref={containerRef}>
       <Button
         type="button"
         variant="outline"
-        className={`w-full justify-start text-left font-normal ${
-          selectedDate && isDateUnavailable(selectedDate) ? "border-red-500 text-red-500" : ""
-        }`}
+        className={`w-full justify-start text-left font-normal ${selectedDate && isDateUnavailable(selectedDate) ? "border-red-500 text-red-500" : ""
+          }`}
         onClick={toggleCalendar}
         disabled={disabled}
       >

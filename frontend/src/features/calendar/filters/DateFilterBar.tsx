@@ -90,8 +90,8 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
 
   const getButtonClass = (isActive: boolean) => {
     return `transition-all duration-200 px-4 py-2 rounded-md text-sm font-medium ${isActive
-        ? 'bg-primary text-primary-foreground shadow-sm'
-        : 'bg-background text-foreground border border-border hover:bg-muted'
+      ? 'bg-primary text-primary-foreground shadow-sm'
+      : 'bg-background text-foreground border border-border hover:bg-muted'
       }`;
   };
 
@@ -253,6 +253,7 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
                                 setStartDate(date || null);
                                 setShowStartCalendar(false);
                               }}
+                              defaultMonth={startDate}
                               locale={fr}
                             />
                           </div>
