@@ -126,6 +126,7 @@ exports.updateIntention = async (req, res) => {
 			amount: req.body.amount,
 			payment_method: req.body.payment_method,
 			brother_name: req.body.brother_name,
+			deceased: req.body.deceased,
 			wants_celebration_date: req.body.wants_celebration_date,
 			date_type: req.body.date_type,
 			is_recurrent: req.body.is_recurrent,
