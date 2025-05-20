@@ -15,9 +15,10 @@ const formatValue = (value: any, columnKey: string, formatters: Record<string, a
   if (!formatter) return value; // Si pas de formatteur, retourner la valeur brute
 
   // Gestion des formatters de type 'boolean' ou 'enum'
-  if (formatter.type === 'boolean') {
-    return value ? 'Oui' : 'Non';
-  }
+ if (formatter.type === 'boolean') {
+  const boolValue = value === true || value === 1 || value === '1';
+  return boolValue ? 'Oui' : 'Non';
+}
 
   if (formatter.type === 'enum' && formatter.options) {
     const option = formatter.options.find((opt: { value: any }) => opt.value === value);
@@ -30,18 +31,8 @@ const formatValue = (value: any, columnKey: string, formatters: Record<string, a
     return isNaN(date.getTime()) ? value : date.toLocaleDateString('fr-FR');
   }
 
-  //Vérification si la valeur est un objet (par exemple un donateur avec firstname et lastname ou un célébrant avec religious_name)
-  // if (typeof value === 'object' && value !== null) {
-  //   if (value.firstname && value.lastname) {
-  //     return `${value.firstname} ${value.lastname}`;  // Afficher le prénom et le nom du donateur
-  //   }
-  //   if (value.religious_name) {
-  //     return value.religious_name;
-  //   }
-  //   return JSON.stringify(value);  // Convertir l'objet en chaîne si pas de prénom/nom
-  // }
   if (columnKey === "celebrant") {
-    return `${row.masse_celebrant_religious_name}`;
+    return `${row.celebrant_title} ${row.celebrant_religious_name}`;
   }
 
   if (columnKey === "donor") {
