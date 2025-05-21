@@ -44,7 +44,7 @@ exports.up = function(knex) {
     .createTable('Masses', function(table) {
       table.increments('id').primary();
       table.datetime('date').notNullable();
-      table.integer('celebrant_id').unsigned().references('id').inTable('Celebrants');
+      table.integer('celebrant_id').unsigned().nullable().references('id').inTable('Celebrants').onDelete('SET NULL');
       table.integer('intention_id').unsigned().references('id').inTable('Intentions').onDelete('CASCADE');
       table.enu('status', ['scheduled', 'cancelled', 'pending']).defaultTo('pending');
     })
