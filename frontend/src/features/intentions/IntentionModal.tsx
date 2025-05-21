@@ -55,6 +55,7 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
   const [step, setStep] = useState(1); // État pour suivre l'étape actuelle
   const [isLoading, setIsLoading] = useState(false);
   const [previewData, setPreviewData] = useState<Masses[]>([]);
+  const [unavailableDates, setUnavailableDates] = useState<string[]>([]); // Nouvel état pour les dates indisponibles
 
   const [formData, setFormData] = useState(testFormData);
 
@@ -84,18 +85,38 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
       setSelectedDate(intention?.date ? parseApiDate(intention.date) : new Date());
       setStep(1);
       setPreviewData([]);
+      setUnavailableDates([]); // Réinitialiser les dates indisponibles
     }
   }, [isOpen, intention]);
 
-  if (!isOpen) return null;
-  
+  // Nouvelle fonction pour récupérer les dates indisponibles d'un célébrant
+  const fetchUnavailableDates = async (celebrantId: string) => {
+    if (!celebrantId) {
+      setUnavailableDates([]);
+      return;
+    }
+    
+    try {
+      const dates = await celebrantService.getUnavailableDates(celebrantId);
+      setUnavailableDates(dates);
+    } catch (error) {
+      console.error('Erreur lors de la récupération des dates indisponibles:', error);
+      setUnavailableDates([]);
+    }
+  };
+
+  // Fonction mise à jour pour gérer le changement de célébrant
+  const handleFormUpdate = (data: Partial<typeof formData>) => {
+    // Si l'ID du célébrant a changé, récupérer ses dates indisponibles
+    if (data.celebrant_id !== undefined && data.celebrant_id !== formData.celebrant_id) {
+      fetchUnavailableDates(data.celebrant_id);
+    }
+    
+    setFormData(prev => ({ ...prev, ...data }));
+  };
 
   const handleRecurrenceClick = () => {
     setShowRecurrenceModal(true);
-  };
-
-  const updateFormData = (data: Partial<typeof formData>) => {
-    setFormData(prev => ({ ...prev, ...data }));
   };
 
   const nextStep = () => setStep((prev) => Math.min(prev + 1, 4));
@@ -112,9 +133,9 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
   const getStepTitle = () => {
     switch (step) {
       case 1: return "Intention de messe";
+      case 4: return "Récapitulatif";
       case 2: return "Don et paiement";
       case 3: return "Informations du donateur";
-      case 4: return "Récapitulatif et confirmation";
       default: return "Intention de messe";
     }
   };
@@ -154,9 +175,9 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
       await intentionService.createMass({
         masses: previewData,
         donor: {
-          firstname: formData.firstname || '',
-          lastname: formData.lastname || '',
-          email: formData.email || '',
+          firstname: formData.donor_firstname || '',
+          lastname: formData.donor_lastname || '',
+          email: formData.donor_email || '',
           phone: formData.phone,
           address: formData.address,
           postal_code: formData.postal_code,
@@ -177,6 +198,8 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
     }
   };
 
+  if (!isOpen) return null;
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       {showRecurrenceModal ? (
@@ -193,7 +216,7 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
           <div className="p-4">
             <RegularityForm 
               formData={formData}
-              updateFormData={updateFormData}
+              updateFormData={handleFormUpdate}
               onValidate={() => setShowRecurrenceModal(false)}
             />
           </div>
@@ -224,12 +247,13 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
               <div className="space-y-4 flex-1 flex flex-col">
                 <IntentionForm
                   formData={formData}
-                  updateFormData={updateFormData}
+                  updateFormData={handleFormUpdate}
                   selectedDate={selectedDate}
                   setSelectedDate={setSelectedDate}
                   celebrantOptions={celebrantOptions}
                   onRecurrenceClick={handleRecurrenceClick}
                   nextStep={previewMasses}
+                  unavailableDates={unavailableDates}
                 />
               </div>
             )}
@@ -253,7 +277,7 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
               <div className="space-y-4 flex-1 flex flex-col">
                 <OfferingForm
                   formData={formData}
-                  updateFormData={updateFormData}
+                  updateFormData={handleFormUpdate}
                   nextStep={nextStep}
                   prevStep={prevStep}
                 />
@@ -264,7 +288,7 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
               <div className="space-y-4 flex-1 flex flex-col">
                 <DonorForm
                   formData={formData}
-                  updateFormData={updateFormData}
+                  updateFormData={handleFormUpdate}
                   prevStep={prevStep}
                   onValidate={confirmAndSave}
                 />
