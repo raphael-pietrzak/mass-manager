@@ -3,6 +3,7 @@ import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, end
 import { fr } from 'date-fns/locale';
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from 'lucide-react';
+import CalendarSelector from '../../../components/CalendarSelector';
 
 interface DateFilterBarProps {
   onFilterChange: (startDate: Date | null, endDate: Date | null) => void;
@@ -227,100 +228,80 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
                   <div className="flex flex-wrap items-end gap-4">
                     <div className="space-y-1.5">
                       <label className="text-xs font-medium text-muted-foreground">Date de début</label>
+                      {/*Début calendrier*/}
                       <div className="relative" ref={startCalendarRef}>
-                        <button
-                          className="w-full min-w-[180px] px-3 py-1.5 bg-background border border-input rounded-md text-sm text-left font-normal
-                                    focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary flex items-center"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setShowStartCalendar(!showStartCalendar);
-                            setShowEndCalendar(false);
-                          }}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {startDate ? (
-                            format(startDate, 'P', { locale: fr })
-                          ) : (
-                            <span>Sélectionner une date</span>
-                          )}
-                        </button>
-                        {showStartCalendar && (
-                          <div className="absolute left-0 mt-1 p-2 bg-white border rounded-md shadow-lg z-20">
-                            <Calendar
-                              mode="single"
-                              selected={startDate || undefined}
-                              onSelect={(date: Date | undefined) => {
-                                setStartDate(date || null);
-                                setShowStartCalendar(false);
-                              }}
-                              defaultMonth={startDate}
-                              locale={fr}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-muted-foreground">Date de fin</label>
-                      <div className="relative" ref={endCalendarRef}>
-                        <button
-                          className="w-full min-w-[180px] px-3 py-1.5 bg-background border border-input rounded-md text-sm text-left font-normal
-                                    focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary flex items-center"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setShowEndCalendar(!showEndCalendar);
-                            setShowStartCalendar(false);
-                          }}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {endDate ? (
-                            format(endDate, 'P', { locale: fr })
-                          ) : (
-                            <span>Sélectionner une date</span>
-                          )}
-                        </button>
-                        {showEndCalendar && (
-                          <div className="absolute left-0 mt-1 p-2 bg-white border rounded-md shadow-lg z-20">
-                            <Calendar
-                              mode="single"
-                              selected={endDate || undefined}
-                              onSelect={(date: Date | undefined) => {
-                                setEndDate(date || null);
-                                setShowEndCalendar(false);
-                              }}
-                              locale={fr}
-                            />
-                          </div>
-                        )}
-                      </div>
+                      <CalendarSelector
+                        selectedDate={startDate || undefined}
+                        onDateChange={(date: Date | undefined) => {
+                          setEndDate(date || null);
+                          //setShowEndCalendar(false);
+                        }}
+                        unavailableDates={["2025-05-25", "2025-05-26"]} // Exemple
+                        ignoreAvailability={false}
+                      />
                     </div>
                   </div>
-                  <div className="flex justify-end">
-                    <button
-                      onClick={handleApplyClick}
-                      className="px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-md
-                               hover:bg-primary/90 transition-colors duration-200 focus:outline-none 
-                               focus:ring-2 focus:ring-primary/30 focus:ring-offset-1"
-                    >
-                      Appliquer
-                    </button>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-muted-foreground">Date de fin</label>
+                    <div className="relative" ref={endCalendarRef}>
+                      <button
+                        className="w-full min-w-[180px] px-3 py-1.5 bg-background border border-input rounded-md text-sm text-left font-normal
+                                    focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary flex items-center"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowEndCalendar(!showEndCalendar);
+                          setShowStartCalendar(false);
+                        }}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {endDate ? (
+                          format(endDate, 'P', { locale: fr })
+                        ) : (
+                          <span>Sélectionner une date</span>
+                        )}
+                      </button>
+                      {showEndCalendar && (
+                        <div className="absolute left-0 mt-1 p-2 bg-white border rounded-md shadow-lg z-20">
+                          <Calendar
+                            mode="single"
+                            selected={endDate || undefined}
+                            onSelect={(date: Date | undefined) => {
+                              setEndDate(date || null);
+                              setShowEndCalendar(false);
+                            }}
+                            locale={fr}
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
+                <div className="flex justify-end">
+                  <button
+                    onClick={handleApplyClick}
+                    className="px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-md
+                               hover:bg-primary/90 transition-colors duration-200 focus:outline-none 
+                               focus:ring-2 focus:ring-primary/30 focus:ring-offset-1"
+                  >
+                    Appliquer
+                  </button>
+                </div>
+              </div>
               </div>
             )}
-          </div>
-
-          {currentStartDate && currentEndDate && (
-            <div className="text-sm text-muted-foreground">
-              <span className="font-medium">Période actuelle: </span>
-              <span>
-                {format(currentStartDate, 'dd/MM/yyyy')} - {format(currentEndDate, 'dd/MM/yyyy')}
-              </span>
-            </div>
-          )}
         </div>
+
+        {currentStartDate && currentEndDate && (
+          <div className="text-sm text-muted-foreground">
+            <span className="font-medium">Période actuelle: </span>
+            <span>
+              {format(currentStartDate, 'dd/MM/yyyy')} - {format(currentEndDate, 'dd/MM/yyyy')}
+            </span>
+          </div>
+        )}
       </div>
     </div>
+    </div >
   );
 };
 
