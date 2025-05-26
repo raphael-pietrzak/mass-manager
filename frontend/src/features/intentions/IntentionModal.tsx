@@ -203,7 +203,7 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       {showRecurrenceModal ? (
-        <div className="bg-white rounded-lg max-w-md w-full mx-4">
+        <div className="bg-white rounded-lg max-w-md w-full mx-4 max-h-[95vh] overflow-y-auto">
           <div className="p-4 flex justify-between items-center border-b">
             <h3 className="font-medium">Configuration de la récurrence</h3>
             <button 

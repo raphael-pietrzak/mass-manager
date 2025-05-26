@@ -4,15 +4,12 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
-import { Calendar } from "@/components/ui/calendar";
-import { fr } from 'date-fns/locale';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { formatDateForDisplay, formatDateForApi, parseApiDate } from '../../../utils/dateUtils';
 import { Intention } from '../../../api/intentionService';
+import CalendarSelector from '../../../components/CalendarSelector';
 
 interface RegularityFormProps {
   formData: Partial<Intention>;
@@ -143,29 +140,12 @@ const RegularityForm: React.FC<RegularityFormProps> = ({
     <div className="space-y-6">
       <div className="space-y-2">
         <Label>Date de début</Label>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" className="w-full justify-start text-left font-normal">
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {startDate ? (
-                formatDateForDisplay(startDate)
-              ) : (
-                <span>Sélectionner une date</span>
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={startDate}
-              onSelect={(date: Date | null) => {
-                updateFormData({ start_date: formatDateForApi(date) });
-              }}
-              initialFocus
-              locale={fr}
-            />
-          </PopoverContent>
-        </Popover>
+        <CalendarSelector
+          selectedDate={startDate ?? undefined}
+          onDateChange={(date: Date | undefined) => {
+            return updateFormData({ start_date: formatDateForApi(date) });
+          }}
+        />
       </div>
 
       <div className="space-y-2">
@@ -219,29 +199,12 @@ const RegularityForm: React.FC<RegularityFormProps> = ({
         </RadioGroup>
 
         {formData.end_type === 'date' && (
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="w-full justify-start text-left font-normal">
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {endDate ? (
-                  formatDateForDisplay(endDate)
-                ) : (
-                  <span>Sélectionner une date de fin</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={endDate}
-                onSelect={(date: Date | null) => {
-                  updateFormData({ end_date: formatDateForApi(date) });
-                }}
-                initialFocus
-                locale={fr}
-              />
-            </PopoverContent>
-          </Popover>
+          <CalendarSelector
+            selectedDate={endDate ?? undefined}
+            onDateChange={(date: Date | undefined) => {
+              return updateFormData({ end_date: formatDateForApi(date) });
+            }}
+          />
         )}
       </div>
 

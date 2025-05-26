@@ -67,7 +67,7 @@ export const DaySlider: React.FC<DaySliderProps> = ({
 
                     <div className="space-y-1">
                       <p className="text-sm text-gray-600">
-                        Célébrant: {mass.celebrant_title} {mass.celebrant_name}
+                        Célébrant: {mass.celebrant_title} {mass.celebrant_religious_name}
                       </p>
                       {mass.intention && (
                         <p className="text-sm text-gray-600 italic">
