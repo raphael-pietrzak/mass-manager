@@ -23,6 +23,7 @@ interface IntentionFormProps {
   celebrantOptions: DropdownOption[];
   onRecurrenceClick: () => void;
   nextStep: () => void;
+  unavailableDates?: string[]; // Nouvelles dates indisponibles du célébrant sélectionné
 }
 
 const IntentionForm: React.FC<IntentionFormProps> = ({
@@ -32,7 +33,8 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
   setSelectedDate,
   celebrantOptions,
   onRecurrenceClick,
-  nextStep
+  nextStep,
+  unavailableDates = [] // Valeur par défaut comme tableau vide
 }) => {
 
   const massTypes = [
@@ -113,6 +115,17 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
           </div>
         </div>
 
+        {/* Célébrant */}
+        <div className="space-y-2">
+          <Label>Célébrant</Label>
+          <DropdownSearch
+            options={celebrantOptions}
+            value={formData.celebrant_id}
+            onChange={(value: string) => updateFormData({ celebrant_id: value })}
+            placeholder="Sélectionner un célébrant"
+          />
+        </div>
+
         {/* Type de date */}
         <div className="space-y-4">
           <Label>Type de date</Label>
@@ -139,33 +152,23 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
           {formData.date_type !== "indifferent" && (
             <div className="flex items-end gap-2">
               <div className="flex-grow">
-          <CalendarSelector
-            selectedDate={selectedDate}
-            onDateChange={(date: Date | undefined) => setSelectedDate(date)}
-          />
+                <CalendarSelector
+                  selectedDate={selectedDate}
+                  onDateChange={(date: Date | undefined) => setSelectedDate(date)}
+                  unavailableDates={unavailableDates}
+                />
               </div>
               <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          onClick={onRecurrenceClick}
-          title="Programmer une récurrence"
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={onRecurrenceClick}
+                title="Programmer une récurrence"
               >
-          <RotateCw className="w-5 h-5" />
+                <RotateCw className="w-5 h-5" />
               </Button>
             </div>
           )}
-        </div>
-
-        {/* Célébrant */}
-        <div className="space-y-2">
-          <Label>Célébrant</Label>
-          <DropdownSearch
-            options={celebrantOptions}
-            value={formData.celebrant_id}
-            onChange={(value: string) => updateFormData({ celebrant_id: value })}
-            placeholder="Sélectionner un célébrant"
-          />
         </div>
       </div>
 
