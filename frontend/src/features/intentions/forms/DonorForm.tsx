@@ -34,36 +34,36 @@ const DonorForm: React.FC<DonorFormProps> = ({
     const existingDonor = donors.find((donor) => donor.id.toString() === value);
     if (value === UNASSIGNED_VALUE || value === '') {
       updateFormData({
-        firstname: '',
-        lastname: '',
-        email: '',
-        phone: '',
-        address: '',
-        city: '',
-        postal_code: ''
+        donor_firstname: '',
+        donor_lastname: '',
+        donor_email: '',
+        donor_phone: '',
+        donor_address: '',
+        donor_city: '',
+        donor_postal_code: ''
       });
       return;
     }
     if (existingDonor) {
       updateFormData({
-        firstname: existingDonor.firstname,
-        lastname: existingDonor.lastname,
-        email: existingDonor.email,
-        phone: existingDonor.phone,
-        address: existingDonor.address,
-        city: existingDonor.city,
-        postal_code: existingDonor.zip_code
+        donor_firstname: existingDonor.firstname,
+        donor_lastname: existingDonor.lastname,
+        donor_email: existingDonor.email,
+        donor_phone: existingDonor.phone,
+        donor_address: existingDonor.address,
+        donor_city: existingDonor.city,
+        donor_postal_code: existingDonor.zip_code
       });
     } else {
       // Saisie libre : on garde l'email et on vide le reste
       updateFormData({
-        firstname: '',
-        lastname: '',
-        email: value,
-        phone: '',
-        address: '',
-        city: '',
-        postal_code: ''
+        donor_firstname: '',
+        donor_lastname: '',
+        donor_email: value,
+        donor_phone: '',
+        donor_address: '',
+        donor_city: '',
+        donor_postal_code: ''
       });
     }
   };
@@ -101,8 +101,8 @@ const DonorForm: React.FC<DonorFormProps> = ({
             <Input
               id="firstname"
               placeholder="Prénom"
-              value={formData.firstname || ''}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ firstname: e.target.value })}
+              value={formData.donor_firstname || ''}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ donor_firstname: e.target.value })}
             />
           </div>
           <div className="space-y-2">
@@ -110,8 +110,8 @@ const DonorForm: React.FC<DonorFormProps> = ({
             <Input
               id="last_name"
               placeholder="Nom"
-              value={formData.lastname || ''}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ lastname: e.target.value })}
+              value={formData.donor_lastname || ''}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ donor_lastname: e.target.value })}
             />
           </div>
         </div>
@@ -121,8 +121,8 @@ const DonorForm: React.FC<DonorFormProps> = ({
             id="phone"
             type="tel"
             placeholder="Numéro de téléphone"
-            value={formData.phone || ''}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ phone: e.target.value })}
+            value={formData.donor_phone || ''}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ donor_phone: e.target.value })}
           />
         </div>
 
@@ -131,8 +131,8 @@ const DonorForm: React.FC<DonorFormProps> = ({
           <Input
             id="address"
             placeholder="Adresse"
-            value={formData.address || ''}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ address: e.target.value })}
+            value={formData.donor_address || ''}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ donor_address: e.target.value })}
           />
         </div>
 
@@ -142,8 +142,8 @@ const DonorForm: React.FC<DonorFormProps> = ({
             <Input
               id="postal_code"
               placeholder="Code postal"
-              value={formData.postal_code || ''}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ postal_code: e.target.value })}
+              value={formData.donor_postal_code || ''}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ donor_postal_code: e.target.value })}
             />
           </div>
           <div className="space-y-2">
@@ -151,8 +151,8 @@ const DonorForm: React.FC<DonorFormProps> = ({
             <Input
               id="city"
               placeholder="Ville"
-              value={formData.city || ''}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ city: e.target.value })}
+              value={formData.donor_city || ''}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ donor_city: e.target.value })}
             />
           </div>
         </div>

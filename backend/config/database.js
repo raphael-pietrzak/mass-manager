@@ -7,6 +7,11 @@ const db = knex({
     filename: './database/mass_manager.db',
   },
   useNullAsDefault: true, // Nécessaire pour SQLite
+  pool: {
+		afterCreate: (conn, done) => {
+			conn.run("PRAGMA foreign_keys = ON", done)
+		},
+	},
 });
 
 module.exports = db;

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
@@ -10,13 +10,15 @@ interface CalendarSelectorProps {
   onDateChange: (date: Date | undefined) => void;
   disabled?: boolean; // si on veut empecher l'entrée du champ date
   unavailableDates?: string[]; // Nouvelles dates indisponibles
+  ignoreAvailability?: boolean; // si on veut donner la possibilités de choisir n'importe qu'elle date même dans le passé
 }
 
 const CalendarSelector: React.FC<CalendarSelectorProps> = ({
   selectedDate,
   onDateChange,
   disabled = false,
-  unavailableDates = []
+  unavailableDates = [],
+  ignoreAvailability = false
 }) => {
   const [showCalendar, setShowCalendar] = useState(false);
   const today = startOfDay(new Date()); // Date d'aujourd'hui sans les heures, minutes, etc.
@@ -46,14 +48,33 @@ const CalendarSelector: React.FC<CalendarSelectorProps> = ({
     return isBefore(date, today);
   };
 
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setShowCalendar(false);
+      }
+    };
+    if (showCalendar) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showCalendar]);
+
+
   return (
-    <div className="relative">
+    <div className="relative" ref={containerRef}>
       <Button
         type="button"
         variant="outline"
-        className={`w-full justify-start text-left font-normal ${
-          selectedDate && isDateUnavailable(selectedDate) ? "border-red-500 text-red-500" : ""
-        }`}
+        className={`w-full justify-start text-left font-normal ${selectedDate && isDateUnavailable(selectedDate) ? "border-red-500 text-red-500" : ""
+          }`}
         onClick={toggleCalendar}
         disabled={disabled}
       >
@@ -76,13 +97,13 @@ const CalendarSelector: React.FC<CalendarSelectorProps> = ({
             captionLayout="dropdown-buttons"
             fromYear={2020}
             toYear={2100}
-            disabled={(date) => isDateInPast(date)}
-            modifiers={{
-              unavailable: (date) => isDateUnavailable(date)
-            }}
-            modifiersClassNames={{
+            disabled={(date: Date) => !ignoreAvailability && (isDateInPast(date) || isDateUnavailable(date))}
+            modifiers={!ignoreAvailability ? {
+              unavailable: (date: Date) => isDateUnavailable(date)
+            } : undefined}
+            modifiersClassNames={!ignoreAvailability ? {
               unavailable: "bg-red-100 text-red-600 hover:bg-red-200"
-            }}
+            } : undefined}
             classNames={{
               caption_label: "hidden",
               dropdown: "flex justify-center", // <-- Ajoute un espace entre mois et année
@@ -106,7 +127,7 @@ const CalendarSelector: React.FC<CalendarSelectorProps> = ({
         </div>
       )}
 
-      {selectedDate && isDateUnavailable(selectedDate) && (
+      {selectedDate && !ignoreAvailability && isDateUnavailable(selectedDate) && (
         <p className="text-sm text-red-500 mt-1">Le célébrant est indisponible à cette date.</p>
       )}
     </div>

@@ -14,10 +14,10 @@ export interface Intention {
     donor_firstname?: string;
     donor_lastname?: string;
     donor_email?: string;
-    phone?: string;
-    address?: string;
-    postal_code?: string;
-    city?: string;
+    donor_phone?: string;
+    donor_address?: string;
+    donor_postal_code?: string;
+    donor_city?: string;
     wants_celebration_date?: boolean;
     donor_id?: number;
 
@@ -52,6 +52,7 @@ export interface Masses {
     date: string | null; // peut être null pour les messes sans date assignée
     intention: string;
     type: 'defunts' | 'vivants';
+    celebrant_title: string;
     celebrant_id: string | null; // peut être null si non assigné
     celebrant_name: string;
     status: 'scheduled' | 'cancelled' | 'pending';
