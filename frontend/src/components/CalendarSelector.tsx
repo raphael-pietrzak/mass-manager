@@ -10,13 +10,15 @@ interface CalendarSelectorProps {
   onDateChange: (date: Date | undefined) => void;
   disabled?: boolean; // si on veut empecher l'entrée du champ date
   unavailableDates?: string[]; // Nouvelles dates indisponibles
+  ignoreAvailability?: boolean; // si on veut donner la possibilités de choisir n'importe qu'elle date même dans le passé
 }
 
 const CalendarSelector: React.FC<CalendarSelectorProps> = ({
   selectedDate,
   onDateChange,
   disabled = false,
-  unavailableDates = []
+  unavailableDates = [],
+  ignoreAvailability = false
 }) => {
   const [showCalendar, setShowCalendar] = useState(false);
   const today = startOfDay(new Date()); // Date d'aujourd'hui sans les heures, minutes, etc.
@@ -95,13 +97,13 @@ const CalendarSelector: React.FC<CalendarSelectorProps> = ({
             captionLayout="dropdown-buttons"
             fromYear={2020}
             toYear={2100}
-            disabled={(date: Date) => isDateInPast(date)}
-            modifiers={{
+            disabled={(date: Date) => !ignoreAvailability && (isDateInPast(date) || isDateUnavailable(date))}
+            modifiers={!ignoreAvailability ? {
               unavailable: (date: Date) => isDateUnavailable(date)
-            }}
-            modifiersClassNames={{
+            } : undefined}
+            modifiersClassNames={!ignoreAvailability ? {
               unavailable: "bg-red-100 text-red-600 hover:bg-red-200"
-            }}
+            } : undefined}
             classNames={{
               caption_label: "hidden",
               dropdown: "flex justify-center", // <-- Ajoute un espace entre mois et année
@@ -125,7 +127,7 @@ const CalendarSelector: React.FC<CalendarSelectorProps> = ({
         </div>
       )}
 
-      {selectedDate && isDateUnavailable(selectedDate) && (
+      {selectedDate && !ignoreAvailability && isDateUnavailable(selectedDate) && (
         <p className="text-sm text-red-500 mt-1">Le célébrant est indisponible à cette date.</p>
       )}
     </div>

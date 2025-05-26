@@ -240,9 +240,10 @@ class Mass {
             .select(
                 'Masses.id',
                 'Masses.date',
+                'Celebrants.title as celebrant_title',
                 'Celebrants.religious_name as celebrant',
                 'Intentions.intention_text as intention',
-                'Masses.status',
+                'Intentions.deceased as type',
             )
             .orderBy('Masses.date');
         

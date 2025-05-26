@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon } from 'lucide-react';
+import CalendarSelector from '../../../components/CalendarSelector';
 
 interface DateFilterBarProps {
   onFilterChange: (startDate: Date | null, endDate: Date | null) => void;
@@ -25,9 +24,6 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
   const [startDate, setStartDate] = useState<Date | null>(currentStartDate);
   const [endDate, setEndDate] = useState<Date | null>(currentEndDate);
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
-  const [showStartCalendar, setShowStartCalendar] = useState(false);
-  const [showEndCalendar, setShowEndCalendar] = useState(false);
-
   const exportMenuRef = useRef<HTMLDivElement>(null);
   const datePickerRef = useRef<HTMLDivElement>(null);
   const startCalendarRef = useRef<HTMLDivElement>(null);
@@ -38,12 +34,12 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
       if (exportMenuRef.current && !exportMenuRef.current.contains(event.target as Node)) {
         setIsExportMenuOpen(false);
       }
-      if (startCalendarRef.current && !startCalendarRef.current.contains(event.target as Node)) {
-        setShowStartCalendar(false);
-      }
-      if (endCalendarRef.current && !endCalendarRef.current.contains(event.target as Node)) {
-        setShowEndCalendar(false);
-      }
+      // if (startCalendarRef.current && !startCalendarRef.current.contains(event.target as Node)) {
+      //   setShowStartCalendar(false);
+      // }
+      // if (endCalendarRef.current && !endCalendarRef.current.contains(event.target as Node)) {
+      //   setShowEndCalendar(false);
+      // }
       if (datePickerRef.current && !datePickerRef.current.contains(event.target as Node) &&
         !startCalendarRef.current?.contains(event.target as Node) &&
         !endCalendarRef.current?.contains(event.target as Node)) {
@@ -222,89 +218,34 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
 
             {showDatePickers && (
               <div className="absolute mt-2 p-4 bg-card border border-border rounded-md shadow-lg z-10 
-                             animate-in fade-in-50 slide-in-from-top-5 w-[420px]">
-                <div className="flex flex-col space-y-4">
-                  <div className="flex flex-wrap items-end gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-muted-foreground">Date de début</label>
-                      <div className="relative" ref={startCalendarRef}>
-                        <button
-                          className="w-full min-w-[180px] px-3 py-1.5 bg-background border border-input rounded-md text-sm text-left font-normal
-                                    focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary flex items-center"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setShowStartCalendar(!showStartCalendar);
-                            setShowEndCalendar(false);
-                          }}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {startDate ? (
-                            format(startDate, 'P', { locale: fr })
-                          ) : (
-                            <span>Sélectionner une date</span>
-                          )}
-                        </button>
-                        {showStartCalendar && (
-                          <div className="absolute left-0 mt-1 p-2 bg-white border rounded-md shadow-lg z-20">
-                            <Calendar
-                              mode="single"
-                              selected={startDate || undefined}
-                              onSelect={(date: Date | undefined) => {
-                                setStartDate(date || null);
-                                setShowStartCalendar(false);
-                              }}
-                              defaultMonth={startDate}
-                              locale={fr}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-muted-foreground">Date de fin</label>
-                      <div className="relative" ref={endCalendarRef}>
-                        <button
-                          className="w-full min-w-[180px] px-3 py-1.5 bg-background border border-input rounded-md text-sm text-left font-normal
-                                    focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary flex items-center"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setShowEndCalendar(!showEndCalendar);
-                            setShowStartCalendar(false);
-                          }}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {endDate ? (
-                            format(endDate, 'P', { locale: fr })
-                          ) : (
-                            <span>Sélectionner une date</span>
-                          )}
-                        </button>
-                        {showEndCalendar && (
-                          <div className="absolute left-0 mt-1 p-2 bg-white border rounded-md shadow-lg z-20">
-                            <Calendar
-                              mode="single"
-                              selected={endDate || undefined}
-                              onSelect={(date: Date | undefined) => {
-                                setEndDate(date || null);
-                                setShowEndCalendar(false);
-                              }}
-                              locale={fr}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                animate-in fade-in-50 slide-in-from-top-5 w-[420px]">
+                <div className="flex items-end justify-between space-x-4">
+                  <div className="flex flex-col space-y-1.5 w-1/2">
+                    <label className="text-xs font-medium text-muted-foreground">Date de début</label>
+                    <CalendarSelector
+                      selectedDate={startDate || undefined}
+                      onDateChange={(date: Date | undefined) => setStartDate(date || null)}
+                      ignoreAvailability
+                    />
                   </div>
-                  <div className="flex justify-end">
-                    <button
-                      onClick={handleApplyClick}
-                      className="px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-md
-                               hover:bg-primary/90 transition-colors duration-200 focus:outline-none 
-                               focus:ring-2 focus:ring-primary/30 focus:ring-offset-1"
-                    >
-                      Appliquer
-                    </button>
+                  <div className="flex flex-col space-y-1.5 w-1/2">
+                    <label className="text-xs font-medium text-muted-foreground">Date de fin</label>
+                    <CalendarSelector
+                      selectedDate={endDate || undefined}
+                      onDateChange={(date: Date | undefined) => setEndDate(date || null)}
+                      ignoreAvailability
+                    />
                   </div>
+                </div>
+                <div className="flex justify-end mt-4">
+                  <button
+                    onClick={handleApplyClick}
+                    className="px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-md
+                 hover:bg-primary/90 transition-colors duration-200 focus:outline-none 
+                 focus:ring-2 focus:ring-primary/30 focus:ring-offset-1"
+                  >
+                    Appliquer
+                  </button>
                 </div>
               </div>
             )}
@@ -320,7 +261,7 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
           )}
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 
@@ -398,12 +339,5 @@ const ChevronDownIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="6 9 12 15 18 9"></polyline>
-  </svg>
-);
-
-const CheckIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none"
-    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="20 6 9 17 4 12"></polyline>
   </svg>
 );

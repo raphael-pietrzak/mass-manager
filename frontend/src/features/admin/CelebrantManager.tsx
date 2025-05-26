@@ -236,7 +236,7 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
             <AlertTriangle className="h-4 w-4 mr-2" />
             <AlertTitle>Confirmer la suppression</AlertTitle>
             <AlertDescription className="mt-2">
-              <p className="mb-3">Êtes-vous sûr de vouloir supprimer ce jour particulier ? Cette action est irréversible.</p>
+              <p className="mb-3">Êtes-vous sûr de vouloir supprimer ce célébrant (Les intentions de messe qui lui sont affectées seront réattribuées aléatoirement) ? Cette action est irréversible.</p>
               <div className="flex justify-end space-x-2">
                 <Button
                   variant="outline"

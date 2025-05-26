@@ -221,6 +221,7 @@ const AdminPage = () => {
                   <CalendarSelector
                     selectedDate={deleteBeforeDate}
                     onDateChange={handleDateChange}
+                    ignoreAvailability
                   />
                 </div>
                 <AlertDialogDescription className="mt-4">
