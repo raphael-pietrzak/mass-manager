@@ -14,10 +14,10 @@ export interface Intention {
     donor_firstname?: string;
     donor_lastname?: string;
     donor_email?: string;
-    phone?: string;
-    address?: string;
-    postal_code?: string;
-    city?: string;
+    donor_phone?: string;
+    donor_address?: string;
+    donor_postal_code?: string;
+    donor_city?: string;
     wants_celebration_date?: boolean;
     donor_id?: number;
 
