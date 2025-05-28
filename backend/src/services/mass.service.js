@@ -8,7 +8,7 @@ const MassService = {
      * @param {Object} params - Paramètres pour la prévisualisation
      * @param {string} params.intention_text - Le texte d'intention
      * @param {boolean} params.deceased - Si l'intention est pour un défunt
-     * @param {Array<string>} params.dates - Dates souhaitées pour les messes (facultatif)
+     * @param {string} params.start_date - Date de début souhaitée pour les messes (facultatif)
      * @param {number} params.mass_count - Nombre de messes à prévoir
      * @param {number} params.celebrant_id - ID du célébrant sélectionné (facultatif)
      * @param {string} params.date_type - Type de date: 'imperative', 'preferred', 'indifferent'
@@ -19,22 +19,28 @@ const MassService = {
             const { 
                 intention_text, 
                 deceased = false,
-                dates = [], 
+                start_date = null,
                 mass_count = 1, 
                 celebrant_id = null,
                 date_type = 'indifferent'
             } = params;
             
             const masses = [];
-            // Pour suivre les célébrants déjà utilisés par date
             const usedCelebrantsByDate = {};
             
-            // Si des dates sont fournies (impératives ou souhaitées)
-            if (dates && dates.length > 0 && (date_type === 'imperative' || date_type === 'preferred')) {
-                for (let i = 0; i < Math.min(dates.length, mass_count); i++) {
+            // Si une date de début est fournie (impérative ou souhaitée)
+            if (start_date && (date_type === 'imperative' || date_type === 'preferred')) {
+                // Générer un tableau de dates à partir de start_date
+                const dates = [];
+                for (let i = 0; i < mass_count; i++) {
+                    const date = new Date(start_date);
+                    date.setDate(date.getDate() + i);
+                    dates.push(date.toISOString().split('T')[0]);
+                }
+
+                for (let i = 0; i < dates.length; i++) {
                     const date = dates[i];
                     
-                    // Initialiser le tracking pour cette date
                     if (!usedCelebrantsByDate[date]) {
                         usedCelebrantsByDate[date] = new Set();
                     }
@@ -84,32 +90,15 @@ const MassService = {
             } 
             // CAS 5 & 6: Date indifférente
             else {
-                for (let i = 0; i < mass_count; i++) {
-                    let massData;
-                    
-                    // CAS 5: Célébrant spécifique
-                    if (celebrant_id) {
-                        massData = await MassService.handleIndifferentDateWithCelebrant(
-                            celebrant_id, intention_text, deceased, usedCelebrantsByDate
-                        );
-                    } 
-                    // CAS 6: Pas de célébrant spécifique
-                    else {
-                        massData = await MassService.handleIndifferentDate(
-                            intention_text, deceased, usedCelebrantsByDate
-                        );
-                    }
-                    
-                    masses.push(massData);
-                    // Mettre à jour les célébrants utilisés
-                    if (massData.celebrant_id && massData.date) {
-                        const dateToUse = massData.date;
-                        if (!usedCelebrantsByDate[dateToUse]) {
-                            usedCelebrantsByDate[dateToUse] = new Set();
-                        }
-                        usedCelebrantsByDate[dateToUse].add(parseInt(massData.celebrant_id));
-                    }
-                }
+                console.log(`Traitement de ${mass_count} messes avec date indifférente`);
+                const indifferentDatesResult = await MassService.handleIndifferentDates(
+                    mass_count,
+                    celebrant_id,
+                    intention_text,
+                    deceased,
+                    usedCelebrantsByDate
+                );
+                masses.push(...indifferentDatesResult);
             }
             
             return masses;
@@ -118,7 +107,7 @@ const MassService = {
             throw error;
         }
     },
-    
+
     /**
      * Gère le cas d'une date impérative
      */
@@ -262,6 +251,52 @@ const MassService = {
         }
     },
     
+    /**
+     * Gère le traitement des messes avec dates indifférentes
+     */
+    handleIndifferentDates: async (mass_count, celebrant_id, intention_text, deceased, usedCelebrantsByDate) => {
+        const masses = [];
+        console.log(`Début du traitement des dates indifférentes. Célébrant spécifique: ${celebrant_id || 'non'}`);
+
+        for (let i = 0; i < mass_count; i++) {
+            console.log(`Traitement de la messe ${i + 1}/${mass_count}`);
+            let massData;
+            
+            if (celebrant_id) {
+                massData = await MassService.handleIndifferentDateWithCelebrant(
+                    celebrant_id, intention_text, deceased, usedCelebrantsByDate
+                );
+            } else {
+                massData = await MassService.handleIndifferentDate(
+                    intention_text, deceased, usedCelebrantsByDate
+                );
+            }
+            
+            masses.push(massData);
+            await MassService.updateUsedCelebrants(massData, usedCelebrantsByDate);
+        }
+
+        console.log(`Fin du traitement des dates indifférentes. ${masses.length} messes traitées`);
+        return masses;
+    },
+
+    /**
+     * Met à jour le suivi des célébrants utilisés
+     */
+    updateUsedCelebrants: async (massData, usedCelebrantsByDate) => {
+        if (massData.celebrant_id && massData.date) {
+            const dateToUse = massData.date;
+            console.log(`Mise à jour des célébrants utilisés pour la date ${dateToUse}`);
+            
+            if (!usedCelebrantsByDate[dateToUse]) {
+                usedCelebrantsByDate[dateToUse] = new Set();
+            }
+            usedCelebrantsByDate[dateToUse].add(parseInt(massData.celebrant_id));
+            
+            console.log(`Célébrant ${massData.celebrant_id} ajouté pour la date ${dateToUse}`);
+        }
+    },
+
     /**
      * Gère le cas d'une date indifférente avec un célébrant spécifique
      */
