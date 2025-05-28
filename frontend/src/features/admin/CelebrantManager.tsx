@@ -107,14 +107,6 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
       setValidationError("Le nom religieux est obligatoire");
       return;
     }
-    if (!newCelebrant.civil_lastname.trim()) {
-      setValidationError("Le nom civil est obligatoire");
-      return;
-    }
-    if (!newCelebrant.civil_firstname.trim()) {
-      setValidationError("Le prénom civil est obligatoire");
-      return;
-    }
     if (!newCelebrant.title.trim()) {
       setValidationError("Le titre est obligatoire (P, RP, TRP...)");
       return;
@@ -279,7 +271,7 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
             </div>
 
             <div>
-              <label htmlFor="civil_firstname" className="block text-sm font-medium text-gray-700 mb-1">Prénom civil<span className="text-red-500"> *</span></label>
+              <label htmlFor="civil_firstname" className="block text-sm font-medium text-gray-700 mb-1">Prénom civil</label>
               <Input
                 required
                 name="civil_firstname"
@@ -292,12 +284,11 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
                   }
                 }}
                 placeholder="Prénom civil"
-                className={validationError && !newCelebrant.civil_firstname.trim() ? "border-red-500" : ""}
               />
             </div>
 
             <div>
-              <label htmlFor="civil_lastname" className="block text-sm font-medium text-gray-700 mb-1">Nom civil<span className="text-red-500"> *</span></label>
+              <label htmlFor="civil_lastname" className="block text-sm font-medium text-gray-700 mb-1">Nom civil</label>
               <Input
                 required
                 name="civil_lastname"
@@ -310,7 +301,6 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
                   }
                 }}
                 placeholder="Nom civil"
-                className={validationError && !newCelebrant.civil_lastname.trim() ? "border-red-500" : ""}
               />
             </div>
 

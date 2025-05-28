@@ -15,14 +15,15 @@ exports.up = function(knex) {
     .createTable('Celebrants', function(table) {
       table.increments('id').primary();
       table.string('religious_name', 50).notNullable();
-      table.string('civil_firstname', 50).notNullable();
-      table.string('civil_lastname', 50).notNullable();
-      table.string('title', 10);
+      table.string('civil_firstname', 50);
+      table.string('civil_lastname', 50);
+      table.string('title', 10).notNullable();
       table.string('role', 50);
+      table.string('email', 100);
     })
     .createTable('Intentions', function(table) {
       table.increments('id').primary();
-      table.integer('donor_id').unsigned().references('id').inTable('Donors');
+      table.integer('donor_id').unsigned().references('id').inTable('Donors').nullable().onDelete('SET NULL');
       table.string('intention_text').notNullable();
       table.boolean('deceased').defaultTo(false);
       table.integer('amount').notNullable();
@@ -61,6 +62,11 @@ exports.up = function(knex) {
       table.string('password', 100).notNullable();
       table.string('email', 100).notNullable();
       table.enu('role', ['admin', 'secretary', 'celebrant'])
+    })
+    .createTable('UnavailabledDays', function(table) {
+      table.integer('celebrant_id').unsigned().nullable().references('id').inTable('Celebrants').onDelete('SET NULL');
+      table.date('date').notNullable();
+      table.boolean('is_recurrent').defaultTo(false);
     });
 };
 
@@ -71,6 +77,7 @@ exports.down = function(knex) {
     .dropTableIfExists('SpecialDays')
     .dropTableIfExists('Donors')
     .dropTableIfExists('Celebrants')
-    .dropTableIfExists('Users');
+    .dropTableIfExists('Users')
+    .dropTableIfExists('UnavailabledDays');
 };
 
