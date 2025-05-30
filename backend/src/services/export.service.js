@@ -93,6 +93,8 @@ class ExportService {
 			const massDateKey = `${year}-${pad(month + 1)}-${pad(day)}`
 			celebrantsMap[key][massDateKey] = {
 				intention: mass.intention,
+				deceased: mass.type,
+				date_type: mass.date_type,
 			}
 		}
 
@@ -178,7 +180,11 @@ class ExportService {
 						}
 
 						const mass = celebrantsMap[name]?.[dateKey]
-						const intention = mass ? mass.intention : ""
+						const intention = mass
+							? mass.intention +
+							  (mass.deceased === 1 || mass.deceased === true || mass.deceased === "1" ? " (D)" : "") +
+							  (mass.date_type === "specifique" ? " (Fixe)" : mass.date_type === "indifferente" ? " (Mobile)" : "")
+							: ""
 
 						return [
 							new TableCell({
@@ -239,8 +245,8 @@ class ExportService {
 			}
 
 			currentChildren.push(table)
-			currentChildren.push(new Paragraph({ text: "" }))
 			currentRowCount += rowCount
+			currentChildren.push(new Paragraph({ text: "" }))
 		}
 
 		if (currentChildren.length > 0) {

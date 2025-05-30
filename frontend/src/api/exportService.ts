@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { API_BASE_URL } from '.';
+import { format } from 'date-fns';
 
 const EXPORT_URL = `${API_BASE_URL}/api/export/masses`;
 
@@ -45,9 +46,9 @@ export const exportService = {
     let url = `${EXPORT_URL}/word`;
     if (startDate || endDate) {
       url += '?';
-      if (startDate) url += `startDate=${startDate.toISOString()}`;
+      if (startDate) url += `startDate=${format(startDate, 'yyyy-MM-dd')}`;
       if (startDate && endDate) url += '&';
-      if (endDate) url += `endDate=${endDate.toISOString()}`;
+      if (endDate) url += `endDate=${format(endDate, 'yyyy-MM-dd')}`;
     }
     const response = await axios.get(url, { responseType: 'blob' });
     const blobUrl = window.URL.createObjectURL(new Blob([response.data]));

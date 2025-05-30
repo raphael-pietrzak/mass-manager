@@ -19,7 +19,8 @@ class Mass {
                 'Donors.firstname as donor_firstname',
                 'Donors.lastname as donor_lastname',
             )
-            .whereNotNull('Masses.celebrant_id')
+            //.whereNotNull('Masses.celebrant_id')
+            .where('Masses.status', '=', 'scheduled')
             .leftJoin('Celebrants', 'Masses.celebrant_id', 'Celebrants.id')
             .leftJoin('Intentions', 'Masses.intention_id', 'Intentions.id')
             .leftJoin('Donors', 'Intentions.donor_id', 'Donors.id')
@@ -245,7 +246,9 @@ class Mass {
                 'Celebrants.religious_name as celebrant',
                 'Intentions.intention_text as intention',
                 'Intentions.deceased as type',
+                'Intentions.date_type as date_type',
             )
+            .where('Masses.status', '=', 'scheduled')
             .orderBy('Masses.date');
         
         if (startDate) {
