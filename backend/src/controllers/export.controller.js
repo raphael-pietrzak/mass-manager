@@ -43,3 +43,23 @@ exports.exportToPdf = async (req, res) => {
     res.status(500).send('Erreur lors de l\'exportation vers PDF');
   }
 };
+
+exports.exportToWord = async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+
+    // Récupérer les masses selon les filtres de date fournis
+    const masses = await Mass.getMassesByDateRange(startDate, endDate);
+
+    // Générer le fichier Word
+    const buffer = await exportService.generateWord(masses);
+
+    // Envoyer le document Word
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    res.setHeader('Content-Disposition', 'attachment; filename="intentions-messes.docx"');
+    res.send(buffer);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Erreur lors de l'exportation vers Word");
+  }
+};

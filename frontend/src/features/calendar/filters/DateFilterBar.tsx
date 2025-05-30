@@ -10,7 +10,7 @@ interface DateFilterBarProps {
   futureOnly: boolean;
   startDate: Date | null;
   endDate: Date | null;
-  onExport?: (format: 'excel' | 'pdf') => Promise<void>;
+  onExport?: (format: 'excel' | 'pdf' | 'word') => Promise<void>;
 }
 
 export const DateFilterBar: React.FC<DateFilterBarProps> = ({
@@ -217,6 +217,13 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
                     >
                       <span className="w-3 h-3 bg-red-600 rounded-sm mr-3"></span>
                       <span className="font-medium">Format PDF</span>
+                    </button>
+                    <button
+                      className="w-full px-4 py-2 text-sm text-card-foreground hover:bg-muted transition-colors duration-150 flex items-center"
+                      onClick={() => { onExport('word'); setIsExportMenuOpen(false); }}
+                    >
+                      <span className="w-3 h-3 bg-blue-600 rounded-sm mr-3"></span>
+                      <span className="font-medium">Format Word</span>
                     </button>
                   </div>
                 </div>

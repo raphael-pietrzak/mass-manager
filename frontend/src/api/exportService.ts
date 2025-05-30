@@ -39,5 +39,23 @@ export const exportService = {
     document.body.appendChild(link);
     link.click();
     link.remove();
+  },
+
+  exportToWord: async (startDate?: Date | null, endDate?: Date | null) => {
+    let url = `${EXPORT_URL}/word`;
+    if (startDate || endDate) {
+      url += '?';
+      if (startDate) url += `startDate=${startDate.toISOString()}`;
+      if (startDate && endDate) url += '&';
+      if (endDate) url += `endDate=${endDate.toISOString()}`;
+    }
+    const response = await axios.get(url, { responseType: 'blob' });
+    const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.setAttribute('download', 'Intentions de messes.docx');
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
   }
 };

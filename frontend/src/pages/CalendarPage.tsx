@@ -20,7 +20,7 @@ function CalendarPage() {
   const [isMassModalOpen, setIsMassModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isSliderOpen, setIsSliderOpen] = useState(false);
-  
+
   const [filters, setFilters] = useState({
     celebrant: 'all',
     startDate: null as Date | null,
@@ -114,7 +114,7 @@ function CalendarPage() {
     setIsSpecialDayModalOpen(true);
   };
 
-  const handleExport = async (format: 'excel' | 'pdf') => {
+  const handleExport = async (format: 'excel' | 'pdf' | 'word') => {
     try {
       switch (format) {
         case 'excel':
@@ -122,6 +122,9 @@ function CalendarPage() {
           break;
         case 'pdf':
           await exportService.exportToPdf(filters.startDate, filters.endDate);
+          break;
+        case 'word':
+          await exportService.exportToWord(filters.startDate, filters.endDate);
           break;
       }
     } catch (err) {
