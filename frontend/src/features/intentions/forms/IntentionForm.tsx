@@ -46,18 +46,7 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
   return (
     <div className="flex flex-col flex-1 h-[550px]">
       <div className="flex-grow space-y-6 overflow-y-auto">
-        {/* Type d'intention (défunt/vivant) */}
-        <div className="flex items-center space-x-2">
-          <Checkbox 
-            id="deceased"
-            checked={formData.deceased}
-            onCheckedChange={(checked: boolean | "indeterminate") => updateFormData({ deceased: checked as boolean })}
-          />
-          <Label htmlFor="deceased">
-            Intention pour un défunt
-          </Label>
-        </div>
-
+        
         {/* Intention */}
         <div className="space-y-2">
           <Label htmlFor="intention_text">
@@ -71,6 +60,18 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
             required
             placeholder="Votre intention..."
           />
+        </div>
+
+        {/* Type d'intention (défunt/vivant) */}
+        <div className="flex items-center space-x-2">
+          <Checkbox 
+            id="deceased"
+            checked={formData.deceased}
+            onCheckedChange={(checked: boolean | "indeterminate") => updateFormData({ deceased: checked as boolean })}
+          />
+          <Label htmlFor="deceased">
+            Intention pour un défunt
+          </Label>
         </div>
 
         {/* Nombre de messes */}

@@ -104,12 +104,10 @@ class ExportService {
 
 		const celebrants = Object.keys(celebrantsMap)
 		const maxCelebrantsPerGroup = 3
-		const colsPerCelebrant = 2
-		const totalCols = maxCelebrantsPerGroup * colsPerCelebrant
 
-		const pageWidthDxa = 12240 // A4 sans marges
-		const smallColWidth = 1200 // Pour les colonnes "Jour"
-		const largeColWidth = Math.floor(pageWidthDxa / maxCelebrantsPerGroup - smallColWidth) // reste pour "Intention"
+		const pageWidthDxa = 12240
+		const smallColWidth = 1200
+		const largeColWidth = Math.floor(pageWidthDxa / maxCelebrantsPerGroup - smallColWidth)
 
 		const celebrantGroups = []
 		for (let i = 0; i < celebrants.length; i += maxCelebrantsPerGroup) {
@@ -118,13 +116,14 @@ class ExportService {
 			celebrantGroups.push(group)
 		}
 
-		const rowsPerGroup = daysInMonth + 2 // title + header + jours
-		const maxRowsPerPage = 30
+		const rowsPerGroup = 2 + daysInMonth
+		const maxTablesPerPage = 2
+		const maxRowsPerPage = rowsPerGroup * maxTablesPerPage
 
 		const tablesByGroup = celebrantGroups.map((group) => {
+			const rowCount = 2 + daysInMonth
 			const rows = []
 
-			// Ligne des titres
 			const titleRow = new TableRow({
 				children: group.map(
 					(name) =>
@@ -142,7 +141,6 @@ class ExportService {
 				),
 			})
 
-			// Ligne des entêtes : "Jour" + "Intention"
 			const headerRow = new TableRow({
 				children: group.flatMap(() => [
 					new TableCell({
@@ -199,7 +197,10 @@ class ExportService {
 				rows.push(row)
 			}
 
-			return new Table({ rows })
+			return {
+				rowCount,
+				table: new Table({ rows }),
+			}
 		})
 
 		const sections = []
@@ -221,11 +222,11 @@ class ExportService {
 			new Paragraph({ text: "" }),
 		]
 
-		let rowsCountInCurrentSection = 0
+		let currentRowCount = 0
 		let isFirstSection = true
 
-		for (let i = 0; i < tablesByGroup.length; i++) {
-			if (rowsCountInCurrentSection + rowsPerGroup > maxRowsPerPage && currentChildren.length > 0) {
+		for (const { table, rowCount } of tablesByGroup) {
+			if (currentRowCount + rowCount > maxRowsPerPage && currentChildren.length > 0) {
 				sections.push({
 					properties: {
 						page: { margin: { top: 0, bottom: 0, left: 0, right: 0 } },
@@ -233,15 +234,15 @@ class ExportService {
 					children: isFirstSection ? mainTitleParagraphs.concat(currentChildren) : currentChildren,
 				})
 				currentChildren = []
-				rowsCountInCurrentSection = 0
+				currentRowCount = 0
 				isFirstSection = false
 			}
 
-			currentChildren.push(tablesByGroup[i])
+			currentChildren.push(table)
 			currentChildren.push(new Paragraph({ text: "" }))
-			rowsCountInCurrentSection += rowsPerGroup
+			currentRowCount += rowCount
 		}
-rowsPerGroup 
+
 		if (currentChildren.length > 0) {
 			sections.push({
 				properties: {
