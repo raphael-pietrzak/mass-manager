@@ -72,6 +72,195 @@ class ExportService {
 			doc.end()
 		})
 	}
+
+	async generateWord(masses) {
+		if (!masses || masses.length === 0) {
+			throw new Error("Aucune donnée à exporter")
+		}
+
+		const celebrantsMap = {}
+
+		for (const mass of masses) {
+			const date = new Date(mass.date)
+			const day = date.getDate()
+			const month = date.getMonth()
+			const year = date.getFullYear()
+
+			const key = `${mass.celebrant_title} ${mass.celebrant}`
+			if (!celebrantsMap[key]) celebrantsMap[key] = {}
+
+			const pad = (n) => (n < 10 ? "0" + n : n)
+			const massDateKey = `${year}-${pad(month + 1)}-${pad(day)}`
+			celebrantsMap[key][massDateKey] = {
+				intention: mass.intention,
+				deceased: mass.type,
+				date_type: mass.date_type,
+			}
+		}
+
+		const allDates = masses.map((m) => new Date(m.date))
+		const firstDate = allDates[0]
+		const year = firstDate.getFullYear()
+		const month = firstDate.getMonth()
+		const daysInMonth = new Date(year, month + 1, 0).getDate()
+
+		const celebrants = Object.keys(celebrantsMap)
+		const maxCelebrantsPerGroup = 3
+
+		const pageWidthDxa = 12240
+		const smallColWidth = 1200
+		const largeColWidth = Math.floor(pageWidthDxa / maxCelebrantsPerGroup - smallColWidth)
+
+		const celebrantGroups = []
+		for (let i = 0; i < celebrants.length; i += maxCelebrantsPerGroup) {
+			const group = celebrants.slice(i, i + maxCelebrantsPerGroup)
+			while (group.length < maxCelebrantsPerGroup) group.push(null)
+			celebrantGroups.push(group)
+		}
+
+		const rowsPerGroup = 2 + daysInMonth
+		const maxTablesPerPage = 2
+		const maxRowsPerPage = rowsPerGroup * maxTablesPerPage
+
+		const tablesByGroup = celebrantGroups.map((group) => {
+			const rowCount = 2 + daysInMonth
+			const rows = []
+
+			const titleRow = new TableRow({
+				children: group.map(
+					(name) =>
+						new TableCell({
+							children: [
+								new Paragraph({
+									text: name || "Colonne vide",
+									alignment: AlignmentType.CENTER,
+								}),
+							],
+							columnSpan: 2,
+							shading: { fill: "F5F5F5" },
+							width: { size: smallColWidth + largeColWidth, type: "dxa" },
+						})
+				),
+			})
+
+			const headerRow = new TableRow({
+				children: group.flatMap(() => [
+					new TableCell({
+						children: [new Paragraph({ text: "Jour", alignment: AlignmentType.CENTER })],
+						shading: { fill: "DDDDDD" },
+						width: { size: smallColWidth, type: "dxa" },
+					}),
+					new TableCell({
+						children: [new Paragraph({ text: "Intention", alignment: AlignmentType.CENTER })],
+						shading: { fill: "DDDDDD" },
+						width: { size: largeColWidth, type: "dxa" },
+					}),
+				]),
+			})
+
+			rows.push(titleRow, headerRow)
+
+			for (let day = 1; day <= daysInMonth; day++) {
+				const pad = (n) => (n < 10 ? "0" + n : n)
+				const dateKey = `${year}-${pad(month + 1)}-${pad(day)}`
+
+				const row = new TableRow({
+					children: group.flatMap((name) => {
+						if (!name) {
+							return [
+								new TableCell({
+									children: [new Paragraph({ text: `${day}`, alignment: AlignmentType.CENTER })],
+									width: { size: smallColWidth, type: "dxa" },
+								}),
+								new TableCell({
+									children: [new Paragraph({ text: "Colonne vide" })],
+									width: { size: largeColWidth, type: "dxa" },
+								}),
+							]
+						}
+
+						const mass = celebrantsMap[name]?.[dateKey]
+						const intention = mass
+							? mass.intention +
+							  (mass.deceased === 1 || mass.deceased === true || mass.deceased === "1" ? " (D)" : "") +
+							  (mass.date_type === "specifique" ? " (Fixe)" : mass.date_type === "indifferente" ? " (Mobile)" : "")
+							: ""
+
+						return [
+							new TableCell({
+								children: [new Paragraph({ text: `${day}`, alignment: AlignmentType.CENTER })],
+								width: { size: smallColWidth, type: "dxa" },
+								shading: { fill: "F5F5F5" },
+							}),
+							new TableCell({
+								children: [new Paragraph({ text: intention })],
+								width: { size: largeColWidth, type: "dxa" },
+							}),
+						]
+					}),
+				})
+
+				rows.push(row)
+			}
+
+			return {
+				rowCount,
+				table: new Table({ rows }),
+			}
+		})
+
+		const sections = []
+		let currentChildren = []
+
+		const mainTitleParagraphs = [
+			new Paragraph({
+				text: "Intentions de messes",
+				heading: HeadingLevel.HEADING1,
+				alignment: AlignmentType.CENTER,
+			}),
+			new Paragraph({
+				text: `Mois : ${firstDate.toLocaleString("fr-FR", {
+					month: "long",
+					year: "numeric",
+				})}`,
+				alignment: AlignmentType.CENTER,
+			}),
+			new Paragraph({ text: "" }),
+		]
+
+		let currentRowCount = 0
+		let isFirstSection = true
+
+		for (const { table, rowCount } of tablesByGroup) {
+			if (currentRowCount + rowCount > maxRowsPerPage && currentChildren.length > 0) {
+				sections.push({
+					properties: {
+						page: { margin: { top: 0, bottom: 0, left: 0, right: 0 } },
+					},
+					children: isFirstSection ? mainTitleParagraphs.concat(currentChildren) : currentChildren,
+				})
+				currentChildren = []
+				currentRowCount = 0
+				isFirstSection = false
+			}
+
+			currentChildren.push(table)
+			currentRowCount += rowCount
+			currentChildren.push(new Paragraph({ text: "" }))
+		}
+
+		if (currentChildren.length > 0) {
+			sections.push({
+				properties: {
+					page: { margin: { top: 0, bottom: 0, left: 0, right: 0 } },
+				},
+				children: isFirstSection ? mainTitleParagraphs.concat(currentChildren) : currentChildren,
+			})
+		}
+
+		const doc = new Document({ sections })
+		return await Packer.toBuffer(doc)
+	}
 }
 
 module.exports = new ExportService()
