@@ -70,8 +70,8 @@ exports.seed = function(knex) {
         { type: 'daily', start_date: '2025-01-01', end_type: 'occurrences', occurrences: 30 },
         { type: 'weekly', start_date: '2025-02-01', end_type: 'date', end_date: '2025-12-31' },
         { type: 'monthly', start_date: '2025-03-01', end_type: 'occurrences', occurrences: 12 },
-        { type: 'relative_monthly', start_date: '2025-01-01', end_type: 'date', end_date: '2025-12-31', week_of_month: 2, day_of_week: 5 }, // 2ème vendredi du mois
-        { type: 'relative_monthly', start_date: '2025-01-01', end_type: 'occurrences', occurrences: 6, week_of_month: 1, day_of_week: 0 }, // 1er dimanche du mois
+        { type: 'relative_position', start_date: '2025-01-01', end_type: 'date', end_date: '2025-12-31', position: 'second', weekday: 'friday' }, // 2ème vendredi du mois
+        { type: 'relative_position', start_date: '2025-01-01', end_type: 'occurrences', occurrences: 6, position: 'first', weekday: 'sunday' }, // 1er dimanche du mois
       ]);
     })
     .then(function () {

@@ -22,15 +22,15 @@ exports.up = function(knex) {
     })
     .createTable('Recurrences', function(table) {
       table.increments('id').primary();
-      table.enu('type', ['daily', 'weekly', 'monthly', 'relative_monthly']).notNullable();
+      table.enu('type', ['daily', 'weekly', 'monthly', 'relative_position', 'yearly']).notNullable();
       table.date('start_date').notNullable();
       table.enu('end_type', ['occurrences', 'date']).notNullable();
       table.integer('occurrences').nullable();
       table.date('end_date').nullable();
       
       // Pour récurrence relative mensuelle
-      table.integer('week_of_month').nullable(); // 1-4 pour 1er, 2ème, 3ème, 4ème semaine
-      table.integer('day_of_week').nullable(); // 0-6 pour dimanche-samedi
+      table.enu('position', ['first', 'second', 'third', 'fourth', 'last']).nullable();
+      table.enu('weekday', ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']).nullable();
       
       table.timestamps(true, true);
     })

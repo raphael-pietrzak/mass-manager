@@ -8,6 +8,7 @@ const celebrantsRoutes = require('./routes/celebrants.routes');
 const intentionsRoutes = require('./routes/intentions.routes');
 const massesRoutes = require('./routes/masses.routes');
 const specialDaysRoutes = require('./routes/specialDays.routes');
+const recurrencesRoutes = require('./routes/recurrences.routes');
 const exportRoutes = require('./routes/export.routes');
 const authRoutes = require('./routes/auth.routes');
 
@@ -29,6 +30,7 @@ app.use('/api/data/celebrants', celebrantsRoutes);
 app.use('/api/data/intentions', intentionsRoutes);
 app.use('/api/data/masses', massesRoutes);
 app.use('/api/data/special-days', specialDaysRoutes);
+app.use('/api/data/recurrences', recurrencesRoutes);
 app.use('/api/export', exportRoutes);
 app.use('/api/auth', authRoutes);
 
@@ -41,6 +43,7 @@ app.listen(PORT, () => {
   console.log('intentions   : http://localhost:3001/api/data/intentions');
   console.log('masses       : http://localhost:3001/api/data/masses');
   console.log('special-days : http://localhost:3001/api/data/special-days');
+  console.log('recurrences  : http://localhost:3001/api/data/recurrences');
   console.log('export masses: http://localhost:3001/api/export/masses/[format]');
 
   console.log('\n [CTRL + CLICK] on the links to open in browser');
