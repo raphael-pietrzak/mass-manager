@@ -77,7 +77,7 @@ const LoginPage: React.FC = () => {
       <Card className="w-full max-w-md p-6 shadow-lg">
         <CardHeader>
           <CardTitle>Connexion</CardTitle>
-          <CardDescription>Gérez les paramètres et les actions administratives</CardDescription>
+          <CardDescription>Pour accéder à l'application, veuillez vous connecter</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}

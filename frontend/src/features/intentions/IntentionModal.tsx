@@ -32,10 +32,10 @@ const testFormData: Partial<Intention> = {
   donor_firstname: '',
   donor_lastname: '',
   donor_email: '',
-  phone: '',
-  address: '',
-  postal_code: '',
-  city: '',
+  donor_phone: '',
+  donor_address: '',
+  donor_postal_code: '',
+  donor_city: '',
   is_recurrent: false,
   start_date: undefined,
   recurrence_type: 'weekly',
@@ -133,9 +133,9 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
   const getStepTitle = () => {
     switch (step) {
       case 1: return "Intention de messe";
-      case 4: return "Récapitulatif";
-      case 2: return "Don et paiement";
-      case 3: return "Informations du donateur";
+      case 2: return "Récapitulatif de l'intention";
+      case 3: return "Don et paiement";
+      case 4: return "Informations du donateur";
       default: return "Intention de messe";
     }
   };
@@ -178,10 +178,10 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
           firstname: formData.donor_firstname || '',
           lastname: formData.donor_lastname || '',
           email: formData.donor_email || '',
-          phone: formData.phone,
-          address: formData.address,
-          postal_code: formData.postal_code,
-          city: formData.city,
+          phone: formData.donor_phone,
+          address: formData.donor_address,
+          postal_code: formData.donor_postal_code,
+          city: formData.donor_city,
           wants_celebration_date: formData.wants_celebration_date || false,
         },
         payment: {
@@ -203,7 +203,7 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       {showRecurrenceModal ? (
-        <div className="bg-white rounded-lg max-w-md w-full mx-4">
+        <div className="bg-white rounded-lg max-w-md w-full mx-4 max-h-[95vh] overflow-y-auto">
           <div className="p-4 flex justify-between items-center border-b">
             <h3 className="font-medium">Configuration de la récurrence</h3>
             <button 

@@ -74,36 +74,15 @@ exports.updateCelebrant = async (req, res) => {
 }
 
 exports.deleteCelebrant = async (req, res) => {
-	try {
-		const id = req.params.id
-
-		// 1. Supprimer le célébrant
-		await Celebrant.delete(id)
-
-		// 2. Réaffecter les messes sans célébrant
-		const massesToAffect = await db("Masses").whereNull("celebrant_id")
-		const availableCelebrants = await Celebrant.getAvailableByDate()
-
-		if (availableCelebrants.length >= massesToAffect.length) {
-			for (let i = 0; i < massesToAffect.length; i++) {
-				const mass = massesToAffect[i]
-				const celebrant = availableCelebrants[i]
-
-				// Mise à jour via la base de données
-				await db("Masses").where({ id: mass.id }).update({ celebrant_id: celebrant.id })
-
-			}
-		} else {
-			console.warn("Pas assez de célébrants disponibles pour toutes les messes.")
-		}
-
-		// 3. Réponse HTTP
-		res.status(201).send("Célébrant supprimé et messes réaffectées !")
-	} catch (error) {
-		console.error("Erreur lors de la suppression ou de la réaffectation :", error)
-		res.status(500).send("Erreur serveur.")
-	}
-}
+  try {
+    const id = req.params.id;
+    await Celebrant.delete(id);
+    res.status(201).send("Célébrant supprimé ! ");
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Erreur lors de la suppression du célébrant');
+  }
+};
 
 exports.getUnavailableDates = async (req, res) => {
 	try {

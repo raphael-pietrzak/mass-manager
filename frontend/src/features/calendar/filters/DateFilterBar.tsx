@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
+import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addMonths } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import CalendarSelector from '../../../components/CalendarSelector';
+import { CalendarArrowUp } from 'lucide-react';
 
 interface DateFilterBarProps {
   onFilterChange: (startDate: Date | null, endDate: Date | null) => void;
@@ -9,7 +10,7 @@ interface DateFilterBarProps {
   futureOnly: boolean;
   startDate: Date | null;
   endDate: Date | null;
-  onExport?: (format: 'excel' | 'pdf') => Promise<void>;
+  onExport?: (format: 'excel' | 'pdf' | 'word') => Promise<void>;
 }
 
 export const DateFilterBar: React.FC<DateFilterBarProps> = ({
@@ -73,6 +74,16 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
     onFilterChange(startOfMonth(today), endOfMonth(today));
   };
 
+  const handleNextMonthClick = () => {
+    const nextMonth = addMonths(new Date(), 1);
+    const nextMonthStart = startOfMonth(nextMonth);
+    const nextMonthEnd = endOfMonth(nextMonth);
+
+    setStartDate(nextMonthStart);
+    setEndDate(nextMonthEnd);
+    onFilterChange(nextMonthStart, nextMonthEnd);
+  };
+
   const handleAllClick = () => {
     setStartDate(null);
     setEndDate(null);
@@ -102,6 +113,10 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
   const isThisMonthActive = !!(currentStartDate && currentEndDate &&
     format(currentStartDate, 'yyyy-MM-dd') === format(startOfMonth(new Date()), 'yyyy-MM-dd') &&
     format(currentEndDate, 'yyyy-MM-dd') === format(endOfMonth(new Date()), 'yyyy-MM-dd'));
+
+  const isNextMonthActive = !!(currentStartDate && currentEndDate &&
+    format(currentStartDate, 'yyyy-MM-dd') === format(startOfMonth(addMonths(new Date(), 1)), 'yyyy-MM-dd') &&
+    format(currentEndDate, 'yyyy-MM-dd') === format(endOfMonth(addMonths(new Date(), 1)), 'yyyy-MM-dd'));
 
   const isAllActive = !currentStartDate && !currentEndDate;
 
@@ -135,6 +150,15 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
               <div className="flex items-center gap-1.5">
                 <CalendarMonthIcon className="h-4 w-4" />
                 Ce mois
+              </div>
+            </button>
+            <button
+              onClick={handleNextMonthClick}
+              className={getButtonClass(isNextMonthActive)}
+            >
+              <div className="flex items-center gap-1.5">
+                <CalendarArrowUp className="h-4 w-4" />
+                Le mois prochain
               </div>
             </button>
             <button
@@ -193,6 +217,13 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
                     >
                       <span className="w-3 h-3 bg-red-600 rounded-sm mr-3"></span>
                       <span className="font-medium">Format PDF</span>
+                    </button>
+                    <button
+                      className="w-full px-4 py-2 text-sm text-card-foreground hover:bg-muted transition-colors duration-150 flex items-center"
+                      onClick={() => { onExport('word'); setIsExportMenuOpen(false); }}
+                    >
+                      <span className="w-3 h-3 bg-blue-600 rounded-sm mr-3"></span>
+                      <span className="font-medium">Format Word</span>
                     </button>
                   </div>
                 </div>

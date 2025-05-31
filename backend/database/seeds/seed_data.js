@@ -1,4 +1,4 @@
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt")
 
 exports.seed = function(knex) {
   // Supprimer les entrées existantes
