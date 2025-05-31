@@ -72,7 +72,7 @@ exports.up = function(knex) {
       table.string('email', 100).notNullable();
       table.enu('role', ['admin', 'secretary', 'celebrant'])
     })
-    .createTable('UnavailabledDays', function(table) {
+    .createTable('UnavailableDays', function(table) {
       table.integer('celebrant_id').unsigned().nullable().references('id').inTable('Celebrants').onDelete('SET NULL');
       table.date('date').notNullable();
       table.boolean('is_recurrent').defaultTo(false);

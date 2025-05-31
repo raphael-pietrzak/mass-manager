@@ -10,6 +10,7 @@ import { massService } from '../api/massService';
 import { exportService } from '../api/exportService';
 import { IntentionSubmission, intentionService } from '../api/intentionService';
 import { SpecialDaysModal } from '../features/special_days/SpecialDaysModal';
+import { UnavailableDayModal } from '../features/unavailableDays/UnavailableDayModal';
 
 export type ViewMode = 'calendar' | 'list';
 
@@ -30,6 +31,7 @@ function CalendarPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSpecialDayModalOpen, setIsSpecialDayModalOpen] = useState(false);
+  const [isUnavailableDayModalOpen, setIsUnavailableDayModalOpen] = useState(false)
 
   useEffect(() => {
     const fetchMasses = async () => {
@@ -114,6 +116,10 @@ function CalendarPage() {
     setIsSpecialDayModalOpen(true);
   };
 
+  const handleAddUnavailableDay = () => {
+    setIsUnavailableDayModalOpen(true)
+  }
+
   const handleExport = async (format: 'excel' | 'pdf' | 'word') => {
     try {
       switch (format) {
@@ -144,6 +150,7 @@ function CalendarPage() {
           filters={filters}
           onFilterChange={handleFilterChange}
           onAddSpecialDay={handleAddSpecialDay}
+          onAddUnavailableDay={handleAddUnavailableDay}
         />
 
         {viewMode === 'list' && (
@@ -192,6 +199,11 @@ function CalendarPage() {
         <SpecialDaysModal
           isOpen={isSpecialDayModalOpen}
           onClose={() => setIsSpecialDayModalOpen(false)}
+        />
+
+        <UnavailableDayModal
+          isOpen={isUnavailableDayModalOpen}
+          onClose={() => setIsUnavailableDayModalOpen(false)}
         />
       </main>
     </div>
