@@ -91,3 +91,13 @@ exports.down = function(knex) {
     .dropTableIfExists('UnavailabledDays');
 };
 
+exports.down = function (knex) {
+	return knex.schema
+		.dropTableIfExists("Masses")
+		.dropTableIfExists("Intentions")
+		.dropTableIfExists("SpecialDays")
+		.dropTableIfExists("Donors")
+		.dropTableIfExists("Celebrants")
+		.dropTableIfExists("Users")
+		.dropTableIfExists("UnavailabledDays")
+}

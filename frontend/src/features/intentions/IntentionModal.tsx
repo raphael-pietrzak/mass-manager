@@ -49,6 +49,7 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
   intention,
   isOpen,
   onClose,
+  onSave
 }) => {
   const [celebrants, setCelebrants] = useState<Celebrant[]>([]);
   const [showRecurrenceModal, setShowRecurrenceModal] = useState(false);
@@ -95,7 +96,7 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
       setUnavailableDates([]);
       return;
     }
-    
+
     try {
       const dates = await celebrantService.getUnavailableDates(celebrantId);
       setUnavailableDates(dates);
@@ -111,7 +112,7 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
     if (data.celebrant_id !== undefined && data.celebrant_id !== formData.celebrant_id) {
       fetchUnavailableDates(data.celebrant_id);
     }
-    
+
     setFormData(prev => ({ ...prev, ...data }));
   };
 
@@ -172,7 +173,7 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
 
     try {
       setIsLoading(true);
-      await intentionService.createMass({
+      onSave({
         masses: previewData,
         donor: {
           firstname: formData.donor_firstname || '',
@@ -206,15 +207,15 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
         <div className="bg-white rounded-lg max-w-md w-full mx-4 max-h-[95vh] overflow-y-auto">
           <div className="p-4 flex justify-between items-center border-b">
             <h3 className="font-medium">Configuration de la récurrence</h3>
-            <button 
-              onClick={() => setShowRecurrenceModal(false)} 
+            <button
+              onClick={() => setShowRecurrenceModal(false)}
               className="p-1 hover:bg-gray-100 rounded-full"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
           <div className="p-4">
-            <RegularityForm 
+            <RegularityForm
               formData={formData}
               updateFormData={handleFormUpdate}
               onValidate={() => setShowRecurrenceModal(false)}
@@ -236,8 +237,8 @@ export const IntentionModal: React.FC<IntentionModalProps> = ({
               </button>
             </div>
             <div className="w-full bg-muted h-2 rounded-full mt-4">
-              <div 
-                className="bg-primary h-2 rounded-full" 
+              <div
+                className="bg-primary h-2 rounded-full"
                 style={{ width: `${(step / 4) * 100}%` }}
               />
             </div>
