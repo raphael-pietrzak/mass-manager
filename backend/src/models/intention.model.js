@@ -33,6 +33,12 @@ const Intention = {
 			})
 			.select("Intentions.*", "Donors.firstname", "Donors.lastname", "Donors.email")
 			.leftJoin("Donors", "Intentions.donor_id", "Donors.id"),
+
+	getPonctualIntentions: () =>
+		db("Intentions")
+			.whereNull("recurrence_id")
+			.select("Intentions.*", "Donors.firstname", "Donors.lastname", "Donors.email")
+			.leftJoin("Donors", "Intentions.donor_id", "Donors.id"),
 }
 
 module.exports = Intention

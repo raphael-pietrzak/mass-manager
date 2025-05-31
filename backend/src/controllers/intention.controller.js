@@ -1,6 +1,5 @@
 const Intention = require("../models/intention.model")
 const Donor = require("../models/donor.model")
-const db = require("../../config/database")
 const MassService = require("../services/mass.service")
 const MassModel = require("../models/mass.model")
 
@@ -148,7 +147,7 @@ exports.updateIntention = async (req, res) => {
 exports.deleteIntention = async (req, res) => {
 	try {
 		const id = req.params.id
-		await Intention.delete(id);
+		await Intention.delete(id)
 		//await db.raw("PRAGMA foreign_keys = ON")
 		//await db("Intentions").where({ id }).del()
 		res.status(204).send()
@@ -202,7 +201,7 @@ exports.getIntentionMasses = async (req, res) => {
 			type: mass.deceased ? "defunts" : "vivants",
 			celebrant_id: mass.celebrant_id || null,
 			celebrant_name: mass.celebrant_name || "",
-      celebrant_title: mass.celebrant_title || "",
+			celebrant_title: mass.celebrant_title || "",
 			status: mass.status || "pending",
 		}))
 
@@ -210,5 +209,15 @@ exports.getIntentionMasses = async (req, res) => {
 	} catch (error) {
 		console.error("Erreur lors de la récupération des messes associées:", error)
 		res.status(500).json({ message: "Erreur lors de la récupération des messes associées" })
+	}
+}
+
+exports.getPonctualIntentions = async (req, res) => {
+	try {
+		const data = await Intention.getPonctualIntentions()
+		res.json(data)
+	} catch (error) {
+		console.error(error)
+		res.status(500).send("Erreur lors de la récupération des intentions ponctuelles")
 	}
 }

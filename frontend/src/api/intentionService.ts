@@ -115,6 +115,11 @@ export const intentionService = {
         return response.data;
     },
 
+    async getPonctualIntentions(): Promise<Intention[]> {
+        const response = await axios.get(`${API_URL}/ponctual`);
+        return response.data;
+    },
+
     async deleteMass(id: string) {
         await axios.delete(`${API_URL}/${id}`);
     }

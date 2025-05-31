@@ -288,7 +288,7 @@ class ExportService {
 						? "Trentain"
 						: intention.intention_type === "unit"
 						? "Unité"
-						: "test"
+						: ""
 
 				worksheet.addRow({
 					intention_text: `${intention.intention_text || ""} ${deceasedText} ${dateTypeText}`.trim(),

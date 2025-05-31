@@ -29,7 +29,7 @@ const IntentionPage: React.FC = () => {
 	const fetchIntentions = async () => {
 		try {
 			setLoading(true);
-			const data = await intentionService.getIntentions();
+			const data = await intentionService.getPonctualIntentions();
 			setIntentions(data);
 		} catch (error) {
 			console.error('Erreur lors de la récupération des intentions:', error);

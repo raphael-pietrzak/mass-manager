@@ -45,10 +45,10 @@ exports.up = function(knex) {
       table.string('brother_name').nullable();
       table.boolean('wants_celebration_date').defaultTo(false);
       table.enu('date_type', ['specifique', 'indifferente']).defaultTo('indifferente');
+			table.enu('intention_type', ['thirty', 'novena', 'unit'])
       
       // Référence vers la table récurrence
       table.integer('recurrence_id').unsigned().nullable().references('id').inTable('Recurrences').onDelete('SET NULL');
-      
       table.timestamps(true, true);
     })
     .createTable('Masses', function(table) {
