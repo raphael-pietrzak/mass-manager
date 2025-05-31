@@ -20,6 +20,20 @@ exports.up = function(knex) {
       table.string('title', 10);
       table.string('role', 50);
     })
+    .createTable('Recurrences', function(table) {
+      table.increments('id').primary();
+      table.enu('type', ['daily', 'weekly', 'monthly', 'relative_monthly']).notNullable();
+      table.date('start_date').notNullable();
+      table.enu('end_type', ['occurrences', 'date']).notNullable();
+      table.integer('occurrences').nullable();
+      table.date('end_date').nullable();
+      
+      // Pour récurrence relative mensuelle
+      table.integer('week_of_month').nullable(); // 1-4 pour 1er, 2ème, 3ème, 4ème semaine
+      table.integer('day_of_week').nullable(); // 0-6 pour dimanche-samedi
+      
+      table.timestamps(true, true);
+    })
     .createTable('Intentions', function(table) {
       table.increments('id').primary();
       table.integer('donor_id').unsigned().references('id').inTable('Donors');
@@ -31,13 +45,8 @@ exports.up = function(knex) {
       table.boolean('wants_celebration_date').defaultTo(false);
       table.enu('date_type', ['specifique', 'indifferente']).defaultTo('indifferente');
       
-      // Gestion de récurrence
-      table.boolean('is_recurrent').defaultTo(false);
-      table.enu('recurrence_type', ['daily', 'weekly', 'monthly']).nullable();
-      table.integer('occurrences').nullable();
-      table.date('start_date').nullable();
-      table.enu('end_type', ['occurrences', 'date']).nullable();
-      table.date('end_date').nullable();
+      // Référence vers la table récurrence
+      table.integer('recurrence_id').unsigned().nullable().references('id').inTable('Recurrences').onDelete('SET NULL');
       
       table.timestamps(true, true);
     })
@@ -68,6 +77,7 @@ exports.down = function(knex) {
   return knex.schema
     .dropTableIfExists('Masses')
     .dropTableIfExists('Intentions')
+    .dropTableIfExists('Recurrences')
     .dropTableIfExists('SpecialDays')
     .dropTableIfExists('Donors')
     .dropTableIfExists('Celebrants')

@@ -7,6 +7,9 @@ exports.seed = function(knex) {
       return knex('Intentions').del();
     })
     .then(function () {
+      return knex('Recurrences').del();
+    })
+    .then(function () {
       return knex('SpecialDays').del();
     })
     .then(function () {
@@ -20,7 +23,7 @@ exports.seed = function(knex) {
     })
     .then(function () {
       // Réinitialiser les séquences d'auto-incrémentation
-      return knex.raw("DELETE FROM sqlite_sequence WHERE name IN ('Masses', 'SpecialDays', 'Donors', 'Celebrants', 'Users', 'Intentions')");
+      return knex.raw("DELETE FROM sqlite_sequence WHERE name IN ('Masses', 'SpecialDays', 'Donors', 'Celebrants', 'Users', 'Intentions', 'Recurrences')");
     })
     .then(function () {
       // Insérer des données fictives dans les tables
@@ -62,8 +65,23 @@ exports.seed = function(knex) {
       ]);
     })
     .then(function () {
+      // Insérer des récurrences
+      return knex('Recurrences').insert([
+        { type: 'daily', start_date: '2025-01-01', end_type: 'occurrences', occurrences: 30 },
+        { type: 'weekly', start_date: '2025-02-01', end_type: 'date', end_date: '2025-12-31' },
+        { type: 'monthly', start_date: '2025-03-01', end_type: 'occurrences', occurrences: 12 },
+        { type: 'relative_monthly', start_date: '2025-01-01', end_type: 'date', end_date: '2025-12-31', week_of_month: 2, day_of_week: 5 }, // 2ème vendredi du mois
+        { type: 'relative_monthly', start_date: '2025-01-01', end_type: 'occurrences', occurrences: 6, week_of_month: 1, day_of_week: 0 }, // 1er dimanche du mois
+      ]);
+    })
+    .then(function () {
       // Créer des données pour la table Intentions
       return knex('Intentions').insert([
+        { donor_id: 1, intention_text: "Messe quotidienne pour les défunts", deceased: true, amount: 100, payment_method: 'cash', wants_celebration_date: true, date_type: 'indifferente', recurrence_id: 1 },
+        { donor_id: 2, intention_text: "Messe hebdomadaire pour les malades", deceased: false, amount: 20, payment_method: 'cheque', wants_celebration_date: true, date_type: 'indifferente', recurrence_id: 2 },
+        { donor_id: 3, intention_text: "Messe mensuelle pour la famille", deceased: false, amount: 30, payment_method: 'transfer', wants_celebration_date: false, date_type: 'indifferente', recurrence_id: 3 },
+        { donor_id: 4, intention_text: "Messe le 2ème vendredi du mois", deceased: true, amount: 25, payment_method: 'cash', wants_celebration_date: true, date_type: 'specifique', recurrence_id: 4 },
+        { donor_id: 5, intention_text: "Messe le 1er dimanche du mois", deceased: false, amount: 45, payment_method: 'cheque', wants_celebration_date: false, date_type: 'indifferente', recurrence_id: 5 },
         { donor_id: 1, intention_text: "Messe pour les défunts", deceased: true, amount: 100, payment_method: 'cash', wants_celebration_date: true, date_type: 'indifferente' },
         { donor_id: 2, intention_text: "Messe pour les malades", deceased: false, amount: 20, payment_method: 'cheque', wants_celebration_date: true, date_type: 'indifferente' },
         { donor_id: 3, intention_text: "Messe pour les vivants", deceased: false, amount: 30, payment_method: 'transfer', wants_celebration_date: false, date_type: 'indifferente' },
