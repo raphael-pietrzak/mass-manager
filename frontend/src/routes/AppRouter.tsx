@@ -9,6 +9,7 @@ import LoginPage from '../pages/LoginPage';
 import DonorsPage from '../pages/DonorsPage';
 import IntentionPage from '../pages/IntentionPage';
 import Navbar from '../components/Navbar';
+import RecurrencePage from '../pages/RecurrencePage';
 
 const AppRouter: React.FC = () => (
   <Router>
@@ -22,14 +23,13 @@ const AppRouter: React.FC = () => (
       <Route path="/calendar" element={<ProtectedRoute requiredRole={['admin', 'secretary']}> <CalendarPage /></ProtectedRoute>} />
       <Route path="/donors" element={<ProtectedRoute requiredRole={['admin', 'secretary']}> <DonorsPage /> </ProtectedRoute>} />
       <Route path="/intentions" element={<ProtectedRoute requiredRole={['admin', 'secretary']}> <IntentionPage /> </ProtectedRoute>} />
+      <Route path="/recurrences" element={<ProtectedRoute requiredRole={['admin', 'secretary']}> <RecurrencePage /> </ProtectedRoute>} />
 
       {/* Routes réservées à admin uniquement */}
       <Route path="/database" element={<ProtectedRoute requiredRole={['admin']}> <DatabaseTabs /> </ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute requiredRole={['admin']}> <AdminPage /> </ProtectedRoute>} />
     </Routes>
   </Router>
-
-
 );
 
 export default AppRouter;
