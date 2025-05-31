@@ -31,7 +31,7 @@ exports.up = function (knex) {
 			table.string("brother_name").nullable()
 			table.boolean("wants_celebration_date").defaultTo(false)
 			table.enu("date_type", ["specifique", "indifferente"]).defaultTo("indifferente")
-			table.enu("mass_type", ["novena", "thirty", "unit"])
+			table.enu("intention_type", ["novena", "thirty", "unit"])
       table.integer("recurrence_id").unsigned().references("id").inTable("Recurrence").nullable().onDelete("SET NULL")
       table.timestamps(true, true)
 		})

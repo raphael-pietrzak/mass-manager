@@ -261,6 +261,51 @@ class ExportService {
 		const doc = new Document({ sections })
 		return await Packer.toBuffer(doc)
 	}
+
+	async generateExcelIntention(intentions) {
+		let totalAmount = 0
+		try {
+			const workbook = new ExcelJS.Workbook()
+			const worksheet = workbook.addWorksheet("Intentions de dons")
+
+			// Définir les colonnes
+			worksheet.columns = [
+				{ header: "Intention", key: "intention_text", width: 40 },
+				{ header: "Type", key: "intention_type", width: 15 },
+				{ header: "Montant (€)", key: "amount", width: 15 },
+			]
+
+			worksheet.getRow(1).font = { bold: true }
+
+			// Remplir les lignes avec les données des intentions
+			intentions.forEach((intention) => {
+				const deceasedText = intention.deceased ? "(défunt)" : ""
+				const dateTypeText = intention.date_type === "specifique" ? "(fixe)" : intention.date_type === "indifferente" ? "(mobile)" : ""
+				const intentionTypeText =
+					intention.intention_type === "novena"
+						? "Neuvaine"
+						: intention.intention_type === "thirty"
+						? "Trentain"
+						: intention.intention_type === "unit"
+						? "Unité"
+						: "test"
+
+				worksheet.addRow({
+					intention_text: `${intention.intention_text || ""} ${deceasedText} ${dateTypeText}`.trim(),
+					intention_type: intentionTypeText,
+					amount: intention.amount || 0,
+				})
+				totalAmount = totalAmount + intention.amount
+			})
+			const totalRow = worksheet.addRow({ intention_text: "Montant total", amount: totalAmount })
+			totalRow.font = { bold: true }
+
+			return await workbook.xlsx.writeBuffer()
+		} catch (error) {
+			console.error("Erreur dans generateExcelIntention:", error)
+			throw error
+		}
+	}
 }
 
 module.exports = new ExportService()

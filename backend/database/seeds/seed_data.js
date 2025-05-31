@@ -218,6 +218,7 @@ exports.seed = function (knex) {
 					payment_method: "cash",
 					wants_celebration_date: true,
 					date_type: "indifferente",
+					intention_type: "unit"
 				},
 				{
 					donor_id: 2,
@@ -227,6 +228,7 @@ exports.seed = function (knex) {
 					payment_method: "cheque",
 					wants_celebration_date: true,
 					date_type: "indifferente",
+					intention_type: "unit"
 				},
 				{
 					donor_id: 3,
@@ -236,6 +238,7 @@ exports.seed = function (knex) {
 					payment_method: "transfer",
 					wants_celebration_date: false,
 					date_type: "indifferente",
+					intention_type: "unit"
 				},
 				{
 					donor_id: 4,
@@ -245,6 +248,7 @@ exports.seed = function (knex) {
 					payment_method: "cash",
 					wants_celebration_date: true,
 					date_type: "specifique",
+					intention_type: "unit"
 				},
 				{
 					donor_id: 5,
@@ -254,6 +258,7 @@ exports.seed = function (knex) {
 					payment_method: "cheque",
 					wants_celebration_date: false,
 					date_type: "indifferente",
+					intention_type: "unit"
 				},
 				{
 					donor_id: 6,
@@ -263,6 +268,67 @@ exports.seed = function (knex) {
 					payment_method: "transfer",
 					wants_celebration_date: false,
 					date_type: "indifferente",
+					intention_type: "unit"
+				},
+				{
+					donor_id: 1,
+					intention_text: "Messe pour les défunts",
+					deceased: true,
+					amount: 25,
+					payment_method: "cash",
+					wants_celebration_date: true,
+					date_type: "specifique",
+					intention_type: "unit"
+				},
+				{
+					donor_id: 2,
+					intention_text: "Messe pour les malades",
+					deceased: false,
+					amount: 45,
+					payment_method: "cheque",
+					wants_celebration_date: false,
+					date_type: "indifferente",
+					intention_type: "unit"
+				},
+				{
+					donor_id: 3,
+					intention_text: "Messe pour les vivants",
+					deceased: false,
+					amount: 40,
+					payment_method: "transfer",
+					wants_celebration_date: false,
+					date_type: "indifferente",
+					intention_type: "unit"
+				},
+				{
+					donor_id: 4,
+					intention_text: "Messe pour les défunts",
+					deceased: true,
+					amount: 25,
+					payment_method: "cash",
+					wants_celebration_date: true,
+					date_type: "specifique",
+					intention_type: "unit"
+				},
+				{
+					donor_id: 5,
+					intention_text: "Messe pour les malades",
+					deceased: false,
+					amount: 45,
+					payment_method: "cheque",
+					wants_celebration_date: false,
+					date_type: "indifferente",
+					intention_type: "unit"
+				},
+				{
+					donor_id: 6,
+					intention_text: "Messe pour les vivants",
+					deceased: false,
+					amount: 40,
+					payment_method: "transfer",
+					wants_celebration_date: false,
+					date_type: "indifferente",
+					intention_type: "unit"
 				},
 				{
 					donor_id: 1,
@@ -363,61 +429,7 @@ exports.seed = function (knex) {
 					wants_celebration_date: false,
 					date_type: "indifferente",
 				},
-				{
-					donor_id: 6,
-					intention_text: "Messe pour les vivants",
-					deceased: false,
-					amount: 40,
-					payment_method: "transfer",
-					wants_celebration_date: false,
-					date_type: "indifferente",
-				},
-				{
-					donor_id: 1,
-					intention_text: "Messe pour les défunts",
-					deceased: true,
-					amount: 25,
-					payment_method: "cash",
-					wants_celebration_date: true,
-					date_type: "specifique",
-				},
-				{
-					donor_id: 2,
-					intention_text: "Messe pour les malades",
-					deceased: false,
-					amount: 45,
-					payment_method: "cheque",
-					wants_celebration_date: false,
-					date_type: "indifferente",
-				},
-				{
-					donor_id: 3,
-					intention_text: "Messe pour les vivants",
-					deceased: false,
-					amount: 40,
-					payment_method: "transfer",
-					wants_celebration_date: false,
-					date_type: "indifferente",
-				},
-				{
-					donor_id: 4,
-					intention_text: "Messe pour les défunts",
-					deceased: true,
-					amount: 25,
-					payment_method: "cash",
-					wants_celebration_date: true,
-					date_type: "specifique",
-				},
-				{
-					donor_id: 5,
-					intention_text: "Messe pour les malades",
-					deceased: false,
-					amount: 45,
-					payment_method: "cheque",
-					wants_celebration_date: false,
-					date_type: "indifferente",
-				},
-				{intention_text: "Gilles", deceased: true, recurrence_type: "anual", date_type: "specifique", recurrence_type: "anual", occurrences: 50, amount: 0}
+
 			])
 		})
 		.then(function () {

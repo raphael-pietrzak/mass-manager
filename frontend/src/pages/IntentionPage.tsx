@@ -4,6 +4,7 @@ import { IntentionModal } from "../features/intentions/IntentionModal";
 import { Intention, IntentionSubmission, intentionService } from "../api/intentionService";
 import { useRef } from 'react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { exportService } from "../api/exportService";
 
 const IntentionPage: React.FC = () => {
 	const [isIntentionModalOpen, setIsIntentionModalOpen] = useState(false);
@@ -72,12 +73,10 @@ const IntentionPage: React.FC = () => {
 		try {
 			switch (format) {
 				case 'excel':
-					//await exportService.generateIntentionsExcel(selectedIntentionIds);
-					//selectedIntentionIds.map()
-					//await intentionService.deleteMass(selectedIntentionIds)
+					await exportService.exportIntentionToExcel(selectedIntentionIds);
 					break;
 				case 'pdf':
-					//await exportService.generateIntenrionsPdf(selectedIntentionIds);
+					//await exportService.generateIntentionsPdf(selectedIntentionIds);
 					break;
 				case 'word':
 					//await exportService.generateIntentionWord(selectedIntentionIds);

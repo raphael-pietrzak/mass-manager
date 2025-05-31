@@ -5,6 +5,7 @@ const exportDonorController = require('../controllers/donor.controller');
 
 // Routes d'exportation des intentions de messes
 router.get('/masses/excel', exportController.exportToExcel);
+router.post('/intentions/excel/don', exportController.exportIntentionToExcel)
 router.get('/masses/pdf', exportController.exportToPdf);
 router.get('/masses/word', exportController.exportToWord);
 router.get('/donors/excel', exportDonorController.exportToExcel);
