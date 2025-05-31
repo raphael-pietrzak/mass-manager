@@ -1,33 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import { intentionService, Intention, Masses } from '../../../api/intentionService';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
-import { User, Calendar, Trash2, AlertTriangle, X, Info, Repeat } from 'lucide-react';
+import { User, Trash2, AlertTriangle, X, Info } from 'lucide-react';
 import { IntentionMassesModal } from './IntentionMassesModal';
 
-export const IntentionList: React.FC = () => {
-  const [intentions, setIntentions] = useState<Intention[]>([]);
-  const [loading, setLoading] = useState(true);
+interface IntentionListProps {
+  onSelectionChange?: (ids: string[]) => void;
+  intentions: Intention[];
+  onRefresh: () => void;
+  loading: boolean;
+};
+
+export const IntentionList: React.FC<IntentionListProps> = ({ intentions, onSelectionChange, onRefresh, loading }) => {
   const [selectedIntention, setSelectedIntention] = useState<Intention | null>(null);
   const [associatedMasses, setAssociatedMasses] = useState<Masses[]>([]);
   const [showMassesModal, setShowMassesModal] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [intentionToDelete, setIntentionToDelete] = useState<Intention | null>(null);
+  const [selectedIntentionId, setSelectedIntentionId] = useState<string[]>([]);
 
   useEffect(() => {
-    fetchIntentions();
-  }, []);
-
-  const fetchIntentions = async () => {
-    try {
-      setLoading(true);
-      const data = await intentionService.getIntentions();
-      setIntentions(data);
-    } catch (error) {
-      console.error('Erreur lors de la récupération des intentions:', error);
-    } finally {
-      setLoading(false);
+    if (onSelectionChange) {
+      onSelectionChange(selectedIntentionId);
     }
+  }, [selectedIntentionId]);
+
+  const isAllSelected = intentions.length > 0 && selectedIntentionId.length === intentions.length;
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIntentionId(intentions.map((i) => i.id));
+    } else {
+      setSelectedIntentionId([]);
+    }
+  };
+
+  const handleSelectIntention = (id: string, checked: boolean) => {
+    setSelectedIntentionId((prev) =>
+      checked ? [...prev, id] : prev.filter((selectedId) => selectedId !== id)
+    );
   };
 
   const handleIntentionClick = async (intention: Intention) => {
@@ -53,7 +63,7 @@ export const IntentionList: React.FC = () => {
     if (intentionToDelete && intentionToDelete.id) {
       try {
         await intentionService.deleteMass(intentionToDelete.id);
-        await fetchIntentions(); // Rafraîchir la liste
+        onRefresh()
       } catch (error) {
         console.error('Erreur lors de la suppression:', error);
       }
@@ -69,9 +79,8 @@ export const IntentionList: React.FC = () => {
 
   return (
     <>
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-6">Liste des intentions de messe</h1>
-        
+      <div className="bg-white rounded-lg shadow p-4 mb-6">
+
         {loading ? (
           <div className="text-center py-10">Chargement des intentions...</div>
         ) : (
@@ -84,51 +93,46 @@ export const IntentionList: React.FC = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Date de création
-                    </th>
-                    <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Donateur
-                    </th>
-                    <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Type
-                    </th>
-                    <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th
+                      scope="col"
+                      className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/3"
+                    >
                       Intention
                     </th>
-                    <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Récurrence
+                    <th className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-1/6">
+                      Type
                     </th>
-                    <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-1/6">
+                      Donateur
+                    </th>
+                    <th className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-1/6">
                       Montant
                     </th>
-                    <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-1/6">
                       Actions
+                    </th>
+                    <th className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-1/12">
+                      <div className="flex items-center gap-2">
+                        <span>Sélectionner tout</span>
+                        <input
+                          type="checkbox"
+                          checked={isAllSelected}
+                          onChange={(e) => handleSelectAll(e.target.checked)}
+                          className="form-checkbox h-5 w-5 text-blue-600"
+                        />
+                      </div>
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {intentions.map(intention => (
-                    <tr 
-                      key={intention.id} 
-                      onClick={() => handleIntentionClick(intention)} 
+                    <tr
+                      key={intention.id}
+                      onClick={() => handleIntentionClick(intention)}
                       className="hover:bg-gray-50 cursor-pointer"
                     >
-                      <td className="px-3 py-2 whitespace-nowrap text-sm">
-                        <div className="flex items-center">
-                          <Calendar className="w-3.5 h-3.5 text-gray-400 mr-1.5" />
-                          <span>
-                            {intention.created_at 
-                              ? format(new Date(intention.created_at), 'EEE d MMM', { locale: fr })
-                              : "Non définie"}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm">
-                        <div className="flex items-center">
-                          <User className="w-3 h-3 text-gray-400 mr-1.5" />
-                          <span>{`${intention.donor_firstname || ''} ${intention.donor_lastname || ''}`}</span>
-                        </div>
+                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 italic truncate max-w-xs">
+                        {intention.intention_text || ""}
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap text-sm">
                         {intention.deceased ? (
@@ -141,25 +145,18 @@ export const IntentionList: React.FC = () => {
                           </span>
                         )}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500 italic truncate max-w-xs">
-                        {intention.intention_text || ""}
-                      </td>
                       <td className="px-3 py-2 whitespace-nowrap text-sm">
-                        {intention.is_recurrent ? (
-                          <span className="flex items-center">
-                            <Repeat className="w-3.5 h-3.5 text-blue-500 mr-1" />
-                            <span className="px-2 py-0.5 rounded-full text-xs bg-blue-50 text-blue-700">
-                              Récurrente
-                            </span>
-                          </span>
-                        ) : ""}
+                        <div className="flex items-center">
+                          <User className="w-3 h-3 text-gray-400 mr-1.5" />
+                          <span>{`${intention.donor_firstname || ''} ${intention.donor_lastname || ''}`}</span>
+                        </div>
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap text-sm">
                         {intention.amount ? `${intention.amount}€` : ""}
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap text-sm">
                         <div className="flex space-x-2">
-                          <button 
+                          <button
                             onClick={(e) => {
                               e.stopPropagation();
                               handleIntentionClick(intention);
@@ -169,14 +166,24 @@ export const IntentionList: React.FC = () => {
                           >
                             <Info className="w-4 h-4" />
                           </button>
-                          <button 
+                          <button
                             onClick={(e) => handleDeleteClick(e, intention)}
                             className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100 transition-colors"
                             title="Supprimer cette intention"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
+
                         </div>
+                      </td>
+                      <td className="px-3 py-2 text-center">
+                        <input
+                          type="checkbox"
+                          className="form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out"
+                          checked={selectedIntentionId.includes(intention.id)}
+                          onClick={(e) => e.stopPropagation()}
+                          onChange={(e) => handleSelectIntention(intention.id, e.target.checked)}
+                        />
                       </td>
                     </tr>
                   ))}
@@ -189,7 +196,7 @@ export const IntentionList: React.FC = () => {
 
       {/* Modal pour afficher les messes associées */}
       {showMassesModal && selectedIntention && (
-        <IntentionMassesModal 
+        <IntentionMassesModal
           intention={selectedIntention}
           masses={associatedMasses}
           onClose={() => setShowMassesModal(false)}
@@ -202,8 +209,8 @@ export const IntentionList: React.FC = () => {
           <div className="bg-white rounded-lg shadow-lg max-w-md w-full mx-4">
             <div className="p-4 flex justify-between items-center border-b">
               <h3 className="font-medium">Confirmer la suppression</h3>
-              <button 
-                onClick={cancelDelete} 
+              <button
+                onClick={cancelDelete}
                 className="p-1 hover:bg-gray-100 rounded-full"
               >
                 <X className="w-5 h-5" />
@@ -221,7 +228,7 @@ export const IntentionList: React.FC = () => {
                   </p>
                 </div>
               </div>
-              
+
               <div className="mt-4 border-t pt-4 flex justify-end space-x-3">
                 <button
                   onClick={cancelDelete}

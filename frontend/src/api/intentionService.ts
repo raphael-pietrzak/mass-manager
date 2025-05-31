@@ -2,7 +2,7 @@ import axios from 'axios';
 import { API_BASE_URL } from '.';
 
 export interface Intention {
-    id?: string;
+    id: string;
     date?: string;
     intention_text?: string;
     celebrant_id?: string;

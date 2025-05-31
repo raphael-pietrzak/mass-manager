@@ -16,7 +16,7 @@ interface DropdownOption {
 }
 
 interface IntentionFormProps {
-  formData: Intention;
+  formData: Partial<Intention>;
   updateFormData: (data: Partial<Intention>) => void;
   selectedDate?: Date;
   setSelectedDate: (date: Date | undefined) => void;

@@ -417,6 +417,7 @@ exports.seed = function (knex) {
 					wants_celebration_date: false,
 					date_type: "indifferente",
 				},
+				{intention_text: "Gilles", deceased: true, recurrence_type: "anual", date_type: "specifique", recurrence_type: "anual", occurrences: 50, amount: 0}
 			])
 		})
 		.then(function () {
@@ -445,6 +446,8 @@ exports.seed = function (knex) {
 				{ date: "2025-07-20", celebrant_id: 21, intention_id: 21, status: "scheduled" },
 				{ date: "2025-05-02", celebrant_id: 22, intention_id: 22, status: "scheduled" },
 				{ date: "2025-06-15", celebrant_id: 23, intention_id: 23, status: "scheduled" },
+				{date: "2025-01-04", celebrant_id: 7, intention_id: 24, status: "scheduled"},
+				{date: "2026-01-04", celebrant_id: 7, intention_id: 24, status: "pending"},
 			])
 		})
 		.then(function () {

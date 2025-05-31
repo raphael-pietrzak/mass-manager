@@ -13,7 +13,7 @@ interface NavLinkItem {
 
 const NAV_LINKS: NavLinkItem[] = [
   { label: "Calendrier", href: "/calendar" },
-  { label: "Intentions", href: "/intentions" },
+  { label: "Intentions ponctuelles", href: "/intentions" },
   { label: "Donateurs", href: "/donors" },
   { label: "Administrateur", href: "/admin" },
 ];
@@ -44,9 +44,8 @@ const Navbar: React.FC = () => {
               <NavLink
                 key={link.href}
                 to={link.href}
-                className={({ isActive }) => 
-                  `text-gray-700 hover:text-primary transition-colors py-2 ${
-                    isActive ? "text-primary font-medium border-b-2 border-primary" : ""
+                className={({ isActive }) =>
+                  `text-gray-700 hover:text-primary transition-colors py-2 ${isActive ? "text-primary font-medium border-b-2 border-primary" : ""
                   }`
                 }
               >
@@ -82,9 +81,8 @@ const Navbar: React.FC = () => {
                 <NavLink
                   key={link.href}
                   to={link.href}
-                  className={({ isActive }) => 
-                    `text-gray-700 hover:text-primary py-2 ${
-                      isActive ? "text-primary font-medium" : ""
+                  className={({ isActive }) =>
+                    `text-gray-700 hover:text-primary py-2 ${isActive ? "text-primary font-medium" : ""
                     }`
                   }
                   onClick={() => setIsMobileMenuOpen(false)}
