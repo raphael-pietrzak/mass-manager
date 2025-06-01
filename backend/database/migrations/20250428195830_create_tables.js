@@ -73,6 +73,7 @@ exports.up = function(knex) {
       table.enu('role', ['admin', 'secretary', 'celebrant'])
     })
     .createTable('UnavailableDays', function(table) {
+      table.increments('id').primary();
       table.integer('celebrant_id').unsigned().nullable().references('id').inTable('Celebrants').onDelete('SET NULL');
       table.date('date').notNullable();
       table.boolean('is_recurrent').defaultTo(false);
@@ -88,7 +89,7 @@ exports.down = function(knex) {
     .dropTableIfExists('Donors')
     .dropTableIfExists('Celebrants')
     .dropTableIfExists('Users')
-    .dropTableIfExists('UnavailabledDays');
+    .dropTableIfExists('UnavailabledDay');
 };
 
 exports.down = function (knex) {
@@ -99,5 +100,5 @@ exports.down = function (knex) {
 		.dropTableIfExists("Donors")
 		.dropTableIfExists("Celebrants")
 		.dropTableIfExists("Users")
-		.dropTableIfExists("UnavailabledDays")
+		.dropTableIfExists("UnavailabledDay")
 }

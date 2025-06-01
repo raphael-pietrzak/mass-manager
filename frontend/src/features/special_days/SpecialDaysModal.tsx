@@ -46,11 +46,11 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
       const timer = setTimeout(() => {
         setSuccessMessage(undefined);
       }, 4000);
-  
+
       return () => clearTimeout(timer);
     }
   }, [successMessage]);
-  
+
 
   const loadSpecialDays = async () => {
     try {
@@ -150,155 +150,124 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent className="w-full max-w-5xl h-[90vh] max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle>Jours particuliers</DialogTitle>
         </DialogHeader>
-        
-        <div className="flex items-center justify-between mb-4">
-          {editingDay && (
-            <Button
-              variant="outline"
-              onClick={resetForm}
-              className="gap-2"
-            >
-              <Plus size={16} /> Ajouter un jour
-            </Button>
-          )}
-          <div className="flex items-center gap-2 ml-auto">
-            <Label htmlFor="showList">Afficher la liste</Label>
-            <Switch 
-              id="showList"
-              checked={showSpecialDays}
-              onCheckedChange={setShowSpecialDays}
-            />
-          </div>
-        </div>
-        
-        <div className="flex-1 overflow-y-auto space-y-6">
-          {/* Form section */}
-          <div className="space-y-4">
-            <Separator />
-            <h3 className="text-lg font-semibold">{editingDay ? 'Modifier' : 'Ajouter'} un jour particulier</h3>
-            
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="date">
-                  Date<span className="text-red-500"> *</span>
-                </Label>
-                <CalendarSelector
-                  selectedDate={newDay.date ? new Date(newDay.date) : undefined} 
-                  onDateChange={(date: Date | undefined) => handleChange('date', date ? date.toISOString().split('T')[0] : '')}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="description">
-                  Description<span className="text-red-500"> *</span>
-                </Label>
-                <Input
-                  id="description"
-                  required
-                  placeholder="ex : Noël ou Jeudi Saint"
-                  value={newDay.description}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('description', e.target.value)}
-                  className={validationError && !newDay.description.trim() ? "border-red-500" : ""}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="massCount">
-                  Nombre de messes par prêtre
-                </Label>
-                <Input
-                  id="massCount"
-                  type="number"
-                  required
-                  min={0}
-                  value={newDay.number_of_masses ?? ''}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('number_of_masses', e.target.value)}
-                />
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="recurrent"
-                  checked={newDay.is_recurrent ?? false}
-                  onCheckedChange={(checked: boolean) => handleChange('is_recurrent', checked)}
-                />
-                <Label htmlFor="recurrent">Récurrent chaque année</Label>
-              </div>
-              
-              {validationError && (
-                <Alert variant="destructive" className="mt-2">
-                  <AlertTriangle className="h-4 w-4 mr-2" />
-                  <AlertDescription>{validationError}</AlertDescription>
-                </Alert>
-              )}
-              
-              <div className="flex gap-2 pt-2">
-                <Button 
-                  type="submit" 
-                  onClick={handleSave}
-                >
-                  {editingDay ? 'Mettre à jour' : 'Ajouter'}
+
+        <div className="flex-1 flex gap-6 overflow-hidden">
+          {/* Colonne gauche : Formulaire */}
+          <div className="w-1/2 flex flex-col overflow-y-auto pr-2">
+            <div className="flex items-center justify-between mb-4">
+              {editingDay && (
+                <Button variant="outline" onClick={resetForm} className="gap-2">
+                  <Plus size={16} /> Ajouter un jour
                 </Button>
-                
-                {editingDay && (
-                  <Button
-                    variant="destructive"
-                    onClick={() => handleDelete(editingDay.id!)}
-                  >
-                    Supprimer
-                  </Button>
+              )}
+              <div className="flex items-center gap-2 ml-auto">
+                <Label htmlFor="showList">Afficher la liste</Label>
+                <Switch
+                  id="showList"
+                  checked={showSpecialDays}
+                  onCheckedChange={setShowSpecialDays}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <Separator />
+              <h3 className="text-lg font-semibold">{editingDay ? 'Modifier' : 'Ajouter'} un jour particulier</h3>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="date">
+                    Date<span className="text-red-500"> *</span>
+                  </Label>
+                  <CalendarSelector
+                    selectedDate={newDay.date ? new Date(newDay.date) : undefined}
+                    onDateChange={(date: Date | undefined) =>
+                      handleChange('date', date ? date.toISOString().split('T')[0] : '')
+                    }
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="description">
+                    Description<span className="text-red-500"> *</span>
+                  </Label>
+                  <Input
+                    id="description"
+                    required
+                    placeholder="ex : Noël ou Jeudi Saint"
+                    value={newDay.description}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('description', e.target.value)}
+                    className={validationError && !newDay.description.trim() ? "border-red-500" : ""}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="massCount">
+                    Nombre de messes par prêtre
+                  </Label>
+                  <Input
+                    id="massCount"
+                    type="number"
+                    required
+                    min={0}
+                    value={newDay.number_of_masses ?? ''}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('number_of_masses', e.target.value)}
+                  />
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="recurrent"
+                    checked={newDay.is_recurrent ?? false}
+                    onCheckedChange={(checked: boolean) => handleChange('is_recurrent', checked)}
+                  />
+                  <Label htmlFor="recurrent">Récurrent chaque année</Label>
+                </div>
+
+                {validationError && (
+                  <Alert variant="destructive" className="mt-2">
+                    <AlertTriangle className="h-4 w-4 mr-2" />
+                    <AlertDescription>{validationError}</AlertDescription>
+                  </Alert>
                 )}
+
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    type="submit"
+                    onClick={handleSave}
+                  >
+                    {editingDay ? 'Mettre à jour' : 'Ajouter'}
+                  </Button>
+
+                  {editingDay && (
+                    <Button
+                      variant="destructive"
+                      onClick={() => handleDelete(editingDay.id!)}
+                    >
+                      Supprimer
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-          
-          {/* Success message */}
-          {successMessage && (
-            <Alert className="bg-green-50 border-green-300 text-green-800">
-              <AlertTitle>✓ Succès</AlertTitle>
-              <AlertDescription>{successMessage}</AlertDescription>
-            </Alert>
-          )}
-          
-          {/* Delete confirmation */}
-          {isConfirmingDelete && (
-            <Alert variant="destructive">
-              <AlertTriangle className="h-4 w-4 mr-2" />
-              <AlertTitle>Confirmer la suppression</AlertTitle>
-              <AlertDescription className="mt-2">
-                <p className="mb-3">Êtes-vous sûr de vouloir supprimer ce jour particulier ? Cette action est irréversible.</p>
-                <div className="flex justify-end space-x-2">
-                  <Button 
-                    variant="outline" 
-                    onClick={handleCloseConfirmDelete}
-                  >
-                    Annuler
-                  </Button>
-                  <Button 
-                    variant="destructive"
-                    onClick={handleConfirmDelete}
-                  >
-                    Supprimer
-                  </Button>
-                </div>
-              </AlertDescription>
-            </Alert>
-          )}
-          
-          {/* Special days list */}
+
+          {/* Trait vertical de séparation */}
+          <div className="w-px bg-gray-200" />
+
+          {/* Colonne droite : Liste */}
           {showSpecialDays && (
-            <div className="space-y-4">
-              <Separator />
-              <h3 className="text-lg font-semibold flex gap-2 items-center">
+            <div className="w-1/2 flex flex-col overflow-y-auto pl-2">
+              <h3 className="text-lg font-semibold flex gap-2 items-center mb-2">
                 <Calendar size={18} /> Liste des jours particuliers
               </h3>
-              
+
               {specialDays.length > 0 ? (
-                <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
+                <div className="space-y-2">
                   {specialDays.map((day) => (
                     <div
                       key={day.id}
@@ -310,10 +279,10 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
                           {day.is_recurrent
                             ? formatDateWithoutYear(day.date)
                             : new Date(day.date).toLocaleDateString('fr-FR', {
-                                day: '2-digit',
-                                month: 'long',
-                                year: 'numeric',
-                              })}
+                              day: '2-digit',
+                              month: 'long',
+                              year: 'numeric',
+                            })}
                           - {day.description}
                         </div>
                         <div className="text-sm text-gray-500">
@@ -332,6 +301,37 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
                 </div>
               )}
             </div>
+          )}
+        </div>
+
+        <div className="pt-4 space-y-4">
+          {/* Success message */}
+          {successMessage && (
+            <Alert className="bg-green-50 border-green-300 text-green-800">
+              <AlertTitle>✓ Succès</AlertTitle>
+              <AlertDescription>{successMessage}</AlertDescription>
+            </Alert>
+          )}
+
+          {/* Delete confirmation */}
+          {isConfirmingDelete && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4 mr-2" />
+              <AlertTitle>Confirmer la suppression</AlertTitle>
+              <AlertDescription className="mt-2">
+                <p className="mb-3">
+                  Êtes-vous sûr de vouloir supprimer ce jour particulier ? Cette action est irréversible.
+                </p>
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline" onClick={handleCloseConfirmDelete}>
+                    Annuler
+                  </Button>
+                  <Button variant="destructive" onClick={handleConfirmDelete}>
+                    Supprimer
+                  </Button>
+                </div>
+              </AlertDescription>
+            </Alert>
           )}
         </div>
       </DialogContent>

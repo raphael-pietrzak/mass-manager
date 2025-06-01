@@ -138,7 +138,7 @@ exports.seed = function(knex) {
     .then(function () {
       return knex('SpecialDays').insert([
         { date: '2024-12-25', description: 'Noël', number_of_masses: 3, is_recurrent: true },
-        { date: '2025-04-17', description: 'Jeudi Saint', number_of_masses: 0,  is_recurrent: false },
+        { date: '2025-04-17', description: 'Jeudi Saint', number_of_masses: 0, is_recurrent: false },
       ]);
     })
     .then(function () {
@@ -146,5 +146,12 @@ exports.seed = function(knex) {
         { login_name: 'admin', password: bcrypt.hashSync('admin', 10), email: 'secretariat@lagrasse.org', role: 'admin' },
         { login_name: 'secretariat', password: bcrypt.hashSync('Lagrasse123', 10), email: 'secretariat@lagrasse.org', role: 'secretary' }
       ]);
+    })
+    .then(function () {
+      return knex('UnavailableDays').insert([
+        { celebrant_id: 1, date: "2025-07-27", is_recurrent: false},
+        { celebrant_id: 1, date: "2025-07-28", is_recurrent: false},
+        { celebrant_id: 2, date: "2025-01-30", is_recurrent: true}
+      ])
     });
 };
