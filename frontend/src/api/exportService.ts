@@ -75,4 +75,36 @@ export const exportService = {
 			console.error("Erreur lors de l'export des intentions :", error)
 		}
 	},
+
+	exportIntentionToWord: async (intentionIds: string[]) => {
+		const url = `${EXPORTDON_URL}/word/don`
+		try {
+			const response = await axios.post(url, { intentionIds }, { responseType: "blob" })
+			const blobUrl = window.URL.createObjectURL(new Blob([response.data]))
+			const link = document.createElement("a")
+			link.href = blobUrl
+			link.setAttribute("download", "Intentions de messes.docx")
+			document.body.appendChild(link)
+			link.click()
+			link.remove()
+		} catch (error) {
+			console.error("Erreur lors de l'export des intentions :", error)
+		}
+	},
+
+	exportIntentionToPdf: async (intentionIds: string[]) => {
+		const url = `${EXPORTDON_URL}/pdf/don`
+		try {
+			const response = await axios.post(url, { intentionIds }, { responseType: "blob" })
+			const blobUrl = window.URL.createObjectURL(new Blob([response.data]))
+			const link = document.createElement("a")
+			link.href = blobUrl
+			link.setAttribute("download", "Intentions de messes.pdf")
+			document.body.appendChild(link)
+			link.click()
+			link.remove()
+		} catch (error) {
+			console.error("Erreur lors de l'export des intentions :", error)
+		}
+	},
 }

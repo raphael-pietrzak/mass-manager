@@ -55,7 +55,6 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
   const loadSpecialDays = async () => {
     try {
       const data = await specialDayService.getSpecialDays();
-      console.log("Données chargées:", data); // Pour déboguer
       const sanitizedData = data.map((day) => ({
         ...day,
         date: day.date || '',

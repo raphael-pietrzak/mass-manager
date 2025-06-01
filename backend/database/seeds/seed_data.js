@@ -22,8 +22,11 @@ exports.seed = function(knex) {
       return knex('Users').del();
     })
     .then(function () {
+      return knex('UnavailableDays').del();
+    })
+    .then(function () {
       // Réinitialiser les séquences d'auto-incrémentation
-      return knex.raw("DELETE FROM sqlite_sequence WHERE name IN ('Masses', 'SpecialDays', 'Donors', 'Celebrants', 'Users', 'Intentions', 'Recurrences')");
+      return knex.raw("DELETE FROM sqlite_sequence WHERE name IN ('Masses', 'SpecialDays', 'Donors', 'Celebrants', 'Users', 'Intentions', 'Recurrences', 'UnavailableDays')");
     })
     .then(function () {
       // Insérer des données fictives dans les tables
