@@ -262,6 +262,14 @@ class ExportService {
 		return await Packer.toBuffer(doc)
 	}
 
+	async generatePDFIntention(intentions) {
+		
+	}
+
+	async generateWordIntention(intentions) {
+		
+	}
+
 	async generateExcelIntention(intentions) {
 		let totalAmount = 0
 		try {
