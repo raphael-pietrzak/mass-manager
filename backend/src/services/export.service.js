@@ -266,6 +266,10 @@ class ExportService {
 		
 	}
 
+	async generateWordIntention(intentions) {
+		
+	}
+
 	async generateExcelIntention(intentions) {
 		let totalAmount = 0
 		try {
