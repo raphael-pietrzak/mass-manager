@@ -24,7 +24,6 @@ const IntentionPage: React.FC = () => {
 	const exportMenuRef = useRef<HTMLDivElement>(null);
 	const [selectedIntentionIds, setSelectedIntentionIds] = useState<string[]>([]);
 	const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false);
-	const [exportFormat, setExportFormat] = useState<'excel' | 'pdf' | 'word' | null>(null);
 
 	const fetchIntentions = async () => {
 		try {
@@ -60,40 +59,47 @@ const IntentionPage: React.FC = () => {
 		}
 	};
 
-	const onExport = (format: 'excel' | 'pdf' | 'word') => {
+	const onExport = async (format: 'excel' | 'pdf' | 'word') => {
 		if (selectedIntentionIds.length === 0) {
 			setError('Veuillez sélectionner au moins une intention à exporter.');
 			return;
 		}
-		setExportFormat(format);
-		setShowDeleteConfirmDialog(true);
-	};
-
-	const handleConfirmExport = async (format: 'excel' | 'pdf' | 'word') => {
 		try {
 			switch (format) {
 				case 'excel':
 					await exportService.exportIntentionToExcel(selectedIntentionIds);
 					break;
 				case 'pdf':
-					//await exportService.generateIntentionsPdf(selectedIntentionIds);
+					await exportService.exportIntentionToPdf(selectedIntentionIds);
 					break;
 				case 'word':
-					//await exportService.generateIntentionWord(selectedIntentionIds);
+					await exportService.exportIntentionToWord(selectedIntentionIds);
 					break;
 				default:
 					throw new Error('Format inconnu');
 			}
+			// Export réussi → on ouvre la modale de confirmation pour supprimer
+			setShowDeleteConfirmDialog(true);
+		} catch (error) {
+			console.error("Erreur lors de l'exportation :", error);
+			setError("Erreur lors de l'exportation.");
+		}
+	};
+
+
+	const handleConfirmExport = async () => {
+		try {
 			for (const id of selectedIntentionIds) {
 				await intentionService.deleteMass(id);
 			}
 			await fetchIntentions();
 			setSelectedIntentionIds([]);
-			setShowDeleteConfirmDialog(false);
 		} catch (error) {
-			setError('Erreur lors de l’exportation.');
+			setError("Erreur lors de la suppression.");
+		} finally {
+			setShowDeleteConfirmDialog(false);
 		}
-	}
+	};
 
 	useEffect(() => {
 		function handleClickOutside(event: MouseEvent) {
@@ -173,23 +179,18 @@ const IntentionPage: React.FC = () => {
 							<AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
 							<AlertDialogDescription>
 								<span className="text-gray-800 text-lg">
-									Êtes-vous sûr de vouloir exporter toutes les intentions sélectionnées,
-									cette action supprimera définitivement ces intentions et les messes associées ?
+									Export Réussi !
+									Voulez-vous supprimer les intentions exportées ?
+									Cette action les supprimera définitivement de la base.
 								</span>
 							</AlertDialogDescription>
 						</AlertDialogHeader>
 						<AlertDialogFooter>
 							<AlertDialogCancel onClick={() => setShowDeleteConfirmDialog(false)}>Annuler</AlertDialogCancel>
 							<AlertDialogAction
-								onClick={() => {
-									if (exportFormat) {
-										handleConfirmExport(exportFormat);
-										setShowDeleteConfirmDialog(false);
-										setExportFormat(null); // reset le format après usage
-									}
-								}}
+								onClick={handleConfirmExport}
 							>
-								Confirmer
+								Confirmer la suppression
 							</AlertDialogAction>
 						</AlertDialogFooter>
 					</AlertDialogContent>

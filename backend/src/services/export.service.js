@@ -1,4 +1,4 @@
-const { Document, Paragraph, Table, TableRow, TableCell, HeadingLevel, AlignmentType, Packer } = require("docx")
+const { Document, Paragraph, Table, TableRow, TableCell, HeadingLevel, AlignmentType, Packer, WidthType } = require("docx")
 const ExcelJS = require("exceljs")
 const PDFDocument = require("pdfkit-table")
 
@@ -262,19 +262,11 @@ class ExportService {
 		return await Packer.toBuffer(doc)
 	}
 
-	async generatePDFIntention(intentions) {
-		
-	}
-
-	async generateWordIntention(intentions) {
-		
-	}
-
 	async generateExcelIntention(intentions) {
 		let totalAmount = 0
 		try {
 			const workbook = new ExcelJS.Workbook()
-			const worksheet = workbook.addWorksheet("Intentions de dons")
+			const worksheet = workbook.addWorksheet("Intentions de messes")
 
 			// Définir les colonnes
 			worksheet.columns = [
@@ -307,12 +299,190 @@ class ExportService {
 			})
 			const totalRow = worksheet.addRow({ intention_text: "Montant total", amount: totalAmount })
 			totalRow.font = { bold: true }
-
 			return await workbook.xlsx.writeBuffer()
 		} catch (error) {
 			console.error("Erreur dans generateExcelIntention:", error)
 			throw error
 		}
+	}
+
+	async generateWordIntention(intentions) {
+		try {
+			let totalAmount = 0
+
+			// Construire les lignes du tableau
+			const rows = [
+				new TableRow({
+					children: [
+						new TableCell({
+							width: { size: 40, type: WidthType.PERCENTAGE },
+							children: [new Paragraph({ text: "Intention", bold: true })],
+							shading: {
+								fill: "D3D3D3",
+							},
+						}),
+						new TableCell({
+							width: { size: 30, type: WidthType.PERCENTAGE },
+							children: [new Paragraph({ text: "Type", bold: true })],
+							shading: {
+								fill: "D3D3D3",
+							},
+						}),
+						new TableCell({
+							width: { size: 30, type: WidthType.PERCENTAGE },
+							children: [new Paragraph({ text: "Montant (€)", bold: true })],
+							shading: {
+								fill: "D3D3D3",
+							},
+						}),
+					],
+				}),
+			]
+
+			intentions.forEach((intention) => {
+				const deceasedText = intention.deceased ? "(défunt)" : ""
+				const dateTypeText = intention.date_type === "specifique" ? "(fixe)" : intention.date_type === "indifferente" ? "(mobile)" : ""
+				const intentionTypeText =
+					intention.intention_type === "novena"
+						? "Neuvaine"
+						: intention.intention_type === "thirty"
+						? "Trentain"
+						: intention.intention_type === "unit"
+						? "Unité"
+						: ""
+
+				rows.push(
+					new TableRow({
+						children: [
+							new TableCell({
+								children: [new Paragraph(`${intention.intention_text || ""} ${deceasedText} ${dateTypeText}`.trim())],
+							}),
+							new TableCell({
+								children: [new Paragraph(intentionTypeText)],
+							}),
+							new TableCell({
+								children: [new Paragraph((intention.amount || 0).toString())],
+							}),
+						],
+					})
+				)
+
+				totalAmount += intention.amount || 0
+			})
+
+			// Ligne total
+			rows.push(
+				new TableRow({
+					children: [
+						new TableCell({
+							children: [new Paragraph({ text: "Montant total", bold: true })],
+							shading: { fill: "D3D3D3" },
+						}),
+						new TableCell({ children: [new Paragraph("")], shading: { fill: "D3D3D3" } }),
+						new TableCell({
+							children: [new Paragraph({ text: totalAmount.toString(), bold: true })],
+							shading: { fill: "D3D3D3" },
+						}),
+					],
+				})
+			)
+
+			const doc = new Document({
+				sections: [
+					{
+						children: [
+							new Paragraph({
+								text: "Intentions de messes",
+								heading: HeadingLevel.HEADING_1,
+								spacing: { after: 300 },
+							}),
+							new Table({
+								rows,
+								width: {
+									size: 100,
+									type: WidthType.PERCENTAGE,
+								},
+							}),
+						],
+					},
+				],
+			})
+
+			// Génère un buffer en Uint8Array (fichier Word en mémoire)
+			const buffer = await Packer.toBuffer(doc)
+			return buffer // tu peux ensuite l'envoyer en réponse HTTP, ou sauvegarder dans un fichier
+		} catch (error) {
+			console.error("Erreur dans generateWordIntention:", error)
+			throw error
+		}
+	}
+
+	async generatePDFIntention(intentions) {
+		return new Promise((resolve, reject) => {
+			try {
+				const doc = new PDFDocument({ margin: 30 })
+				const buffers = []
+
+				doc.on("data", buffers.push.bind(buffers))
+				doc.on("end", () => {
+					const pdfData = Buffer.concat(buffers)
+					resolve(pdfData)
+				})
+
+				doc.fontSize(18).font("Helvetica-Bold").text("Intentions de messes", { align: "left" })
+				doc.moveDown()
+
+				const rows = []
+				let totalAmount = 0
+
+				intentions.forEach((intention) => {
+					const deceasedText = intention.deceased ? "(défunt)" : ""
+					const dateTypeText = intention.date_type === "specifique" ? "(fixe)" : intention.date_type === "indifferente" ? "(mobile)" : ""
+					const intentionTypeText =
+						intention.intention_type === "novena"
+							? "Neuvaine"
+							: intention.intention_type === "thirty"
+							? "Trentain"
+							: intention.intention_type === "unit"
+							? "Unité"
+							: ""
+
+					const intentionText = `${intention.intention_text || ""} ${deceasedText} ${dateTypeText}`.trim()
+					const amount = intention.amount || 0
+
+					rows.push([intentionText, intentionTypeText, amount.toFixed(2)])
+					totalAmount += amount
+				})
+
+				// Ligne total - simple tableau de strings/nombres, pas d'objet
+				rows.push(["Montant total", "", totalAmount.toFixed(2)])
+
+				const table = {
+					headers: [
+						{ label: "Intention", property: "intention", width: 400, headerColor: "#D3D3D3", headerFont: "Helvetica-Bold" },
+						{ label: "Type", property: "type", width: 100, headerColor: "#D3D3D3", headerFont: "Helvetica-Bold" },
+						{ label: "Montant (€)", property: "amount", width: 100, headerColor: "#D3D3D3", headerFont: "Helvetica-Bold" },
+					],
+					rows: rows,
+				}
+
+				doc.table(table, {
+					prepareHeader: () => doc.font("Helvetica-Bold").fontSize(12),
+					prepareRow: (row, indexColumn, indexRow) => {
+						if (indexRow === rows.length - 1) {
+							doc.font("Helvetica-Bold")
+						} else {
+							doc.font("Helvetica")
+						}
+						doc.fontSize(12)
+					},
+				})
+
+				doc.end()
+			} catch (error) {
+				reject(error)
+			}
+		})
 	}
 }
 

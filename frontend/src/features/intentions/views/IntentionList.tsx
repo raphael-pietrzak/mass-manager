@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { intentionService, Intention, Masses } from '../../../api/intentionService';
 import { User, Trash2, AlertTriangle, X, Info } from 'lucide-react';
 import { IntentionMassesModal } from './IntentionMassesModal';
@@ -24,7 +24,17 @@ export const IntentionList: React.FC<IntentionListProps> = ({ intentions, onSele
     }
   }, [selectedIntentionId]);
 
-  const isAllSelected = intentions.length > 0 && selectedIntentionId.length === intentions.length;
+  useEffect(() => {
+    // Garde uniquement les IDs qui sont encore présents dans la liste intentions
+    setSelectedIntentionId((prevSelected) =>
+      prevSelected.filter((id) => intentions.some((intention) => intention.id === id))
+    );
+  }, [intentions]);
+
+  const isAllSelected = useMemo(
+    () => intentions.length > 0 && selectedIntentionId.length === intentions.length,
+    [intentions, selectedIntentionId]
+  );
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
