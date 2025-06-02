@@ -128,7 +128,7 @@ export const IntentionList: React.FC<IntentionListProps> = ({ intentions, onSele
                           type="checkbox"
                           checked={isAllSelected}
                           onChange={(e) => handleSelectAll(e.target.checked)}
-                          className="form-checkbox h-5 w-5 text-blue-600"
+                          className="form-checkbox h-6 w-6 text-blue-600"
                         />
                       </div>
                     </th>

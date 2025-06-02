@@ -5,6 +5,7 @@ import { Intention, IntentionSubmission, intentionService } from "../api/intenti
 import { useRef } from 'react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { exportService } from "../api/exportService";
+import { BookCheck } from "lucide-react";
 
 const IntentionPage: React.FC = () => {
 	const [isIntentionModalOpen, setIsIntentionModalOpen] = useState(false);
@@ -116,9 +117,9 @@ const IntentionPage: React.FC = () => {
 	return (
 		<div className="min-h-screen bg-gray-100">
 			<main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-				<div className="flex justify-between items-center mb-6">
+				<div className="flex justify-between items-center space-y-4">
 					<h1 className="text-2xl font-bold mb-6">Liste des intentions de messe ponctuelles</h1>
-					<div>
+					<div className="flex flex-col items-end space-y-4">
 						{onExport && (
 							<div className="relative" ref={exportMenuRef}>
 								<button
@@ -162,9 +163,19 @@ const IntentionPage: React.FC = () => {
 								)}
 							</div>
 						)}
+
+						<div className="relative">
+							<button
+								type="button"
+								className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+							>
+								<BookCheck className="w-5 h-5" />
+								<span>Publier les intentions</span>
+							</button>
+						</div>
 					</div>
 				</div>
-				<div className="mb-8">
+				<div className="mt-6 mb-6">
 					{error && (
 						<div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded z-50">
 							{error}
