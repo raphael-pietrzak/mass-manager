@@ -18,20 +18,7 @@ class DonorService {
 	async getDonors(): Promise<Donor[]> {
 		try {
 			const response = await axios.get(`${API_URL}/donors`)
-			// Vérifier si les données sont un tableau
-			if (Array.isArray(response.data)) {
-				return response.data
-			} else if (response.data && typeof response.data === "object") {
-				// Si c'est un objet qui contient un tableau (par exemple { donors: [...] })
-				const possibleArrays = Object.values(response.data).filter(Array.isArray)
-				if (possibleArrays.length > 0) {
-					return possibleArrays[0] as Donor[]
-				}
-			}
-
-			// Si on ne trouve pas de tableau, on renvoie un tableau vide
-			console.error("Format de données inattendu:", response.data)
-			return []
+			return response.data
 		} catch (error) {
 			console.error("Erreur lors de la récupération des donateurs:", error)
 			return []
