@@ -38,19 +38,6 @@ class DonorService {
 		}
 	}
 
-	async getDonorsPaginated(limit: number, page: number, searchQuery?: string): Promise<{ donors: Donor[]; totalPages: number }> {
-		try {
-			// Envoi de la requête GET avec limit et page dans les paramètres de la query
-			const response = await axios.get(`${API_URL}/donors`, {
-				params: { limit, page, searchQuery },
-			})
-			return response.data // Les données retournées contiennent les donateurs et les informations de pagination
-		} catch (error) {
-			console.error("Erreur lors de la récupération des donateurs", error)
-			throw new Error("Erreur lors de la récupération des donateurs")
-		}
-	}
-
 	async createDonor(donor: Donor): Promise<string> {
 		try {
 			const response = await axios.post(`${API_URL}/donors`, donor)
