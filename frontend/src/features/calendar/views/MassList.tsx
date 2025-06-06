@@ -107,6 +107,9 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
                   Date
                 </th>
                 <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Statut
+                </th>
+                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Célébrant
                 </th>
                 <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -132,6 +135,24 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
                       <Calendar className="w-3.5 h-3.5 text-gray-400 mr-1.5" />
                       <span>{format(new Date(mass.date), 'EEE d MMM', { locale: fr })}</span>
                     </div>
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap text-sm">
+                    {(() => {
+                      const statusConfig = {
+                        planned: { label: 'Planifiée', color: 'bg-blue-100 text-blue-800' },
+                        confirmed: { label: 'Confirmée', color: 'bg-green-100 text-green-800' },
+                        celebrated: { label: 'Célébrée', color: 'bg-purple-100 text-purple-800' },
+                        cancelled: { label: 'Annulée', color: 'bg-red-100 text-red-800' }
+                      };
+                      const status = mass.status || 'planned';
+                      const config = statusConfig[status];
+                      
+                      return (
+                        <span className={`px-2 py-0.5 rounded-full text-xs ${config.color}`}>
+                          {config.label}
+                        </span>
+                      );
+                    })()}
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap text-sm">
                     <div className="flex items-center">
