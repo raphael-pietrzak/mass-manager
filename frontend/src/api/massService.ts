@@ -82,10 +82,29 @@ export const massService = {
       date: mass.date ? new Date(mass.date).toISOString().split('T')[0] : null,
     }));
   },
-  // createMass: async (mass: MassSubmission): Promise<string> => {
-  //   const response = await axios.post(`${API_URL}`, mass);
-  //   return response.data;
-  // },
+
+  getMassesByDateRange: async (startDate?: Date | null, endDate?: Date | null): Promise<Mass[]> => {
+    let url = API_URL;
+    const params = new URLSearchParams();
+    
+    if (startDate) {
+      params.append('startDate', startDate.toISOString().split('T')[0]);
+    }
+    if (endDate) {
+      params.append('endDate', endDate.toISOString().split('T')[0]);
+    }
+    
+    const queryString = params.toString();
+    if (queryString) {
+      url += `?${queryString}`;
+    }
+
+    const response = await axios.get(url);
+    return response.data.map((mass: any) => ({
+      ...mass,
+      date: mass.date ? new Date(mass.date).toISOString().split('T')[0] : null,
+    }));
+  },
 
   updateMass: async (id: string, mass: any) => {
     const response = await axios.put(`${API_URL}/${id}`, mass);

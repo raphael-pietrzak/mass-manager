@@ -243,11 +243,14 @@ class Mass {
             .select(
                 'Masses.id',
                 'Masses.date',
+                'Masses.status',
                 'Celebrants.title as celebrant_title',
-                'Celebrants.religious_name as celebrant',
+                'Celebrants.religious_name as celebrant_religious_name',
+                'Celebrants.id as celebrant_id',
                 'Intentions.intention_text as intention',
-                'Intentions.deceased as type',
-                'Intentions.date_type as date_type',
+                'Intentions.deceased',
+                'Intentions.amount',
+                'Intentions.wants_celebration_date as wants_notification',
                 'Donors.firstname as donor_firstname',
                 'Donors.lastname as donor_lastname',
                 'Donors.email as donor_email'

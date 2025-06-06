@@ -1,13 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addMonths } from 'date-fns';
+import { format, startOfDay, startOfWeek, endOfWeek, endOfMonth, addMonths, startOfYear } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import CalendarSelector from '../../../components/CalendarSelector';
-import { CalendarArrowUp } from 'lucide-react';
 
 interface DateFilterBarProps {
   onFilterChange: (startDate: Date | null, endDate: Date | null) => void;
-  onFutureOnlyChange: (checked: boolean) => void;
-  futureOnly: boolean;
   startDate: Date | null;
   endDate: Date | null;
   onExport?: (format: 'excel' | 'pdf' | 'word') => Promise<void>;
@@ -15,15 +12,16 @@ interface DateFilterBarProps {
 
 export const DateFilterBar: React.FC<DateFilterBarProps> = ({
   onFilterChange,
-  onFutureOnlyChange,
-  futureOnly,
   startDate: currentStartDate,
   endDate: currentEndDate,
   onExport
 }) => {
+  const defaultStartDate = currentStartDate || startOfWeek(new Date(), { locale: fr });
+  const defaultEndDate = currentEndDate || endOfWeek(new Date(), { locale: fr });
+
   const [showDatePickers, setShowDatePickers] = useState(false);
-  const [startDate, setStartDate] = useState<Date | null>(currentStartDate);
-  const [endDate, setEndDate] = useState<Date | null>(currentEndDate);
+  const [startDate, setStartDate] = useState<Date | null>(defaultStartDate);
+  const [endDate, setEndDate] = useState<Date | null>(defaultEndDate);
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   const exportMenuRef = useRef<HTMLDivElement>(null);
   const datePickerRef = useRef<HTMLDivElement>(null);
@@ -35,12 +33,6 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
       if (exportMenuRef.current && !exportMenuRef.current.contains(event.target as Node)) {
         setIsExportMenuOpen(false);
       }
-      // if (startCalendarRef.current && !startCalendarRef.current.contains(event.target as Node)) {
-      //   setShowStartCalendar(false);
-      // }
-      // if (endCalendarRef.current && !endCalendarRef.current.contains(event.target as Node)) {
-      //   setShowEndCalendar(false);
-      // }
       if (datePickerRef.current && !datePickerRef.current.contains(event.target as Node) &&
         !startCalendarRef.current?.contains(event.target as Node) &&
         !endCalendarRef.current?.contains(event.target as Node)) {
@@ -53,12 +45,12 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
     };
   }, [exportMenuRef, startCalendarRef, endCalendarRef, datePickerRef]);
 
-  const handleTodayClick = () => {
-    const today = new Date();
-    setStartDate(startOfDay(today));
-    setEndDate(endOfDay(today));
-    onFilterChange(startOfDay(today), endOfDay(today));
-  };
+  // Appeler onFilterChange au montage si aucune date n'est définie
+  useEffect(() => {
+    if (!currentStartDate && !currentEndDate) {
+      onFilterChange(defaultStartDate, defaultEndDate);
+    }
+  }, []);
 
   const handleThisWeekClick = () => {
     const today = new Date();
@@ -67,27 +59,27 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
     onFilterChange(startOfWeek(today, { locale: fr }), endOfWeek(today, { locale: fr }));
   };
 
-  const handleThisMonthClick = () => {
+  const handleNext3MonthsClick = () => {
     const today = new Date();
-    setStartDate(startOfMonth(today));
-    setEndDate(endOfMonth(today));
-    onFilterChange(startOfMonth(today), endOfMonth(today));
+    const endDate = endOfMonth(addMonths(today, 3));
+    setStartDate(startOfDay(today));
+    setEndDate(endDate);
+    onFilterChange(startOfDay(today), endDate);
   };
 
-  const handleNextMonthClick = () => {
-    const nextMonth = addMonths(new Date(), 1);
-    const nextMonthStart = startOfMonth(nextMonth);
-    const nextMonthEnd = endOfMonth(nextMonth);
-
-    setStartDate(nextMonthStart);
-    setEndDate(nextMonthEnd);
-    onFilterChange(nextMonthStart, nextMonthEnd);
+  const handleNext6MonthsClick = () => {
+    const today = new Date();
+    const endDate = endOfMonth(addMonths(today, 6));
+    setStartDate(startOfDay(today));
+    setEndDate(endDate);
+    onFilterChange(startOfDay(today), endDate);
   };
 
-  const handleAllClick = () => {
-    setStartDate(null);
-    setEndDate(null);
-    onFilterChange(null, null);
+  const handleThisYearClick = () => {
+    const today = new Date();
+    setStartDate(startOfYear(today));
+    setEndDate(today);
+    onFilterChange(startOfYear(today), today);
   };
 
   const handleApplyClick = () => {
@@ -102,131 +94,105 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
       }`;
   };
 
-  const isTodayActive = !!(currentStartDate && currentEndDate &&
-    format(currentStartDate, 'yyyy-MM-dd') === format(startOfDay(new Date()), 'yyyy-MM-dd') &&
-    format(currentEndDate, 'yyyy-MM-dd') === format(endOfDay(new Date()), 'yyyy-MM-dd'));
-
   const isThisWeekActive = !!(currentStartDate && currentEndDate &&
     format(currentStartDate, 'yyyy-MM-dd') === format(startOfWeek(new Date(), { locale: fr }), 'yyyy-MM-dd') &&
     format(currentEndDate, 'yyyy-MM-dd') === format(endOfWeek(new Date(), { locale: fr }), 'yyyy-MM-dd'));
 
-  const isThisMonthActive = !!(currentStartDate && currentEndDate &&
-    format(currentStartDate, 'yyyy-MM-dd') === format(startOfMonth(new Date()), 'yyyy-MM-dd') &&
-    format(currentEndDate, 'yyyy-MM-dd') === format(endOfMonth(new Date()), 'yyyy-MM-dd'));
+  const isNext3MonthsActive = !!(currentStartDate && currentEndDate &&
+    format(currentStartDate, 'yyyy-MM-dd') === format(startOfDay(new Date()), 'yyyy-MM-dd') &&
+    format(currentEndDate, 'yyyy-MM-dd') === format(endOfMonth(addMonths(new Date(), 3)), 'yyyy-MM-dd'));
 
-  const isNextMonthActive = !!(currentStartDate && currentEndDate &&
-    format(currentStartDate, 'yyyy-MM-dd') === format(startOfMonth(addMonths(new Date(), 1)), 'yyyy-MM-dd') &&
-    format(currentEndDate, 'yyyy-MM-dd') === format(endOfMonth(addMonths(new Date(), 1)), 'yyyy-MM-dd'));
+  const isNext6MonthsActive = !!(currentStartDate && currentEndDate &&
+    format(currentStartDate, 'yyyy-MM-dd') === format(startOfDay(new Date()), 'yyyy-MM-dd') &&
+    format(currentEndDate, 'yyyy-MM-dd') === format(endOfMonth(addMonths(new Date(), 6)), 'yyyy-MM-dd'));
 
-  const isAllActive = !currentStartDate && !currentEndDate;
+  const isThisYearActive = !!(currentStartDate && currentEndDate &&
+    format(currentStartDate, 'yyyy-MM-dd') === format(startOfYear(new Date()), 'yyyy-MM-dd') &&
+    format(currentEndDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd'));
 
   return (
     <div className="bg-card rounded-lg shadow-md p-5 mb-6 relative">
       <div className="flex flex-col space-y-4">
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center justify-between">
           <div className="flex space-x-1 rounded-lg bg-muted/50 p-1">
-            <button
-              onClick={handleTodayClick}
-              className={getButtonClass(isTodayActive)}
-            >
-              <div className="flex items-center gap-1.5">
-                <CalendarDayIcon className="h-4 w-4" />
-                Aujourd'hui
-              </div>
-            </button>
             <button
               onClick={handleThisWeekClick}
               className={getButtonClass(isThisWeekActive)}
             >
               <div className="flex items-center gap-1.5">
-                <CalendarWeekIcon className="h-4 w-4" />
-                Cette semaine
+          <CalendarWeekIcon className="h-4 w-4" />
+          Cette semaine
               </div>
             </button>
             <button
-              onClick={handleThisMonthClick}
-              className={getButtonClass(isThisMonthActive)}
+              onClick={handleNext3MonthsClick}
+              className={getButtonClass(isNext3MonthsActive)}
             >
               <div className="flex items-center gap-1.5">
-                <CalendarMonthIcon className="h-4 w-4" />
-                Ce mois
+          <Calendar3MonthsIcon className="h-4 w-4" />
+          Prochains 3 mois
               </div>
             </button>
             <button
-              onClick={handleNextMonthClick}
-              className={getButtonClass(isNextMonthActive)}
+              onClick={handleNext6MonthsClick}
+              className={getButtonClass(isNext6MonthsActive)}
             >
               <div className="flex items-center gap-1.5">
-                <CalendarArrowUp className="h-4 w-4" />
-                Le mois prochain
+          <Calendar6MonthsIcon className="h-4 w-4" />
+          Prochains 6 mois
               </div>
             </button>
             <button
-              onClick={handleAllClick}
-              className={getButtonClass(isAllActive)}
+              onClick={handleThisYearClick}
+              className={getButtonClass(isThisYearActive)}
             >
               <div className="flex items-center gap-1.5">
-                <CalendarAllIcon className="h-4 w-4" />
-                Tous
+          <CalendarYearIcon className="h-4 w-4" />
+          Cette année (passé)
               </div>
             </button>
-          </div>
-
-          <div className="ml-auto flex items-center space-x-2">
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="future-only"
-                checked={futureOnly}
-                onChange={(e) => onFutureOnlyChange(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/30"
-              />
-              <label htmlFor="future-only" className="ml-2 text-sm font-medium text-muted-foreground cursor-pointer">
-                Événements à venir uniquement
-              </label>
-            </div>
           </div>
 
           {onExport && (
             <div className="relative" ref={exportMenuRef}>
               <button
-                onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
-                className="transition-colors duration-200 px-3 py-2 text-sm font-medium bg-card border border-border 
-                           rounded-md shadow-sm hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary/30 
-                           flex items-center gap-2"
+          onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
+          className="transition-colors duration-200 px-3 py-2 text-sm font-medium bg-card border border-border 
+               rounded-md shadow-sm hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary/30 
+               flex items-center gap-2"
               >
-                <ExportIcon className="h-4 w-4" />
-                <span>Exporter</span>
-                <ChevronDownIcon className={`h-4 w-4 transition-transform duration-200 
-                                           ${isExportMenuOpen ? 'rotate-180' : ''}`} />
+          <ExportIcon className="h-4 w-4" />
+          <span>Exporter</span>
+          <ChevronDownIcon className={`h-4 w-4 transition-transform duration-200 
+                   ${isExportMenuOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {isExportMenuOpen && (
-                <div className="absolute right-0 mt-1 w-48 bg-card rounded-md shadow-lg z-10 border border-border">
-                  <div className="py-1.5">
-                    <button
-                      className="w-full px-4 py-2 text-sm text-card-foreground hover:bg-muted transition-colors duration-150 flex items-center"
-                      onClick={() => { onExport('excel'); setIsExportMenuOpen(false); }}
-                    >
-                      <span className="w-3 h-3 bg-green-600 rounded-sm mr-3"></span>
-                      <span className="font-medium">Format Excel</span>
-                    </button>
-                    <button
-                      className="w-full px-4 py-2 text-sm text-card-foreground hover:bg-muted transition-colors duration-150 flex items-center"
-                      onClick={() => { onExport('pdf'); setIsExportMenuOpen(false); }}
-                    >
-                      <span className="w-3 h-3 bg-red-600 rounded-sm mr-3"></span>
-                      <span className="font-medium">Format PDF</span>
-                    </button>
-                    <button
-                      className="w-full px-4 py-2 text-sm text-card-foreground hover:bg-muted transition-colors duration-150 flex items-center"
-                      onClick={() => { onExport('word'); setIsExportMenuOpen(false); }}
-                    >
-                      <span className="w-3 h-3 bg-blue-600 rounded-sm mr-3"></span>
-                      <span className="font-medium">Format Word</span>
-                    </button>
-                  </div>
-                </div>
+          <div className="absolute right-0 mt-1 w-48 bg-card rounded-md shadow-lg z-10 border border-border">
+            <div className="py-1.5">
+              <button
+                className="w-full px-4 py-2 text-sm text-card-foreground hover:bg-muted transition-colors duration-150 flex items-center"
+                onClick={() => { onExport('excel'); setIsExportMenuOpen(false); }}
+              >
+                <span className="w-3 h-3 bg-green-600 rounded-sm mr-3"></span>
+                <span className="font-medium">Format Excel</span>
+              </button>
+              <button
+                className="w-full px-4 py-2 text-sm text-card-foreground hover:bg-muted transition-colors duration-150 flex items-center"
+                onClick={() => { onExport('pdf'); setIsExportMenuOpen(false); }}
+              >
+                <span className="w-3 h-3 bg-red-600 rounded-sm mr-3"></span>
+                <span className="font-medium">Format PDF</span>
+              </button>
+              <button
+                className="w-full px-4 py-2 text-sm text-card-foreground hover:bg-muted transition-colors duration-150 flex items-center"
+                onClick={() => { onExport('word'); setIsExportMenuOpen(false); }}
+              >
+                <span className="w-3 h-3 bg-blue-600 rounded-sm mr-3"></span>
+                <span className="font-medium">Format Word</span>
+              </button>
+            </div>
+          </div>
               )}
             </div>
           )}
@@ -297,16 +263,6 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
 };
 
 // Icônes simplifiées pour le design
-const CalendarDayIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none"
-    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-    <line x1="16" y1="2" x2="16" y2="6"></line>
-    <line x1="8" y1="2" x2="8" y2="6"></line>
-    <line x1="3" y1="10" x2="21" y2="10"></line>
-    <rect x="8" y="14" width="2" height="2"></rect>
-  </svg>
-);
 
 const CalendarWeekIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none"
@@ -317,31 +273,6 @@ const CalendarWeekIcon = ({ className }: { className?: string }) => (
     <line x1="3" y1="10" x2="21" y2="10"></line>
   </svg>
 );
-
-const CalendarMonthIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none"
-    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-    <line x1="16" y1="2" x2="16" y2="6"></line>
-    <line x1="8" y1="2" x2="8" y2="6"></line>
-    <line x1="3" y1="10" x2="21" y2="10"></line>
-    <line x1="8" y1="14" x2="8" y2="18"></line>
-    <line x1="12" y1="14" x2="12" y2="18"></line>
-    <line x1="16" y1="14" x2="16" y2="18"></line>
-  </svg>
-);
-
-const CalendarAllIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none"
-    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-    <line x1="16" y1="2" x2="16" y2="6"></line>
-    <line x1="8" y1="2" x2="8" y2="6"></line>
-    <line x1="3" y1="10" x2="21" y2="10"></line>
-    <circle cx="12" cy="16" r="2"></circle>
-  </svg>
-);
-
 const CalendarRangeIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -370,5 +301,42 @@ const ChevronDownIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="6 9 12 15 18 9"></polyline>
+  </svg>
+);
+
+const Calendar3MonthsIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+    <line x1="16" y1="2" x2="16" y2="6"></line>
+    <line x1="8" y1="2" x2="8" y2="6"></line>
+    <line x1="3" y1="10" x2="21" y2="10"></line>
+    <path d="M8 14h3"></path>
+    <path d="M14 14h3"></path>
+    <path d="M8 18h3"></path>
+  </svg>
+);
+
+const Calendar6MonthsIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+    <line x1="16" y1="2" x2="16" y2="6"></line>
+    <line x1="8" y1="2" x2="8" y2="6"></line>
+    <line x1="3" y1="10" x2="21" y2="10"></line>
+    <path d="M8 14h3"></path>
+    <path d="M14 14h3"></path>
+    <path d="M8 18h8"></path>
+  </svg>
+);
+
+const CalendarYearIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+    <line x1="16" y1="2" x2="16" y2="6"></line>
+    <line x1="8" y1="2" x2="8" y2="6"></line>
+    <line x1="3" y1="10" x2="21" y2="10"></line>
+    <text x="7" y="17" fontSize="6" fill="currentColor">Y</text>
   </svg>
 );
