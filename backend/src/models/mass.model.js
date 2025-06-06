@@ -255,7 +255,6 @@ class Mass {
                 'Donors.lastname as donor_lastname',
                 'Donors.email as donor_email'
             )
-            .where('Masses.status', '=', 'scheduled')
             .orderBy('Masses.date');
 
 

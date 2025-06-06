@@ -142,12 +142,12 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
                   <td className="px-3 py-2 whitespace-nowrap text-sm">
                     {(() => {
                       const statusConfig = {
-                        planned: { label: 'Planifiée', color: 'bg-blue-100 text-blue-800' },
+                        scheduled: { label: 'Planifiée', color: 'bg-blue-100 text-blue-800' },
                         confirmed: { label: 'Confirmée', color: 'bg-green-100 text-green-800' },
                         celebrated: { label: 'Célébrée', color: 'bg-purple-100 text-purple-800' },
                         cancelled: { label: 'Annulée', color: 'bg-red-100 text-red-800' }
                       };
-                      const status = mass.status || 'planned';
+                      const status = mass.status || 'scheduled';
                       const config = statusConfig[status];
                       
                       return (
