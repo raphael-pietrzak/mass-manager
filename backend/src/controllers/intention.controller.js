@@ -99,7 +99,7 @@ exports.createIntention = async (req, res) => {
 					date: mass.date,
 					intention_id: intentionId,
 					celebrant_id: mass.celebrant_id || null,
-					status: "pending",
+					status: "planned",
 				}
 
 				await MassModel.create(massData)
@@ -157,15 +157,6 @@ exports.deleteIntention = async (req, res) => {
 	}
 }
 
-exports.getPendingIntentions = async (req, res) => {
-	try {
-		const data = await Intention.getPendingIntentions()
-		res.json(data)
-	} catch (error) {
-		console.error(error)
-		res.status(500).send("Erreur lors de la récupération des intentions en attente")
-	}
-}
 
 exports.previewIntention = async (req, res) => {
 	try {
@@ -202,7 +193,7 @@ exports.getIntentionMasses = async (req, res) => {
 			celebrant_id: mass.celebrant_id || null,
 			celebrant_name: mass.celebrant_name || "",
 			celebrant_title: mass.celebrant_title || "",
-			status: mass.status || "pending",
+			status: mass.status,
 		}))
 
 		res.json(formattedMasses)

@@ -26,14 +26,6 @@ const Intention = {
 
 	delete: (id) => db("Intentions").where({ id }).del(),
 
-	getPendingIntentions: () =>
-		db("Intentions")
-			.whereNotExists(function () {
-				this.select("*").from("Masses").whereRaw("Masses.intention_id = Intentions.id")
-			})
-			.select("Intentions.*", "Donors.firstname", "Donors.lastname", "Donors.email")
-			.leftJoin("Donors", "Intentions.donor_id", "Donors.id"),
-
 	getPonctualIntentions: () =>
 		db("Intentions")
 			.where("date_type", "indifferente")

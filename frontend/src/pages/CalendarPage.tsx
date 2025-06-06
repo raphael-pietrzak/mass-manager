@@ -37,7 +37,7 @@ function CalendarPage() {
     const fetchMasses = async () => {
       try {
         setLoading(true);
-        const data = await massService.getMasses();
+        const data = await massService.getMassesByDateRange(filters.startDate, filters.endDate);
         setMasses(data);
       } catch (err) {
         setError('Erreur lors du chargement des messes');
@@ -47,7 +47,7 @@ function CalendarPage() {
     };
 
     fetchMasses();
-  }, []);
+  }, [filters.startDate, filters.endDate]);
 
   const handleMassClick = (mass: Mass) => {
     setSelectedMass(mass);
@@ -157,8 +157,6 @@ function CalendarPage() {
         {viewMode === 'list' && (
           <DateFilterBar
             onFilterChange={handleDateFilterChange}
-            onFutureOnlyChange={handleFutureOnlyChange}
-            futureOnly={filters.futureOnly}
             startDate={filters.startDate}
             endDate={filters.endDate}
             onExport={handleExport}

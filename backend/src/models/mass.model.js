@@ -20,7 +20,6 @@ class Mass {
                 'Donors.lastname as donor_lastname',
             )
             //.whereNotNull('Masses.celebrant_id')
-            .where('Masses.status', '=', 'scheduled')
             .leftJoin('Celebrants', 'Masses.celebrant_id', 'Celebrants.id')
             .leftJoin('Intentions', 'Masses.intention_id', 'Intentions.id')
             .leftJoin('Donors', 'Intentions.donor_id', 'Donors.id')
@@ -236,6 +235,7 @@ class Mass {
     }
 
     static async getMassesByDateRange(startDate, endDate) {
+        // Requête pour les messes normales
         let query = db('Masses')
             .leftJoin('Celebrants', 'Masses.celebrant_id', 'Celebrants.id')
             .leftJoin('Intentions', 'Masses.intention_id', 'Intentions.id')
@@ -243,18 +243,48 @@ class Mass {
             .select(
                 'Masses.id',
                 'Masses.date',
+                'Masses.status',
                 'Celebrants.title as celebrant_title',
-                'Celebrants.religious_name as celebrant',
+                'Celebrants.religious_name as celebrant_religious_name',
+                'Celebrants.id as celebrant_id',
                 'Intentions.intention_text as intention',
-                'Intentions.deceased as type',
-                'Intentions.date_type as date_type',
+                'Intentions.deceased',
+                'Intentions.amount',
+                'Intentions.wants_celebration_date as wants_notification',
                 'Donors.firstname as donor_firstname',
                 'Donors.lastname as donor_lastname',
-                'Donors.email as donor_email'
+                'Donors.email as donor_email',
+                db.raw('FALSE as is_recurring')
             )
-            .where('Masses.status', '=', 'scheduled')
             .orderBy('Masses.date');
-        
+
+        console.log('Regular Masses Query:', query.toString());
+
+        // Requête pour les messes récurrentes
+        let recurringQuery = db('Intentions')
+            .leftJoin('Recurrences', 'Intentions.recurrence_id', 'Recurrences.id')
+            .leftJoin('Donors', 'Intentions.donor_id', 'Donors.id')
+            .select(
+                db.raw('NULL as id'),
+                db.raw('? as date', [startDate]),
+                db.raw("'scheduled' as status"),
+                db.raw('NULL as celebrant_title'),
+                db.raw('NULL as celebrant_religious_name'),
+                db.raw('NULL as celebrant_id'),
+                'Intentions.intention_text as intention',
+                'Intentions.deceased',
+                'Intentions.amount',
+                'Intentions.wants_celebration_date as wants_notification',
+                'Donors.firstname as donor_firstname',
+                'Donors.lastname as donor_lastname',
+                'Donors.email as donor_email',
+                db.raw('TRUE as is_recurring')
+            )
+            .whereNotNull('Intentions.recurrence_id');
+
+        console.log('Recurring Query:', recurringQuery.toString());
+
+
         if (startDate) {
             const formattedStartDate = new Date(startDate).toISOString().split('T')[0];
             query = query.where(db.raw('DATE(Masses.date)'), '>=', formattedStartDate);
@@ -264,8 +294,64 @@ class Mass {
             const formattedEndDate = new Date(endDate).toISOString().split('T')[0];
             query = query.where(db.raw('DATE(Masses.date)'), '<=', formattedEndDate);
         }
-        
-        return query;
+
+        // Récupérer les résultats des deux requêtes
+        const [regularMasses, recurringMasses] = await Promise.all([
+            query,
+            recurringQuery
+        ]);
+
+        // Traiter les messes récurrentes pour générer les dates appropriées
+        const processedRecurringMasses = this.processRecurringMasses(recurringMasses, startDate, endDate);
+
+        // Combiner et trier les résultats
+        return [...regularMasses, ...processedRecurringMasses].sort((a, b) => 
+            new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
+    }
+
+    static processRecurringMasses(recurringMasses, startDate, endDate) {
+        const processed = [];
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        for (const mass of recurringMasses) {
+            const recurrence = mass.recurrence_type;
+            let current = new Date(start);
+
+            while (current <= end) {
+                // Vérifier si la date correspond au motif de récurrence
+                if (this.matchesRecurrencePattern(current, recurrence)) {
+                    processed.push({
+                        ...mass,
+                        date: current.toISOString().split('T')[0],
+                        is_recurring: true
+                    });
+                }
+                current.setDate(current.getDate() + 1);
+            }
+        }
+
+        return processed;
+    }
+
+    static matchesRecurrencePattern(date, recurrence) {
+        // Implémenter la logique de correspondance selon le type de récurrence
+        switch (recurrence.type) {
+            case 'daily':
+                return true;
+            case 'weekly':
+                return date.getDay() === recurrence.weekday;
+            case 'monthly':
+                if (recurrence.position) {
+                    return this.matchesMonthlyPosition(date, recurrence.position, recurrence.weekday);
+                }
+                return date.getDate() === recurrence.dayOfMonth;
+            case 'yearly':
+                return date.getMonth() === recurrence.month && date.getDate() === recurrence.day;
+            default:
+                return false;
+        }
     }
 
     static async getMassesByIntentionId(intentionId) {
