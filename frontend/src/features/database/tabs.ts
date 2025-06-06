@@ -142,4 +142,67 @@ export const tabs: TabColumn[] = [
 			},
 		},
 	},
+	{
+		key: "recurrences",
+		label: "Récurrences",
+		endpoint: "http://localhost:3001/api/data/recurrences",
+		columns: [
+			{ key: "type", label: "Type" },
+			{ key: "start_date", label: "Date de début" },
+			{ key: "end_type", label: "Type de fin" },
+			{ key: "occurrences", label: "Occurrences" },
+			{ key: "end_date", label: "Date de fin" },
+			{ key: "position", label: "Position" },
+			{ key: "weekday", label: "Jour de la semaine" },
+		],
+		formatters: {
+			type: {
+				type: "enum",
+				options: [
+					{ label: "Quotidien", value: "daily" },
+					{ label: "Hebdomadaire", value: "weekly" },
+					{ label: "Mensuel", value: "monthly" },
+					{ label: "Position relative", value: "relative_position" },
+					{ label: "Annuel", value: "yearly" },
+				],
+			},
+			start_date: {
+				type: "date",
+				display: (value: string) => new Date(value).toLocaleDateString("fr-FR"),
+			},
+			end_date: {
+				type: "date",
+				display: (value: string) => value ? new Date(value).toLocaleDateString("fr-FR") : "",
+			},
+			end_type: {
+				type: "enum",
+				options: [
+					{ label: "Nombre d'occurrences", value: "occurrences" },
+					{ label: "Date de fin", value: "date" },
+				],
+			},
+			position: {
+				type: "enum",
+				options: [
+					{ label: "Premier", value: "first" },
+					{ label: "Deuxième", value: "second" },
+					{ label: "Troisième", value: "third" },
+					{ label: "Quatrième", value: "fourth" },
+					{ label: "Dernier", value: "last" },
+				],
+			},
+			weekday: {
+				type: "enum",
+				options: [
+					{ label: "Lundi", value: "monday" },
+					{ label: "Mardi", value: "tuesday" },
+					{ label: "Mercredi", value: "wednesday" },
+					{ label: "Jeudi", value: "thursday" },
+					{ label: "Vendredi", value: "friday" },
+					{ label: "Samedi", value: "saturday" },
+					{ label: "Dimanche", value: "sunday" },
+				],
+			},
+		},
+	},
 ]
