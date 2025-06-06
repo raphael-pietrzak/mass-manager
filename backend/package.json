@@ -25,6 +25,7 @@
     "jwt-decode": "^4.0.0",
     "knex": "^3.1.0",
     "mongoose": "^8.7.2",
+    "pdf-lib": "^1.17.1",
     "pdfkit": "^0.13.0",
     "pdfkit-table": "^0.1.99",
     "sqlite3": "^5.1.7",

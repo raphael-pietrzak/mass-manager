@@ -19,7 +19,7 @@ exports.up = function(knex) {
       table.string('civil_lastname', 50);
       table.string('title', 10).notNullable();
       table.string('role', 50);
-      table.string('email', 100);
+      table.string('email', 100).nullable();
     })
     .createTable('Recurrences', function(table) {
       table.increments('id').primary();

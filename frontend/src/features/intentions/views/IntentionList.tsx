@@ -92,7 +92,7 @@ export const IntentionList: React.FC<IntentionListProps> = ({ intentions, onSele
       <div className="bg-white rounded-lg shadow p-4 mb-6">
 
         {loading ? (
-          <div className="text-center py-10">Chargement des intentions...</div>
+          <div className="text-center py-10">Chargement...</div>
         ) : (
           <div className="bg-white rounded-lg shadow overflow-hidden">
             {intentions.length === 0 ? (
