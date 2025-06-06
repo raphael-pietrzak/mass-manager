@@ -5,7 +5,7 @@ const db = require('../../config/database');
 
 exports.getMasses = async (req, res) => {
   try {
-    const data = await Mass.getAll();
+    const data = await Mass.getMassesByDateRange(req.query.startDate, req.query.endDate);
     res.json(data);
   } catch (error) {
     console.error(error);
@@ -61,7 +61,7 @@ exports.createMass = async (req, res) => {
       date: req.body.date,
       celebrant_id: req.body.celebrant_id,
       intention_id: intentionId,
-      status: req.body.status || 'pending'
+      status: req.body.status
     };
 
     await Mass.create(massData);

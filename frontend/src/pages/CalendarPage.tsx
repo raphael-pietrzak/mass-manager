@@ -10,6 +10,7 @@ import { massService } from '../api/massService';
 import { exportService } from '../api/exportService';
 import { IntentionSubmission, intentionService } from '../api/intentionService';
 import { SpecialDaysModal } from '../features/special_days/SpecialDaysModal';
+import { UnavailableDayModal } from '../features/unavailableDays/UnavailableDayModal';
 
 export type ViewMode = 'calendar' | 'list';
 
@@ -30,21 +31,23 @@ function CalendarPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSpecialDayModalOpen, setIsSpecialDayModalOpen] = useState(false);
+  const [isUnavailableDayModalOpen, setIsUnavailableDayModalOpen] = useState(false)
 
   useEffect(() => {
     const fetchMasses = async () => {
       try {
-        const data = await massService.getMasses();
+        setLoading(true);
+        const data = await massService.getMassesByDateRange(filters.startDate, filters.endDate);
         setMasses(data);
-        setLoading(false);
       } catch (err) {
         setError('Erreur lors du chargement des messes');
+      } finally {
         setLoading(false);
       }
     };
 
     fetchMasses();
-  }, []);
+  }, [filters.startDate, filters.endDate]);
 
   const handleMassClick = (mass: Mass) => {
     setSelectedMass(mass);
@@ -114,6 +117,10 @@ function CalendarPage() {
     setIsSpecialDayModalOpen(true);
   };
 
+  const handleAddUnavailableDay = () => {
+    setIsUnavailableDayModalOpen(true)
+  }
+
   const handleExport = async (format: 'excel' | 'pdf' | 'word') => {
     try {
       switch (format) {
@@ -132,25 +139,24 @@ function CalendarPage() {
     }
   };
 
-  if (loading) return <div>Chargement...</div>;
-  if (error) return <div>Erreur: {error}</div>;
+  if (error) return <div className="text-center py-10">Erreur: {error}</div>;
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8"><h1 className="text-2xl font-bold mb-6">Calendrier des messes</h1>
+      <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+        <h1 className="text-2xl font-bold mb-6">Calendrier des messes</h1>
         <FilterBar
           viewMode={viewMode}
           onViewModeChange={setViewMode}
           filters={filters}
           onFilterChange={handleFilterChange}
           onAddSpecialDay={handleAddSpecialDay}
+          onAddUnavailableDay={handleAddUnavailableDay}
         />
 
         {viewMode === 'list' && (
           <DateFilterBar
             onFilterChange={handleDateFilterChange}
-            onFutureOnlyChange={handleFutureOnlyChange}
-            futureOnly={filters.futureOnly}
             startDate={filters.startDate}
             endDate={filters.endDate}
             onExport={handleExport}
@@ -170,6 +176,7 @@ function CalendarPage() {
               onMassClick={handleMassClick}
               filters={filters}
               onDeleteMass={handleDeleteMass}
+              loading={loading}
             />
           )}
         </div>
@@ -192,6 +199,11 @@ function CalendarPage() {
         <SpecialDaysModal
           isOpen={isSpecialDayModalOpen}
           onClose={() => setIsSpecialDayModalOpen(false)}
+        />
+
+        <UnavailableDayModal
+          isOpen={isUnavailableDayModalOpen}
+          onClose={() => setIsUnavailableDayModalOpen(false)}
         />
       </main>
     </div>

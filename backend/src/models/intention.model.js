@@ -26,12 +26,12 @@ const Intention = {
 
 	delete: (id) => db("Intentions").where({ id }).del(),
 
-	getPendingIntentions: () =>
+	getPonctualIntentions: () =>
 		db("Intentions")
-			.whereNotExists(function () {
-				this.select("*").from("Masses").whereRaw("Masses.intention_id = Intentions.id")
-			})
-			.select("Intentions.*", "Donors.firstname", "Donors.lastname", "Donors.email")
+			.where("date_type", "indifferente")
+			.whereNull("recurrence_id")
+			.select("Intentions.*", "Donors.firstname as donor_firstname", "Donors.lastname as donor_lastname", "Donors.email as donor_email")
+			.orderBy("created_at", "asc")
 			.leftJoin("Donors", "Intentions.donor_id", "Donors.id"),
 }
 

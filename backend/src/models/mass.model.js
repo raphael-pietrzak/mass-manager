@@ -20,7 +20,6 @@ class Mass {
                 'Donors.lastname as donor_lastname',
             )
             //.whereNotNull('Masses.celebrant_id')
-            .where('Masses.status', '=', 'scheduled')
             .leftJoin('Celebrants', 'Masses.celebrant_id', 'Celebrants.id')
             .leftJoin('Intentions', 'Masses.intention_id', 'Intentions.id')
             .leftJoin('Donors', 'Intentions.donor_id', 'Donors.id')
@@ -236,21 +235,29 @@ class Mass {
     }
 
     static async getMassesByDateRange(startDate, endDate) {
+        // Requête pour les messes normales
         let query = db('Masses')
             .leftJoin('Celebrants', 'Masses.celebrant_id', 'Celebrants.id')
             .leftJoin('Intentions', 'Masses.intention_id', 'Intentions.id')
+            .leftJoin('Donors', 'Intentions.donor_id', 'Donors.id')
             .select(
                 'Masses.id',
                 'Masses.date',
+                'Masses.status',
                 'Celebrants.title as celebrant_title',
-                'Celebrants.religious_name as celebrant',
+                'Celebrants.religious_name as celebrant_religious_name',
+                'Celebrants.id as celebrant_id',
                 'Intentions.intention_text as intention',
-                'Intentions.deceased as type',
-                'Intentions.date_type as date_type',
+                'Intentions.deceased',
+                'Intentions.amount',
+                'Intentions.wants_celebration_date as wants_notification',
+                'Donors.firstname as donor_firstname',
+                'Donors.lastname as donor_lastname',
+                'Donors.email as donor_email'
             )
-            .where('Masses.status', '=', 'scheduled')
             .orderBy('Masses.date');
-        
+
+
         if (startDate) {
             const formattedStartDate = new Date(startDate).toISOString().split('T')[0];
             query = query.where(db.raw('DATE(Masses.date)'), '>=', formattedStartDate);
@@ -260,8 +267,9 @@ class Mass {
             const formattedEndDate = new Date(endDate).toISOString().split('T')[0];
             query = query.where(db.raw('DATE(Masses.date)'), '<=', formattedEndDate);
         }
-        
+
         return query;
+
     }
 
     static async getMassesByIntentionId(intentionId) {

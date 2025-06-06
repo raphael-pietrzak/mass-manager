@@ -9,7 +9,8 @@ interface FilterBarProps {
     celebrant: string;
   };
   onFilterChange: (key: string, value: string) => void;
-  onAddSpecialDay: () => void; // Nouvelle prop pour gérer l'ajout de jours particuliers
+  onAddSpecialDay: () => void;
+  onAddUnavailableDay: () => void
 }
 
 export const FilterBar: React.FC<FilterBarProps> = ({
@@ -18,6 +19,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   filters,
   onFilterChange,
   onAddSpecialDay,
+  onAddUnavailableDay,
 }) => {
   const [celebrants, setCelebrants] = useState<Celebrant[]>([]);
   const [loading, setLoading] = useState(false);
@@ -45,21 +47,19 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           <div className="flex items-center space-x-2">
             <button
               onClick={() => onViewModeChange('list')}
-              className={`p-2 rounded-lg ${
-                viewMode === 'list'
-                  ? 'bg-blue-100 text-blue-800'
-                  : 'bg-gray-100 text-gray-600'
-              }`}
+              className={`p-2 rounded-lg ${viewMode === 'list'
+                ? 'bg-blue-100 text-blue-800'
+                : 'bg-gray-100 text-gray-600'
+                }`}
             >
               <List className="w-5 h-5" />
             </button>
             <button
               onClick={() => onViewModeChange('calendar')}
-              className={`p-2 rounded-lg ${
-                viewMode === 'calendar'
-                  ? 'bg-blue-100 text-blue-800'
-                  : 'bg-gray-100 text-gray-600'
-              }`}
+              className={`p-2 rounded-lg ${viewMode === 'calendar'
+                ? 'bg-blue-100 text-blue-800'
+                : 'bg-gray-100 text-gray-600'
+                }`}
             >
               <CalendarIcon className="w-5 h-5" />
             </button>
@@ -83,13 +83,44 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           </div>
         </div>
 
-        {/* Bouton pour les jours particuliers */}
-        <button
-          onClick={onAddSpecialDay}
-          className="rounded-lg bg-yellow-500 text-white px-3 py-2 flex items-center gap-2 hover:bg-yellow-600"
-        >
-          + Jours Particuliers
-        </button>
+        <div className='flex gap-4'>
+          {/* Bouton pour les jours particuliers */}
+          <div className='flex'>
+            <button
+              onClick={onAddSpecialDay}
+              className="rounded-lg bg-yellow-500 text-white px-3 py-2 flex items-center gap-2 hover:bg-yellow-600"
+            >
+              + Jours Particuliers
+            </button>
+            <div className="relative group">
+              <span className="text-sm w-5 h-5 rounded-full bg-gray-300 text-black flex items-center justify-center cursor-pointer">
+                ?
+              </span>
+              <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 bg-gray-700 text-white text-xs rounded px-3 py-2 opacity-0 group-hover:opacity-100 transition z-10 w-60 whitespace-normal">
+                Ajouter un jour spécial pour empêcher d'affecter une intention ce jour ou augmenter le nombre de messes ce jour (ex: Noël ou Jeudi Saint)
+              </div>
+            </div>
+          </div>
+
+          {/* Bouton pour les jours indisponibles */}
+          <div className='flex'>
+            <button
+              onClick={onAddUnavailableDay}
+              className="rounded-lg bg-green-500 text-white px-3 py-2 flex items-center gap-2 hover:bg-green-600"
+            >
+              + Jours indisponibles
+            </button>
+            <div className="relative group">
+              <span className="text-sm w-5 h-5 rounded-full bg-gray-300 text-black flex items-center justify-center cursor-pointer">
+                ?
+              </span>
+              <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 bg-gray-700 text-white text-xs rounded px-3 py-2 opacity-0 group-hover:opacity-100 transition z-10 w-60 whitespace-normal">
+                Ajouter un ou plusieurs jours indisponible(s) pour un célébrant (jour sans intentions)
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   );

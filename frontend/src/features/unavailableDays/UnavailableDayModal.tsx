@@ -1,8 +1,5 @@
 import { useEffect, useState } from 'react';
-import { SpecialDays } from '../../api/specialDaysService';
-import { specialDayService } from '../../api/specialDaysService';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Calendar, Plus, AlertTriangle } from 'lucide-react';
@@ -12,32 +9,58 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Switch } from '@/components/ui/switch';
 import CalendarSelector from '../../components/CalendarSelector';
+import { UnavailableDays, unavailableDayService } from '../../api/unavailabledayService';
+import { Celebrant, celebrantService } from '../../api/celebrantService';
+import { DropdownSearch } from '../../components/DropdownSearch';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
-  const [specialDays, setSpecialDays] = useState<SpecialDays[]>([]);
-  const [editingDay, setEditingDay] = useState<SpecialDays | null>(null);
-  const [newDay, setNewDay] = useState<SpecialDays>({
+export const UnavailableDayModal: React.FC<Props> = ({ isOpen, onClose }) => {
+  const [unavailableDays, setUnavailableDay] = useState<UnavailableDays[]>([]);
+  const [editingDay, setEditingDay] = useState<UnavailableDays | null>(null);
+  const [newDay, setNewDay] = useState<UnavailableDays>({
+    celebrant_id: 0,
     date: '',
-    description: '',
-    number_of_masses: 0,
     is_recurrent: false,
   });
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
-  const [showSpecialDays, setShowSpecialDays] = useState(true);
+  const [showUnavailableDays, setShowUnavailableDays] = useState(true);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string>();
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [celebrants, setCelebrants] = useState<Celebrant[]>([]);
+  const celebrantOptions = celebrants.map((celebrant) => ({
+    value: celebrant.id.toString(),
+    label: `${celebrant.title} ${celebrant.religious_name}`
+  }));
+  const [selectedCelebrantId, setSelectedCelebrantId] = useState<number | null>(null); // célébrant sélectionné dans la liste
+
+  const handleSelectCelebrant = (value: string) => {
+    const id = parseInt(value, 10);
+    handleChange('celebrant_id', id);
+  };
+
+  const handleSelectFilterCelebrant = async (value: string) => {
+    const id = parseInt(value, 10);
+    setSelectedCelebrantId(id);
+  };
 
   useEffect(() => {
     if (isOpen) {
-      loadSpecialDays();
+      loadUnavailableDays();
+    }
+  }, [selectedCelebrantId]);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchCelebrants();
+      setUnavailableDay([]);
     } else {
       resetForm();
+      setSelectedCelebrantId(null);
     }
   }, [isOpen]);
 
@@ -51,28 +74,40 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
     }
   }, [successMessage]);
 
-
-  const loadSpecialDays = async () => {
+  const fetchCelebrants = async () => {
     try {
-      const data = await specialDayService.getSpecialDays();
-      const sanitizedData = data.map((day) => ({
-        ...day,
-        date: day.date || '',
-        description: day.description || '', // Assurez-vous d'utiliser description et non note
-        number_of_masses: day.number_of_masses || 0,
-        is_recurrent: day.is_recurrent ?? false,
-      }));
-      setSpecialDays(sanitizedData);
+      const data = await celebrantService.getCelebrants();
+      setCelebrants(data);
     } catch (error) {
-      console.error("Erreur lors du chargement des jours spéciaux", error);
-      setSpecialDays([]);
+      console.error("Erreur lors du chargement des célébrants:", error);
     }
   };
 
-  const handleChange = (field: keyof SpecialDays, value: any) => {
+  const loadUnavailableDays = async () => {
+    try {
+      if (!selectedCelebrantId) {
+        setUnavailableDay([]);
+        return;
+      }
+
+      const data = await unavailableDayService.getUnavailableDays(selectedCelebrantId);
+      const sanitizedData = data.map((day) => ({
+        ...day,
+        date: day.date || '',
+        is_recurrent: day.is_recurrent ?? false,
+      }));
+      setUnavailableDay(sanitizedData);
+    } catch (error) {
+      console.error("Erreur lors du chargement des jours spéciaux", error);
+      setUnavailableDay([]);
+    }
+  };
+
+
+  const handleChange = (field: keyof UnavailableDays, value: any) => {
     setNewDay((prev: any) => ({
       ...prev,
-      [field]: field === 'number_of_masses' ? parseInt(value) : value,
+      [field]: value,
     }));
   };
 
@@ -82,21 +117,17 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
       setValidationError("La date est obligatoire");
       return;
     }
-    if (!newDay.description.trim()) {
-      setValidationError("La description est obligatoire");
-      return;
-    }
     // Réinitialiser l'erreur si validation OK
     setValidationError(null);
     try {
       if (editingDay?.id) {
-        const response = await specialDayService.updateSpecialDay(editingDay.id, newDay);
+        const response = await unavailableDayService.updateUnavailableDay(editingDay.id, newDay);
         setSuccessMessage(response);
       } else {
-        const response = await specialDayService.createSpecialDays(newDay);
+        const response = await unavailableDayService.createUnavailableDay(newDay);
         setSuccessMessage(response);
       }
-      await loadSpecialDays();
+      await loadUnavailableDays();
     } catch (error) {
       console.error("Erreur lors de l'enregistrement du jour spécial", error);
     }
@@ -110,8 +141,8 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
   const handleConfirmDelete = async () => {
     if (isDeleting) {
       try {
-        await specialDayService.deleteSpecialDay(isDeleting);
-        await loadSpecialDays();
+        await unavailableDayService.deleteUnavailableDay(isDeleting);
+        await loadUnavailableDays();
         resetForm();
         setIsDeleting(null);
         setSuccessMessage("Jour particulier supprimé avec succès");
@@ -121,7 +152,7 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
     }
   };
 
-  const handleEdit = (day: SpecialDays) => {
+  const handleEdit = (day: UnavailableDays) => {
     setEditingDay(day);
     setNewDay({ ...day });
   };
@@ -134,7 +165,7 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
   const resetForm = () => {
     setEditingDay(null);
-    setNewDay({ date: '', description: '', number_of_masses: 0, is_recurrent: false });
+    setNewDay({ celebrant_id: 0, date: '', is_recurrent: false });
     setIsDeleting(null);
     setIsConfirmingDelete(false);
     setSuccessMessage(undefined);
@@ -151,7 +182,7 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-full max-w-5xl h-[90vh] max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle>Jours particuliers</DialogTitle>
+          <DialogTitle>Jours indisponibles</DialogTitle>
         </DialogHeader>
 
         <div className="flex-1 flex gap-6 overflow-hidden">
@@ -167,17 +198,28 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
                 <Label htmlFor="showList">Afficher la liste</Label>
                 <Switch
                   id="showList"
-                  checked={showSpecialDays}
-                  onCheckedChange={setShowSpecialDays}
+                  checked={showUnavailableDays}
+                  onCheckedChange={setShowUnavailableDays}
                 />
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-6">
               <Separator />
-              <h3 className="text-lg font-semibold">{editingDay ? 'Modifier' : 'Ajouter'} un jour particulier</h3>
+              <h3 className="text-lg font-semibold">{editingDay ? 'Modifier' : 'Ajouter'} un jour indisponible</h3>
 
               <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="celebrant">
+                    Célébrant<span className="text-red-500"> *</span>
+                  </Label>
+                  <DropdownSearch
+                    options={celebrantOptions}
+                    value={newDay.celebrant_id ? newDay.celebrant_id.toString() : undefined}
+                    onChange={handleSelectCelebrant}
+                    placeholder="Sélectionner un célébrant"
+                  />
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="date">
                     Date<span className="text-red-500"> *</span>
@@ -187,34 +229,6 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
                     onDateChange={(date: Date | undefined) =>
                       handleChange('date', date ? date.toISOString().split('T')[0] : '')
                     }
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="description">
-                    Description<span className="text-red-500"> *</span>
-                  </Label>
-                  <Input
-                    id="description"
-                    required
-                    placeholder="ex : Noël ou Jeudi Saint"
-                    value={newDay.description}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('description', e.target.value)}
-                    className={validationError && !newDay.description.trim() ? "border-red-500" : ""}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="massCount">
-                    Nombre de messes par prêtre
-                  </Label>
-                  <Input
-                    id="massCount"
-                    type="number"
-                    required
-                    min={0}
-                    value={newDay.number_of_masses ?? ''}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('number_of_masses', e.target.value)}
                   />
                 </div>
 
@@ -259,15 +273,29 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
           <div className="w-px bg-gray-200" />
 
           {/* Colonne droite : Liste */}
-          {showSpecialDays && (
-            <div className="w-1/2 flex flex-col overflow-y-auto pl-2">
+          {showUnavailableDays && (
+            <div className="w-1/2 flex flex-col overflow-y-auto pl-2 gap-4">
               <h3 className="text-lg font-semibold flex gap-2 items-center mb-2">
-                <Calendar size={18} /> Liste des jours particuliers
+                <Calendar size={18} /> Liste des jours indisponibles
               </h3>
 
-              {specialDays.length > 0 ? (
+              <div className="space-y-2">
+                <label className="block text-sm font-medium mb-1">Sélection du célébrant</label>
+                <DropdownSearch
+                  options={celebrantOptions}
+                  value={selectedCelebrantId?.toString()}
+                  onChange={handleSelectFilterCelebrant}
+                  placeholder="Sélectionner un célébrant"
+                />
+              </div>
+
+              {selectedCelebrantId === null ? (
+                <div className="text-center p-4 text-gray-500">
+                  Veuillez sélectionner un célébrant.
+                </div>
+              ) : unavailableDays.length > 0 ? (
                 <div className="space-y-2">
-                  {specialDays.map((day) => (
+                  {unavailableDays.map((day) => (
                     <div
                       key={day.id}
                       onClick={() => handleEdit(day)}
@@ -282,10 +310,6 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
                               month: 'long',
                               year: 'numeric',
                             })}
-                          - {day.description}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {day.number_of_masses} messe(s)
                         </div>
                       </div>
                       <Badge variant={day.is_recurrent ? "secondary" : "outline"}>
@@ -296,7 +320,7 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
                 </div>
               ) : (
                 <div className="text-center p-4 text-gray-500">
-                  Aucun jour particulier enregistré
+                  Aucun jour indisponible enregistré
                 </div>
               )}
             </div>
@@ -319,7 +343,7 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
               <AlertTitle>Confirmer la suppression</AlertTitle>
               <AlertDescription className="mt-2">
                 <p className="mb-3">
-                  Êtes-vous sûr de vouloir supprimer ce jour particulier ? Cette action est irréversible.
+                  Êtes-vous sûr de vouloir supprimer ce jour indisponible ? Cette action est irréversible.
                 </p>
                 <div className="flex justify-end space-x-2">
                   <Button variant="outline" onClick={handleCloseConfirmDelete}>
