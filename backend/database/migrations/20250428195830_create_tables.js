@@ -44,7 +44,7 @@ exports.up = function(knex) {
       table.enu('payment_method', ['cash', 'cheque', 'card', 'transfer']).notNullable();
       table.string('brother_name').nullable();
       table.boolean('wants_celebration_date').defaultTo(false);
-      table.enu('date_type', ['specifique', 'indifferente']).defaultTo('indifferente');
+      table.enu('date_type', ['specifique', 'indifferente']);
 			table.enu('intention_type', ['thirty', 'novena', 'unit'])
       
       // Référence vers la table récurrence

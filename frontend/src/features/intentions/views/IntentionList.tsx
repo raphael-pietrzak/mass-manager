@@ -112,16 +112,16 @@ export const IntentionList: React.FC<IntentionListProps> = ({ intentions, onSele
                     <th className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-1/6">
                       Type
                     </th>
-                    <th className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-1/6">
+                    <th className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-1/5">
                       Donateur
                     </th>
-                    <th className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-1/6">
+                    <th className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-1/5">
                       Montant
                     </th>
-                    <th className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-1/6">
+                    <th className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-1/5">
                       Actions
                     </th>
-                    <th className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-1/12">
+                    <th className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-1/5">
                       <div className="flex items-center gap-2">
                         <span>Sélectionner tout</span>
                         <input
@@ -141,19 +141,28 @@ export const IntentionList: React.FC<IntentionListProps> = ({ intentions, onSele
                       onClick={() => handleIntentionClick(intention)}
                       className="hover:bg-gray-50 cursor-pointer"
                     >
-                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 italic truncate max-w-xs">
-                        {intention.intention_text || ""}
-                      </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm">
+                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-90 truncate max-w-xs">
+                        <span className='italic'>{intention.intention_text}</span>
                         {intention.deceased ? (
-                          <span className="px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-700">
+                          <span className="ml-2 px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-700">
                             Défunts
                           </span>
-                        ) : (
+                        ) : null}
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap text-sm">
+                        {intention.intention_type === "unit" ? (
                           <span className="px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-700">
-                            Vivants
+                            Unité
                           </span>
-                        )}
+                        ) : intention.intention_type === "thirty" ? (
+                          <span className="px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-700">
+                            Trentain
+                          </span>
+                        ) : intention.intention_type === "novena" ? (
+                          <span className="px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-700">
+                            Neuvaine
+                          </span>
+                        ) : null}
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap text-sm">
                         <div className="flex items-center">

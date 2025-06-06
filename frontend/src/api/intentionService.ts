@@ -9,6 +9,7 @@ export interface Intention {
     celebrant_name?: string;
     status?: 'scheduled' | 'cancelled' | 'pending';
     deceased?: boolean;
+    intention_type?: 'unit' | 'thirty' | 'novena';
 
     // Données du donateur
     donor_firstname?: string;

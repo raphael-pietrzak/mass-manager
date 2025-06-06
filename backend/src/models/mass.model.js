@@ -239,6 +239,7 @@ class Mass {
         let query = db('Masses')
             .leftJoin('Celebrants', 'Masses.celebrant_id', 'Celebrants.id')
             .leftJoin('Intentions', 'Masses.intention_id', 'Intentions.id')
+            .leftJoin('Donors', 'Intentions.donor_id', 'Donors.id')
             .select(
                 'Masses.id',
                 'Masses.date',
@@ -247,6 +248,9 @@ class Mass {
                 'Intentions.intention_text as intention',
                 'Intentions.deceased as type',
                 'Intentions.date_type as date_type',
+                'Donors.firstname as donor_firstname',
+                'Donors.lastname as donor_lastname',
+                'Donors.email as donor_email'
             )
             .where('Masses.status', '=', 'scheduled')
             .orderBy('Masses.date');

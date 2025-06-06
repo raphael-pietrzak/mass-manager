@@ -95,6 +95,8 @@ class ExportService {
 				intention: mass.intention,
 				deceased: mass.type,
 				date_type: mass.date_type,
+				donor_firstname: mass.donor_firstname || "",
+				donor_lastname: mass.donor_lastname || "",
 			}
 		}
 
@@ -108,7 +110,7 @@ class ExportService {
 		const maxCelebrantsPerGroup = 3
 
 		const pageWidthDxa = 12240
-		const smallColWidth = 1200
+		const smallColWidth = 300
 		const largeColWidth = Math.floor(pageWidthDxa / maxCelebrantsPerGroup - smallColWidth)
 
 		const celebrantGroups = []
@@ -118,12 +120,7 @@ class ExportService {
 			celebrantGroups.push(group)
 		}
 
-		const rowsPerGroup = 2 + daysInMonth
-		const maxTablesPerPage = 2
-		const maxRowsPerPage = rowsPerGroup * maxTablesPerPage
-
 		const tablesByGroup = celebrantGroups.map((group) => {
-			const rowCount = 2 + daysInMonth
 			const rows = []
 
 			const titleRow = new TableRow({
@@ -180,11 +177,24 @@ class ExportService {
 						}
 
 						const mass = celebrantsMap[name]?.[dateKey]
-						const intention = mass
-							? mass.intention +
-							  (mass.deceased === 1 || mass.deceased === true || mass.deceased === "1" ? " (D)" : "") +
-							  (mass.date_type === "specifique" ? " (Fixe)" : mass.date_type === "indifferente" ? " (Mobile)" : "")
-							: ""
+						const intention = (() => {
+							if (!mass) return ""
+
+							let text = mass.intention || ""
+							if (mass.deceased === 1 || mass.deceased === true || mass.deceased === "1") {
+								text += " (D)"
+							}
+							if (mass.date_type === "specifique") {
+								text += " (Fixe)"
+							} else if (mass.date_type === "indifferente") {
+								text += " (Mobile)"
+							}
+
+							const donor = (mass.donor_firstname || "") + " " + (mass.donor_lastname || "")
+							text += donor.trim() ? ` \n Donateur : ${donor.trim()}` : " \n Donateur : non renseigné"
+
+							return text
+						})()
 
 						return [
 							new TableCell({
@@ -204,13 +214,12 @@ class ExportService {
 			}
 
 			return {
-				rowCount,
 				table: new Table({ rows }),
 			}
 		})
 
 		const sections = []
-		let currentChildren = []
+		let isFirstSection = true
 
 		const mainTitleParagraphs = [
 			new Paragraph({
@@ -228,34 +237,14 @@ class ExportService {
 			new Paragraph({ text: "" }),
 		]
 
-		let currentRowCount = 0
-		let isFirstSection = true
-
-		for (const { table, rowCount } of tablesByGroup) {
-			if (currentRowCount + rowCount > maxRowsPerPage && currentChildren.length > 0) {
-				sections.push({
-					properties: {
-						page: { margin: { top: 0, bottom: 0, left: 0, right: 0 } },
-					},
-					children: isFirstSection ? mainTitleParagraphs.concat(currentChildren) : currentChildren,
-				})
-				currentChildren = []
-				currentRowCount = 0
-				isFirstSection = false
-			}
-
-			currentChildren.push(table)
-			currentRowCount += rowCount
-			currentChildren.push(new Paragraph({ text: "" }))
-		}
-
-		if (currentChildren.length > 0) {
+		for (const { table } of tablesByGroup) {
 			sections.push({
 				properties: {
 					page: { margin: { top: 0, bottom: 0, left: 0, right: 0 } },
 				},
-				children: isFirstSection ? mainTitleParagraphs.concat(currentChildren) : currentChildren,
+				children: isFirstSection ? mainTitleParagraphs.concat([table]) : [table],
 			})
+			isFirstSection = false
 		}
 
 		const doc = new Document({ sections })

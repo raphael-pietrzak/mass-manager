@@ -36,8 +36,10 @@ const Intention = {
 
 	getPonctualIntentions: () =>
 		db("Intentions")
+			.where("date_type", "indifferente")
 			.whereNull("recurrence_id")
-			.select("Intentions.*", "Donors.firstname", "Donors.lastname", "Donors.email")
+			.select("Intentions.*", "Donors.firstname as donor_firstname", "Donors.lastname as donor_lastname", "Donors.email as donor_email")
+			.orderBy("created_at", "asc")
 			.leftJoin("Donors", "Intentions.donor_id", "Donors.id"),
 }
 

@@ -1,6 +1,5 @@
 // donor.controller.js
 const Donor = require("../models/donor.model")
-const exportDonorService = require("../services/exportDonor.service")
 
 exports.getDonors = async (req, res) => {
 	try {
