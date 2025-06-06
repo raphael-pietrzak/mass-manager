@@ -20,7 +20,6 @@ class Mass {
                 'Donors.lastname as donor_lastname',
             )
             //.whereNotNull('Masses.celebrant_id')
-            .where('Masses.status', '=', 'scheduled')
             .leftJoin('Celebrants', 'Masses.celebrant_id', 'Celebrants.id')
             .leftJoin('Intentions', 'Masses.intention_id', 'Intentions.id')
             .leftJoin('Donors', 'Intentions.donor_id', 'Donors.id')
@@ -257,8 +256,9 @@ class Mass {
                 'Donors.email as donor_email',
                 db.raw('FALSE as is_recurring')
             )
-            .where('Masses.status', '=', 'scheduled')
             .orderBy('Masses.date');
+
+        console.log('Regular Masses Query:', query.toString());
 
         // Requête pour les messes récurrentes
         let recurringQuery = db('Intentions')
@@ -281,6 +281,9 @@ class Mass {
                 db.raw('TRUE as is_recurring')
             )
             .whereNotNull('Intentions.recurrence_id');
+
+        console.log('Recurring Query:', recurringQuery.toString());
+
 
         if (startDate) {
             const formattedStartDate = new Date(startDate).toISOString().split('T')[0];

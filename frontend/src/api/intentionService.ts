@@ -3,13 +3,15 @@ import { API_BASE_URL } from '.';
 
 import { MassStatus } from './massService';
 
+export type IntentionStatus = 'received' | 'scheduled' | 'cancelled' | 'in_progress' | 'completed';
+
 export interface Intention {
     id: string;
     date?: string;
     intention_text?: string;
     celebrant_id?: string;
     celebrant_name?: string;
-    status?: 'received' | 'scheduled' | 'cancelled' | 'in_progress' | 'completed';
+    status?: IntentionStatus;
     deceased?: boolean;
     intention_type?: 'unit' | 'thirty' | 'novena';
 
