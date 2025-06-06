@@ -1,13 +1,15 @@
 import axios from 'axios';
 import { API_BASE_URL } from '.';
 
+import { MassStatus } from './massService';
+
 export interface Intention {
     id: string;
     date?: string;
     intention_text?: string;
     celebrant_id?: string;
     celebrant_name?: string;
-    status?: 'scheduled' | 'cancelled' | 'pending';
+    status?: 'received' | 'scheduled' | 'cancelled' | 'in_progress' | 'completed';
     deceased?: boolean;
     intention_type?: 'unit' | 'thirty' | 'novena';
 
@@ -56,7 +58,7 @@ export interface Masses {
     celebrant_title: string;
     celebrant_id: string | null; // peut être null si non assigné
     celebrant_name: string;
-    status: 'scheduled' | 'cancelled' | 'pending';
+    status: MassStatus;
 }
 
 export interface IntentionSubmission {

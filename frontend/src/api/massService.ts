@@ -1,6 +1,9 @@
 import axios from 'axios';
 import { API_BASE_URL } from '.';
 
+// mass status
+export type MassStatus = 'planned' | 'confirmed' | 'celebrated' | 'cancelled';
+
 export interface Mass {
   id?: string;
   date: string; // format YYYY-MM-DD
@@ -9,7 +12,7 @@ export interface Mass {
   celebrant_id: string
   celebrant_religious_name: string; // ID du célébrant, plus de champ "celebrant"
   celebrant_title?: string; // Titre du célébrant pour l'affichage
-  status?: 'scheduled' | 'cancelled' | 'pending';
+  status?: MassStatus; // Statut de la messe
   // Données du donateur
   firstName?: string;
   lastName?: string;
@@ -45,7 +48,7 @@ export interface MassPreview {
     type: 'defunts' | 'vivants';
     celebrant_id: string | null; // peut être null si non assigné
     celebrant_name: string;
-    status: 'scheduled' | 'cancelled' | 'pending';
+    status: MassStatus;
   }[];
   totalAmount: string;
   massCount: number;

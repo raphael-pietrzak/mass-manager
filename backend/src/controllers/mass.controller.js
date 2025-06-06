@@ -61,7 +61,7 @@ exports.createMass = async (req, res) => {
       date: req.body.date,
       celebrant_id: req.body.celebrant_id,
       intention_id: intentionId,
-      status: req.body.status || 'pending'
+      status: req.body.status
     };
 
     await Mass.create(massData);

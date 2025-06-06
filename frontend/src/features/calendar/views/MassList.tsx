@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Mass } from '../../../api/massService';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Calendar, User, Trash2, AlertTriangle, X } from 'lucide-react';
+import { Calendar, User, Trash2, AlertTriangle, X, Edit } from 'lucide-react';
 import { MassModal } from '../MassModal';
 
 interface MassListProps {
@@ -27,12 +27,15 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedMass, setSelectedMass] = useState<Mass | null>(null);
 
+  // État pour la modale de détails
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [selectedDetailMass, setSelectedDetailMass] = useState<Mass | null>(null);
+
   const filteredMasses = masses.filter(mass => {
     const massDate = new Date(mass.date);
 
     // Filter by celebrant
     const celebrantMatch = filters.celebrant === 'all' || String(mass.celebrant_id) === String(filters.celebrant);
-    //const celebrantMatch = filters.celebrant === 'all' || mass.celebrant_id === filters.celebrant;
 
     // Filter by date range
     const startDateMatch = !filters.startDate || massDate >= filters.startDate;
@@ -71,6 +74,11 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
   const handleMassClick = (mass: Mass) => {
     setSelectedMass(mass);
     setIsEditModalOpen(true);
+  };
+
+  const handleRowClick = (mass: Mass) => {
+    setSelectedDetailMass(mass);
+    setIsDetailsModalOpen(true);
   };
 
   const handleSaveMass = (updatedMass: Mass) => {
@@ -116,7 +124,7 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
               {sortedMasses.map(mass => (
                 <tr
                   key={mass.id}
-                  onClick={() => handleMassClick(mass)}
+                  onClick={() => handleRowClick(mass)}
                   className="hover:bg-gray-50 cursor-pointer"
                 >
                   <td className="px-3 py-2 whitespace-nowrap text-sm">
@@ -142,13 +150,25 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
                     {mass.intention}
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap text-sm">
-                    <button
-                      onClick={(e) => handleDeleteClick(e, mass)}
-                      className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100 transition-colors"
-                      title="Supprimer cette messe"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center space-x-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleMassClick(mass);
+                        }}
+                        className="p-1 text-gray-400 hover:text-blue-500 rounded-full hover:bg-gray-100 transition-colors"
+                        title="Modifier cette messe"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={(e) => handleDeleteClick(e, mass)}
+                        className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100 transition-colors"
+                        title="Supprimer cette messe"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -156,6 +176,81 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
           </table>
         )}
       </div>
+
+      {/* Modale de détails */}
+      {isDetailsModalOpen && selectedDetailMass && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          onClick={() => setIsDetailsModalOpen(false)}
+        >
+          <div 
+            className="bg-white rounded-lg shadow-lg max-w-2xl w-full mx-4 p-6"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold">Détails de la messe</h2>
+              <button
+                onClick={() => setIsDetailsModalOpen(false)}
+                className="p-1 hover:bg-gray-100 rounded-full"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">Date</h3>
+                <p className="flex items-center mt-1">
+                  <Calendar className="w-4 h-4 text-gray-400 mr-2" />
+                  {format(new Date(selectedDetailMass.date), 'EEEE d MMMM yyyy', { locale: fr })}
+                </p>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">Célébrant</h3>
+                <p className="flex items-center mt-1">
+                  <User className="w-4 h-4 text-gray-400 mr-2" />
+                  {selectedDetailMass.celebrant_title} {selectedDetailMass.celebrant_religious_name}
+                </p>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">Type</h3>
+                <p className="mt-1">
+                  {selectedDetailMass.deceased === 1 ? (
+                    <span className="px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-700">
+                      Défunts
+                    </span>
+                  ) : 'Standard'}
+                </p>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">Intention</h3>
+                <p className="mt-1 text-gray-600">{selectedDetailMass.intention}</p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setIsDetailsModalOpen(false)}
+                className="px-4 py-2 border rounded-md text-sm font-medium hover:bg-gray-50"
+              >
+                Fermer
+              </button>
+              <button
+                onClick={() => {
+                  setIsDetailsModalOpen(false);
+                  handleMassClick(selectedDetailMass);
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
+              >
+                Modifier
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modale de confirmation de suppression */}
       {isConfirmModalOpen && massToDelete && (
