@@ -34,6 +34,7 @@ export interface Mass {
   startDate?: string;
   endDate?: string;
   endType?: string;
+  is_recurring?: boolean;
 }
 
 // Type pour la réponse de prévisualisation avec une structure simplifiée des masses
