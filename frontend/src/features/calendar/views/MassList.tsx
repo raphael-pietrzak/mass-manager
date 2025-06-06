@@ -16,9 +16,10 @@ interface MassListProps {
     endDate: Date | null;
     futureOnly: boolean;
   };
+  loading: boolean;
 }
 
-export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDeleteMass, onUpdateMass, filters }) => {
+export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDeleteMass, onUpdateMass, filters, loading }) => {
   // État pour la modale de confirmation
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [massToDelete, setMassToDelete] = useState<Mass | null>(null);
@@ -95,7 +96,9 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
   return (
     <>
       <div className="bg-white rounded-lg shadow overflow-hidden">
-        {sortedMasses.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-10">Chargement...</div>
+        ) : sortedMasses.length === 0 ? (
           <div className="p-4 text-center text-gray-500">
             Aucune messe ne correspond à ces critères
           </div>

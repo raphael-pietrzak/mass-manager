@@ -36,11 +36,12 @@ function CalendarPage() {
   useEffect(() => {
     const fetchMasses = async () => {
       try {
+        setLoading(true);
         const data = await massService.getMassesByDateRange(filters.startDate, filters.endDate);
         setMasses(data);
-        setLoading(false);
       } catch (err) {
         setError('Erreur lors du chargement des messes');
+      } finally {
         setLoading(false);
       }
     };
@@ -138,8 +139,7 @@ function CalendarPage() {
     }
   };
 
-  if (loading) return <div>Chargement...</div>;
-  if (error) return <div>Erreur: {error}</div>;
+  if (error) return <div className="text-center py-10">Erreur: {error}</div>;
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -176,6 +176,7 @@ function CalendarPage() {
               onMassClick={handleMassClick}
               filters={filters}
               onDeleteMass={handleDeleteMass}
+              loading={loading}
             />
           )}
         </div>
