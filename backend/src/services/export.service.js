@@ -7,7 +7,6 @@ class ExportService {
 		const workbook = new ExcelJS.Workbook()
 		const worksheet = workbook.addWorksheet("Intentions de messes")
 
-		// En-têtes des colonnes
 		worksheet.columns = [
 			{ header: "Date", key: "date", width: 15 },
 			{ header: "Célébrant", key: "celebrant", width: 20 },
@@ -15,20 +14,21 @@ class ExportService {
 			{ header: "Intention", key: "intention", width: 40 },
 		]
 
-		// Style des en-têtes
 		worksheet.getRow(1).font = { bold: true }
 
-		// Données
 		masses.forEach((mass) => {
+			const celebrantName = mass.celebrant_title && mass.celebrant_religious_name ? 
+				`${mass.celebrant_title} ${mass.celebrant_religious_name}` : 
+				"Non assigné"
+
 			worksheet.addRow({
 				date: new Date(mass.date).toLocaleDateString("fr-FR"),
-				celebrant: `${mass.celebrant_title} ${mass.celebrant}`,
-				type: mass.type === 1 ? "défunt" : "",
+				celebrant: celebrantName,
+				type: mass.deceased ? "défunt" : "",
 				intention: mass.intention,
 			})
 		})
 
-		// Génération du buffer
 		return await workbook.xlsx.writeBuffer()
 	}
 
@@ -36,7 +36,6 @@ class ExportService {
 		return new Promise((resolve, reject) => {
 			const doc = new PDFDocument({ margin: 30, size: "A4" })
 
-			// Collecte de tout l'output dans un buffer
 			const buffers = []
 			doc.on("data", buffers.push.bind(buffers))
 			doc.on("end", () => {
@@ -44,29 +43,26 @@ class ExportService {
 				resolve(pdfData)
 			})
 
-			// Titre
 			doc.fontSize(20).text("Intentions de messes", { align: "center" })
 			doc.moveDown()
-
-			// Tableau des messes
 
 			const tableData = {
 				headers: [{ label: "Date" }, { label: "Célébrant" }, { label: "Type" }, { label: "Intention" }],
 				rows: masses.map((mass) => [
 					new Date(mass.date).toLocaleDateString("fr-FR"),
-					`${mass.celebrant_title} ${mass.celebrant}`,
-					mass.type === 1 ? "défunt" : "",
+					mass.celebrant_title && mass.celebrant_religious_name ? 
+						`${mass.celebrant_title} ${mass.celebrant_religious_name}` : 
+						"Non assigné",
+					mass.deceased ? "défunt" : "",
 					mass.intention,
 				]),
 			}
 
-			// Options du tableau
 			const options = {
 				prepareHeader: () => doc.fontSize(10).font("Helvetica-Bold"),
 				prepareRow: () => doc.fontSize(10).font("Helvetica"),
 			}
 
-			// Dessiner le tableau
 			doc.table(tableData, options)
 
 			doc.end()
@@ -86,14 +82,16 @@ class ExportService {
 			const month = date.getMonth()
 			const year = date.getFullYear()
 
-			const key = `${mass.celebrant_title} ${mass.celebrant}`
+			const key = mass.celebrant_title && mass.celebrant_religious_name ? 
+				`${mass.celebrant_title} ${mass.celebrant_religious_name}` : 
+				"Non assigné"
 			if (!celebrantsMap[key]) celebrantsMap[key] = {}
 
 			const pad = (n) => (n < 10 ? "0" + n : n)
 			const massDateKey = `${year}-${pad(month + 1)}-${pad(day)}`
 			celebrantsMap[key][massDateKey] = {
 				intention: mass.intention,
-				deceased: mass.type,
+				deceased: mass.deceased,
 				date_type: mass.date_type,
 				donor_firstname: mass.donor_firstname || "",
 				donor_lastname: mass.donor_lastname || "",
