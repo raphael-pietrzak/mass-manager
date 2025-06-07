@@ -529,7 +529,7 @@ exports.seed = function (knex) {
 					payment_method: "cheque",
 					wants_celebration_date: false,
 					date_type: "indifferente",
-					intention_type: "novena",
+					intention_type: "unit",
 					number_of_masses: 1,
 				},
 			])
