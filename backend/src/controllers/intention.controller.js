@@ -49,6 +49,23 @@ exports.createIntention = async (req, res) => {
 			donorId = await Donor.create(donorData)
 		}
 
+		// Logique pour initialiser number_of_masses selon le type
+		const intentionType = (intentionData.masses[0]?.intention_type || intentionData.masses[0]?.type || "").toLowerCase();
+		let number = 0
+		switch (intentionType) {
+			case "novena":
+				number = 9
+				break
+			case "thirty":
+				number = 30
+				break
+			case "unit":
+				number = intentionData.number_of_masses && intentionData.number_of_masses > 0 ? intentionData.number_of_masses : 1
+				break
+			default:
+				number = 1
+		}
+
 		// Créer l'intention
 		const intention = {
 			donor_id: donorId,
@@ -59,6 +76,8 @@ exports.createIntention = async (req, res) => {
 			brother_name: intentionData.payment.brother_name || null,
 			wants_celebration_date: intentionData.donor.wants_celebration_date,
 			date_type: intentionData.donor.wants_celebration_date ? "specifique" : "indifferente",
+			intention_type: intentionType,
+			number_of_masses: number,
 		}
 
 		const intentionId = await Intention.create(intention)
@@ -156,7 +175,6 @@ exports.deleteIntention = async (req, res) => {
 		res.status(500).send("Erreur lors de la suppression de l'intention")
 	}
 }
-
 
 exports.previewIntention = async (req, res) => {
 	try {
