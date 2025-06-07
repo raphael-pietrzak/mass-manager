@@ -5,7 +5,8 @@ const db = require('../../config/database');
 
 exports.getMasses = async (req, res) => {
   try {
-    const data = await Mass.getAll();
+    const { startDate, endDate } = req.query;
+    const data = await Mass.getMassesByDateRange({ startDate, endDate });
     res.json(data);
   } catch (error) {
     console.error(error);

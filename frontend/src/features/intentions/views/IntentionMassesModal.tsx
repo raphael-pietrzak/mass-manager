@@ -150,7 +150,7 @@ export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ inte
                           )}
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap text-sm">
-                          {mass.status === 'planned' && (
+                          {mass.status === 'scheduled' && (
                             <span className="px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700">
                               Programmée
                             </span>

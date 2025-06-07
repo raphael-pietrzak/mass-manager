@@ -54,7 +54,7 @@ class ExportService {
 			const dateKey = `${year}-${pad(month + 1)}-${pad(day)}`
 			celebrantsMap[key][dateKey] = {
 				intention: mass.intention,
-				deceased: mass.type,
+				deceased: mass.deceased,
 				date_type: mass.date_type,
 				donor_firstname: mass.donor_firstname || "",
 				donor_lastname: mass.donor_lastname || "",
@@ -195,14 +195,14 @@ class ExportService {
 			const month = date.getMonth()
 			const year = date.getFullYear()
 
-			const key = `${mass.celebrant_title} ${mass.celebrant}`
+			const key = `${mass.celebrant_title} ${mass.celebrant_religious_name}`
 			if (!celebrantsMap[key]) celebrantsMap[key] = {}
 
 			const pad = (n) => (n < 10 ? "0" + n : n)
 			const massDateKey = `${year}-${pad(month + 1)}-${pad(day)}`
 			celebrantsMap[key][massDateKey] = {
 				intention: mass.intention,
-				deceased: mass.type,
+				deceased: mass.deceased,
 				date_type: mass.date_type,
 				donor_firstname: mass.donor_firstname || "",
 				donor_lastname: mass.donor_lastname || "",

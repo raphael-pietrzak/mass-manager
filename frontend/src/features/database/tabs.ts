@@ -60,7 +60,7 @@ export const tabs: TabColumn[] = [
 			status: {
 				type: "enum",
 				options: [
-					{ label: "Planifiée", value: "planned" },
+					{ label: "Planifiée", value: "scheduled" },
 					{ label: "Confirmée", value: "confirmed" },
 					{ label: "Célébrée", value: "celebrated" },
 					{ label: "Annulée", value: "cancelled" },
