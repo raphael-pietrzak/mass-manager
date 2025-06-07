@@ -7,7 +7,6 @@ class ExportService {
 		const workbook = new ExcelJS.Workbook()
 		const worksheet = workbook.addWorksheet("Intentions de messes")
 
-		// En-têtes des colonnes
 		worksheet.columns = [
 			{ header: "Date", key: "date", width: 15 },
 			{ header: "Célébrant", key: "celebrant", width: 20 },
@@ -15,20 +14,21 @@ class ExportService {
 			{ header: "Intention", key: "intention", width: 40 },
 		]
 
-		// Style des en-têtes
 		worksheet.getRow(1).font = { bold: true }
 
-		// Données
 		masses.forEach((mass) => {
+			const celebrantName = mass.celebrant_title && mass.celebrant_religious_name ? 
+				`${mass.celebrant_title} ${mass.celebrant_religious_name}` : 
+				"Non assigné"
+
 			worksheet.addRow({
 				date: new Date(mass.date).toLocaleDateString("fr-FR"),
-				celebrant: `${mass.celebrant_title} ${mass.celebrant}`,
-				type: mass.type === 1 ? "défunt" : "",
+				celebrant: celebrantName,
+				type: mass.deceased ? "défunt" : "",
 				intention: mass.intention,
 			})
 		})
 
-		// Génération du buffer
 		return await workbook.xlsx.writeBuffer()
 	}
 
@@ -195,7 +195,9 @@ class ExportService {
 			const month = date.getMonth()
 			const year = date.getFullYear()
 
-			const key = `${mass.celebrant_title} ${mass.celebrant_religious_name}`
+			const key = mass.celebrant_title && mass.celebrant_religious_name ? 
+				`${mass.celebrant_title} ${mass.celebrant_religious_name}` : 
+				"Non assigné"
 			if (!celebrantsMap[key]) celebrantsMap[key] = {}
 
 			const pad = (n) => (n < 10 ? "0" + n : n)

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mass, MassStatus } from '../../../api/massService';
+import { Mass } from '../../../api/massService';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Calendar, User, Trash2, AlertTriangle, X, Edit } from 'lucide-react';
@@ -147,7 +147,7 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
                         celebrated: { label: 'Célébrée', color: 'bg-purple-100 text-purple-800' },
                         cancelled: { label: 'Annulée', color: 'bg-red-100 text-red-800' }
                       };
-                      const status: MassStatus = mass.status || 'scheduled';
+                      const status = mass.status || 'scheduled';
                       const config = statusConfig[status];
                       
                       return (
