@@ -288,6 +288,7 @@ exports.seed = function (knex) {
 					wants_celebration_date: true,
 					date_type: "indifferente",
 					intention_type: "unit",
+					number_of_masses: 1,
 				},
 				{
 					donor_id: 2,
@@ -298,6 +299,7 @@ exports.seed = function (knex) {
 					wants_celebration_date: true,
 					date_type: "indifferente",
 					intention_type: "unit",
+					number_of_masses: 1,
 				},
 				{
 					donor_id: 3,
@@ -308,6 +310,7 @@ exports.seed = function (knex) {
 					wants_celebration_date: false,
 					date_type: "indifferente",
 					intention_type: "unit",
+					number_of_masses: 1,
 				},
 				{
 					donor_id: 4,
@@ -318,6 +321,7 @@ exports.seed = function (knex) {
 					wants_celebration_date: true,
 					date_type: "specifique",
 					intention_type: "unit",
+					number_of_masses: 1,
 				},
 				{
 					donor_id: 5,
@@ -328,6 +332,7 @@ exports.seed = function (knex) {
 					wants_celebration_date: false,
 					date_type: "indifferente",
 					intention_type: "unit",
+					number_of_masses: 1,
 				},
 				{
 					donor_id: 6,
@@ -338,6 +343,7 @@ exports.seed = function (knex) {
 					wants_celebration_date: false,
 					date_type: "indifferente",
 					intention_type: "unit",
+					number_of_masses: 1,
 				},
 				{
 					donor_id: 1,
@@ -348,6 +354,7 @@ exports.seed = function (knex) {
 					wants_celebration_date: true,
 					date_type: "specifique",
 					intention_type: "unit",
+					number_of_masses: 1,
 				},
 				{
 					donor_id: 2,
@@ -358,6 +365,7 @@ exports.seed = function (knex) {
 					wants_celebration_date: false,
 					date_type: "indifferente",
 					intention_type: "unit",
+					number_of_masses: 1,
 				},
 				{
 					donor_id: 3,
@@ -368,6 +376,7 @@ exports.seed = function (knex) {
 					wants_celebration_date: false,
 					date_type: "indifferente",
 					intention_type: "unit",
+					number_of_masses: 1,
 				},
 				{
 					donor_id: 4,
@@ -378,6 +387,7 @@ exports.seed = function (knex) {
 					wants_celebration_date: true,
 					date_type: "specifique",
 					intention_type: "unit",
+					number_of_masses: 1,
 				},
 				{
 					donor_id: 5,
@@ -388,6 +398,7 @@ exports.seed = function (knex) {
 					wants_celebration_date: false,
 					date_type: "indifferente",
 					intention_type: "unit",
+					number_of_masses: 1,
 				},
 				{
 					donor_id: 6,
@@ -398,6 +409,7 @@ exports.seed = function (knex) {
 					wants_celebration_date: false,
 					date_type: "indifferente",
 					intention_type: "unit",
+					number_of_masses: 1,
 				},
 				{
 					donor_id: 1,
@@ -408,6 +420,7 @@ exports.seed = function (knex) {
 					wants_celebration_date: true,
 					date_type: "specifique",
 					intention_type: "unit",
+					number_of_masses: 1,
 				},
 				{
 					donor_id: 2,
@@ -418,6 +431,7 @@ exports.seed = function (knex) {
 					wants_celebration_date: false,
 					date_type: "indifferente",
 					intention_type: "unit",
+					number_of_masses: 1,
 				},
 				{
 					donor_id: 3,
@@ -428,6 +442,7 @@ exports.seed = function (knex) {
 					wants_celebration_date: false,
 					date_type: "indifferente",
 					intention_type: "unit",
+					number_of_masses: 1,
 				},
 				{
 					donor_id: 4,
@@ -438,6 +453,7 @@ exports.seed = function (knex) {
 					wants_celebration_date: true,
 					date_type: "specifique",
 					intention_type: "unit",
+					number_of_masses: 1,
 				},
 				{
 					donor_id: 5,
@@ -448,6 +464,7 @@ exports.seed = function (knex) {
 					wants_celebration_date: false,
 					date_type: "indifferente",
 					intention_type: "unit",
+					number_of_masses: 1,
 				},
 				{
 					donor_id: 6,
@@ -458,6 +475,7 @@ exports.seed = function (knex) {
 					wants_celebration_date: false,
 					date_type: "indifferente",
 					intention_type: "unit",
+					number_of_masses: 1,
 				},
 				{
 					donor_id: 1,
@@ -468,6 +486,7 @@ exports.seed = function (knex) {
 					wants_celebration_date: true,
 					date_type: "specifique",
 					intention_type: "unit",
+					number_of_masses: 1,
 				},
 				{
 					donor_id: 2,
@@ -478,6 +497,7 @@ exports.seed = function (knex) {
 					wants_celebration_date: false,
 					date_type: "indifferente",
 					intention_type: "unit",
+					number_of_masses: 1,
 				},
 				{
 					donor_id: 3,
@@ -488,6 +508,7 @@ exports.seed = function (knex) {
 					wants_celebration_date: false,
 					date_type: "indifferente",
 					intention_type: "unit",
+					number_of_masses: 1,
 				},
 				{
 					donor_id: 4,
@@ -498,6 +519,7 @@ exports.seed = function (knex) {
 					wants_celebration_date: true,
 					date_type: "specifique",
 					intention_type: "unit",
+					number_of_masses: 1,
 				},
 				{
 					donor_id: 5,
@@ -508,6 +530,7 @@ exports.seed = function (knex) {
 					wants_celebration_date: false,
 					date_type: "indifferente",
 					intention_type: "unit",
+					number_of_masses: 5,
 				},
 			])
 		})

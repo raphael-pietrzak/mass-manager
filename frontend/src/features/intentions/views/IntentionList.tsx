@@ -151,9 +151,16 @@ export const IntentionList: React.FC<IntentionListProps> = ({ intentions, onSele
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap text-sm">
                         {intention.intention_type === "unit" ? (
-                          <span className="px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-700">
-                            Unité
-                          </span>
+                          <>
+                            <span className="px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-700">
+                              Unité
+                            </span>
+                            {intention.number_of_masses !== 1 && (
+                              <span className="ml-1 text-black text-xs">
+                                ({intention.number_of_masses} messes)
+                              </span>
+                            )}
+                          </>
                         ) : intention.intention_type === "thirty" ? (
                           <span className="px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-700">
                             Trentain
