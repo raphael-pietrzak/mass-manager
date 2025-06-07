@@ -82,7 +82,7 @@ exports.exportIntentionToExcel = async (req, res) => {
 		const intentions = await Promise.all(
 			numericIds.map(async (id) => {
 				try {
-					return await Intention.findById(id) // id est bien un Number
+					return await Intention.findById(id)
 				} catch (err) {
 					console.error(`Erreur lors de la récupération de l'intention avec l'id ${id}:`, err)
 					return null
@@ -99,7 +99,7 @@ exports.exportIntentionToExcel = async (req, res) => {
 
 		// Générer le fichier Excel à partir des intentions
 		const buffer = await exportService.generateExcelIntention(validIntentions)
-
+		
 		// Envoyer le fichier
 		res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 		res.setHeader("Content-Disposition", 'attachment; filename="intentions-don.xlsx"')

@@ -19,7 +19,7 @@ exports.up = function(knex) {
       table.string('civil_lastname', 50);
       table.string('title', 10).notNullable();
       table.string('role', 50);
-      table.string('email', 100);
+      table.string('email', 100).nullable();
     })
     .createTable('Recurrences', function(table) {
       table.increments('id').primary();
@@ -44,8 +44,9 @@ exports.up = function(knex) {
       table.enu('payment_method', ['cash', 'cheque', 'card', 'transfer']).notNullable();
       table.string('brother_name').nullable();
       table.boolean('wants_celebration_date').defaultTo(false);
-      table.enu('date_type', ['specifique', 'indifferente']).defaultTo('indifferente');
-			table.enu('intention_type', ['thirty', 'novena', 'unit'])
+      table.enu('date_type', ['specifique', 'indifferente']);
+			table.enu('intention_type', ['thirty', 'novena', 'unit']);
+      table.enum('status', ['pending', 'scheduled', 'in_progress', 'completed', 'cancelled']).defaultTo('pending');
       
       // Référence vers la table récurrence
       table.integer('recurrence_id').unsigned().nullable().references('id').inTable('Recurrences').onDelete('SET NULL');
@@ -56,7 +57,8 @@ exports.up = function(knex) {
       table.datetime('date').notNullable();
       table.integer('celebrant_id').unsigned().nullable().references('id').inTable('Celebrants').onDelete('SET NULL');
       table.integer('intention_id').unsigned().references('id').inTable('Intentions').onDelete('CASCADE');
-      table.enu('status', ['scheduled', 'cancelled', 'pending']).defaultTo('pending');
+      table.enum('status', ['pending', 'scheduled']).defaultTo('pending');
+      table.timestamps(true, true);
     })
     .createTable('SpecialDays', function(table) {
       table.increments('id').primary();

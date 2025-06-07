@@ -61,7 +61,8 @@ export const tabs: TabColumn[] = [
 				type: "enum",
 				options: [
 					{ label: "Planifiée", value: "scheduled" },
-					{ label: "En attente", value: "pending" },
+					{ label: "Confirmée", value: "confirmed" },
+					{ label: "Célébrée", value: "celebrated" },
 					{ label: "Annulée", value: "cancelled" },
 				],
 			},
@@ -72,7 +73,7 @@ export const tabs: TabColumn[] = [
 					{ label: "Non", value: 0 },
 				],
 			},
-      celebrant: {
+	  celebrant: {
 				type: "string",
 				display: (_value: any, row: any) => {
 					return `${row.celebrant_title} ${row.celebrant_religious_name}`.trim()

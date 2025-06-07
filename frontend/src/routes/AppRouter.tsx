@@ -6,7 +6,6 @@ import AdminPage from '../pages/AdminPage';
 import DatabaseTabs from '../pages/DatabasePage';
 import ProtectedRoute from './ProtectedRoute';
 import LoginPage from '../pages/LoginPage';
-import DonorsPage from '../pages/DonorsPage';
 import IntentionPage from '../pages/IntentionPage';
 import Navbar from '../components/Navbar';
 import RecurrencePage from '../pages/RecurrencePage';
@@ -21,7 +20,6 @@ const AppRouter: React.FC = () => (
       {/* Routes accessibles à admin ou secretary */}
       <Route path="/" element={<ProtectedRoute requiredRole={['admin', 'secretary']}><CalendarPage /></ProtectedRoute>} />
       <Route path="/calendar" element={<ProtectedRoute requiredRole={['admin', 'secretary']}> <CalendarPage /></ProtectedRoute>} />
-      <Route path="/donors" element={<ProtectedRoute requiredRole={['admin', 'secretary']}> <DonorsPage /> </ProtectedRoute>} />
       <Route path="/intentions" element={<ProtectedRoute requiredRole={['admin', 'secretary']}> <IntentionPage /> </ProtectedRoute>} />
       <Route path="/recurrences" element={<ProtectedRoute requiredRole={['admin', 'secretary']}> <RecurrencePage /> </ProtectedRoute>} />
 

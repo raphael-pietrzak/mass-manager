@@ -160,9 +160,14 @@ export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ inte
                               Annulée
                             </span>
                           )}
-                          {mass.status === 'pending' && (
+                          {mass.status === 'confirmed' && (
                             <span className="px-2 py-0.5 rounded-full text-xs bg-yellow-100 text-yellow-700">
                               En attente
+                            </span>
+                          )}
+                          {mass.status === 'celebrated' && (
+                            <span className="px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-700">
+                              Célébrée
                             </span>
                           )}
                         </td>

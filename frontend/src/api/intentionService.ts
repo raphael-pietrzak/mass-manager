@@ -1,14 +1,19 @@
 import axios from 'axios';
 import { API_BASE_URL } from '.';
 
+import { MassStatus } from './massService';
+
+export type IntentionStatus = 'received' | 'scheduled' | 'cancelled' | 'in_progress' | 'completed';
+
 export interface Intention {
     id: string;
     date?: string;
     intention_text?: string;
     celebrant_id?: string;
     celebrant_name?: string;
-    status?: 'scheduled' | 'cancelled' | 'pending';
+    status?: IntentionStatus;
     deceased?: boolean;
+    intention_type?: 'unit' | 'thirty' | 'novena';
 
     // Données du donateur
     donor_firstname?: string;
@@ -55,7 +60,7 @@ export interface Masses {
     celebrant_title: string;
     celebrant_id: string | null; // peut être null si non assigné
     celebrant_name: string;
-    status: 'scheduled' | 'cancelled' | 'pending';
+    status: MassStatus;
 }
 
 export interface IntentionSubmission {
