@@ -59,9 +59,9 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
     onFilterChange(startOfWeek(today, { locale: fr }), endOfWeek(today, { locale: fr }));
   };
 
-  const handleNextMonthsClick = () => {
+  const handleNext3MonthsClick = () => {
     const today = new Date();
-    const endDate = endOfMonth(addMonths(today));
+    const endDate = endOfMonth(addMonths(today, 3));
     setStartDate(startOfDay(today));
     setEndDate(endDate);
     onFilterChange(startOfDay(today), endDate);
