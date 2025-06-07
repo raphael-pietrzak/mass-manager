@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Pencil, Trash2, Plus } from 'lucide-react';
 import { recurrenceService, Recurrence } from '../api/recurrenceService';
@@ -118,68 +117,83 @@ const RecurrencePage: React.FC = () => {
           </div>
         </CardHeader>
         <CardContent>
-          {recurrences.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              Aucune récurrence trouvée
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Date de début</TableHead>
-                  <TableHead>Fin</TableHead>
-                  <TableHead>Détails</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recurrences.map((recurrence) => (
-                  <TableRow key={recurrence.id}>
-                    <TableCell>
-                      <Badge variant={getRecurrenceVariant(recurrence.type) as any}>
-                        {getRecurrenceTypeLabel(recurrence.type)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {formatDateForDisplay(parseApiDate(recurrence.start_date))}
-                    </TableCell>
-                    <TableCell>
-                      {getEndTypeLabel(recurrence.end_type, recurrence)}
-                    </TableCell>
-                    <TableCell>
-                      {recurrence.type === 'relative_position' && recurrence.position && recurrence.weekday && (
-                        <span className="text-sm text-gray-600">
-                          {recurrence.position} {recurrence.weekday}
+          <div className="bg-white rounded-lg shadow overflow-hidden">
+            {recurrences.length === 0 ? (
+              <div className="p-4 text-center text-gray-500">
+                Aucune récurrence trouvée
+              </div>
+            ) : (
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Type
+                    </th>
+                    <th className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">
+                      Date de début
+                    </th>
+                    <th className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">
+                      Fin
+                    </th>
+                    <th className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">
+                      Détails
+                    </th>
+                    <th className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {recurrences.map((recurrence) => (
+                    <tr
+                      key={recurrence.id}
+                      className="hover:bg-gray-50"
+                    >
+                      <td className="px-3 py-2 whitespace-nowrap text-sm">
+                        <span className="px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-700">
+                          {getRecurrenceTypeLabel(recurrence.type)}
                         </span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEdit(recurrence)}
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDelete(recurrence.id!)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap text-sm">
+                        {formatDateForDisplay(parseApiDate(recurrence.start_date))}
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap text-sm">
+                        {getEndTypeLabel(recurrence.end_type, recurrence)}
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap text-sm">
+                        {recurrence.type === 'relative_position' && recurrence.position && recurrence.weekday && (
+                          <span className="text-gray-600">
+                            {recurrence.position} {recurrence.weekday}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap text-sm">
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handleEdit(recurrence)}
+                            className="p-1 text-gray-400 hover:text-blue-500 rounded-full hover:bg-gray-100 transition-colors"
+                            title="Modifier cette récurrence"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(recurrence.id!)}
+                            className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100 transition-colors"
+                            title="Supprimer cette récurrence"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
         </CardContent>
       </Card>
-
+      
       <RecurrenceDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}

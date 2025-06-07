@@ -126,7 +126,7 @@ const MassService = {
                     type: deceased ? 'defunts' : 'vivants',
                     celebrant_id: celebrant.id,
                     celebrant_name: celebrant.religious_name,
-                    status: 'planned'
+                    status: 'scheduled'
                 };
             } else {
                 // Échec: célébrant indisponible à cette date
@@ -147,7 +147,7 @@ const MassService = {
                     type: deceased ? 'defunts' : 'vivants',
                     celebrant_id: availableCelebrant.id,
                     celebrant_name: availableCelebrant.religious_name,
-                    status: 'planned'
+                    status: 'scheduled'
                 };
             } else {
                 // Échec: aucun célébrant disponible à cette date
@@ -174,7 +174,7 @@ const MassService = {
                     type: deceased ? 'defunts' : 'vivants',
                     celebrant_id: celebrant.id,
                     celebrant_name: celebrant.religious_name,
-                    status: 'planned'
+                    status: 'scheduled'
                 };
             } else {
                 // Chercher la date disponible la plus proche pour ce célébrant
@@ -188,7 +188,7 @@ const MassService = {
                         type: deceased ? 'defunts' : 'vivants',
                         celebrant_id: slot.celebrant.id,
                         celebrant_name: slot.celebrant.religious_name,
-                        status: 'planned',
+                        status: 'scheduled',
                         changed_date: true
                     };
                 } else {
@@ -218,7 +218,7 @@ const MassService = {
                     type: deceased ? 'defunts' : 'vivants',
                     celebrant_id: availableCelebrant.id,
                     celebrant_name: availableCelebrant.religious_name,
-                    status: 'planned'
+                    status: 'scheduled'
                 };
             } else {
                 // Chercher la date la plus proche avec un célébrant disponible
@@ -232,7 +232,7 @@ const MassService = {
                         type: deceased ? 'defunts' : 'vivants',
                         celebrant_id: slot.celebrant.id,
                         celebrant_name: slot.celebrant.religious_name,
-                        status: 'planned',
+                        status: 'scheduled',
                         changed_date: true
                     };
                 } else {
@@ -311,7 +311,7 @@ const MassService = {
                 type: deceased ? 'defunts' : 'vivants',
                 celebrant_id: slot.celebrant.id,
                 celebrant_name: slot.celebrant.religious_name,
-                status: 'planned'
+                status: 'scheduled'
             };
         } else {
             // Aucune date disponible pour ce célébrant
@@ -346,7 +346,7 @@ const MassService = {
                     type: deceased ? 'defunts' : 'vivants',
                     celebrant_id: slot.celebrant.id,
                     celebrant_name: slot.celebrant.religious_name,
-                    status: 'planned'
+                    status: 'scheduled'
                 };
             }
         }
@@ -361,7 +361,7 @@ const MassService = {
                 type: deceased ? 'defunts' : 'vivants',
                 celebrant_id: slot.celebrant.id,
                 celebrant_name: slot.celebrant.religious_name,
-                status: 'planned'
+                status: 'scheduled'
             };
         } else {
             // Aucune date disponible
