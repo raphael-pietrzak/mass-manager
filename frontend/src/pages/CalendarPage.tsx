@@ -3,12 +3,10 @@ import { MassCalendar } from '../features/calendar/views/MassCalendar';
 import { MassList } from '../features/calendar/views/MassList';
 import { FilterBar } from '../features/calendar/filters/FilterBar';
 import { DateFilterBar } from '../features/calendar/filters/DateFilterBar';
-import { IntentionModal } from '../features/intentions/IntentionModal';
 import { DaySlider } from '../features/calendar/DaySlider';
 import { Mass } from '../api/massService';
 import { massService } from '../api/massService';
 import { exportService } from '../api/exportService';
-import { IntentionSubmission, intentionService } from '../api/intentionService';
 import { SpecialDaysModal } from '../features/special_days/SpecialDaysModal';
 import { UnavailableDayModal } from '../features/unavailableDays/UnavailableDayModal';
 
@@ -33,19 +31,19 @@ function CalendarPage() {
   const [isSpecialDayModalOpen, setIsSpecialDayModalOpen] = useState(false);
   const [isUnavailableDayModalOpen, setIsUnavailableDayModalOpen] = useState(false)
 
+  const fetchMasses = async () => {
+    try {
+      setLoading(true);
+      const data = await massService.getMassesByDateRange(filters.startDate, filters.endDate);
+      setMasses(data);
+    } catch (err) {
+      setError('Erreur lors du chargement des messes');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   useEffect(() => {
-    const fetchMasses = async () => {
-      try {
-        setLoading(true);
-        const data = await massService.getMassesByDateRange(filters.startDate, filters.endDate);
-        setMasses(data);
-      } catch (err) {
-        setError('Erreur lors du chargement des messes');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchMasses();
   }, [filters.startDate, filters.endDate]);
 
@@ -59,19 +57,12 @@ function CalendarPage() {
     setIsSliderOpen(true);
   };
 
-  const handleSaveMass = async (updatedMass: IntentionSubmission) => {
-    try {
-      if (updatedMass.id) {
-        await intentionService.updateMass(updatedMass.id, updatedMass);
-      } else {
-        await intentionService.createMass(updatedMass);
-      }
-      const newMasses = await massService.getMasses();
-      setMasses(newMasses);
-      setIsMassModalOpen(false);
-    } catch (err) {
-      setError('Erreur lors de la sauvegarde de la messe');
-    }
+  const handleUpdateMass = async (mass: Mass) => {
+    setSelectedMass(mass);
+    await massService.updateMass(mass);
+    setIsMassModalOpen(true);
+    fetchMasses();
+
   };
 
   const handleDeleteMass = async (massToDelete: Mass) => {
@@ -93,24 +84,6 @@ function CalendarPage() {
 
   const handleDateFilterChange = (startDate: Date | null, endDate: Date | null) => {
     setFilters(prev => ({ ...prev, startDate, endDate }));
-  };
-
-  const handleFutureOnlyChange = (checked: boolean) => {
-    setFilters(prev => ({ ...prev, futureOnly: checked }));
-  };
-
-  const handleResetFilters = () => {
-    setFilters({
-      celebrant: 'all',
-      startDate: null,
-      endDate: null,
-      futureOnly: false,
-    });
-  };
-
-  const handleAddMass = () => {
-    setSelectedMass(null);
-    setIsMassModalOpen(true);
   };
 
   const handleAddSpecialDay = () => {
@@ -176,17 +149,11 @@ function CalendarPage() {
               onMassClick={handleMassClick}
               filters={filters}
               onDeleteMass={handleDeleteMass}
+              onUpdateMass={handleUpdateMass}
               loading={loading}
             />
           )}
         </div>
-
-        <IntentionModal
-          intention={null}
-          isOpen={isMassModalOpen}
-          onClose={() => setIsMassModalOpen(false)}
-          onSave={handleSaveMass}
-        />
 
         <DaySlider
           date={selectedDate}

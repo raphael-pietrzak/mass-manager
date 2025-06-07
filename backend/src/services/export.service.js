@@ -3,50 +3,97 @@ const ExcelJS = require("exceljs")
 const PDFDocument = require("pdfkit-table")
 
 class ExportService {
+
 	async generateExcel(masses) {
-		const workbook = new ExcelJS.Workbook()
-		const worksheet = workbook.addWorksheet("Intentions de messes")
-
-		worksheet.columns = [
-			{ header: "Date", key: "date", width: 15 },
-			{ header: "Célébrant", key: "celebrant", width: 20 },
-			{ header: "Type", key: "type", width: 12 },
-			{ header: "Intention", key: "intention", width: 40 },
-		]
-
-		worksheet.getRow(1).font = { bold: true }
-
-		masses.forEach((mass) => {
-			const celebrantName = mass.celebrant_title && mass.celebrant_religious_name ? 
-				`${mass.celebrant_title} ${mass.celebrant_religious_name}` : 
-				"Non assigné"
-
-			worksheet.addRow({
-				date: new Date(mass.date).toLocaleDateString("fr-FR"),
-				celebrant: celebrantName,
-				type: mass.deceased ? "défunt" : "",
-				intention: mass.intention,
-			})
-		})
-
-		return await workbook.xlsx.writeBuffer()
+	if (!masses || masses.length === 0) {
+		throw new Error("Aucune donnée à exporter")
 	}
 
-	// Focntionne, ajouter colonne vide si plus de celebrant
-	// Gérer intention_text qu'il soit bien aligné
-	async generatePDF(masses) {
-		if (!masses || masses.length === 0) {
-			throw new Error("Aucune donnée à exporter")
+	const celebrantsMap = {}
+
+	for (const mass of masses) {
+		const date = new Date(mass.date)
+		const day = date.getDate()
+		const month = date.getMonth()
+		const year = date.getFullYear()
+
+		const key =
+			mass.celebrant_title && mass.celebrant_religious_name
+				? `${mass.celebrant_title} ${mass.celebrant_religious_name}`
+				: "Non assigné"
+
+		if (!celebrantsMap[key]) celebrantsMap[key] = {}
+
+		const pad = (n) => (n < 10 ? "0" + n : n)
+		const massDateKey = `${year}-${pad(month + 1)}-${pad(day)}`
+		celebrantsMap[key][massDateKey] = {
+			intention: mass.intention,
+			deceased: mass.deceased,
+			date_type: mass.date_type,
+			donor_firstname: mass.donor_firstname || "",
+			donor_lastname: mass.donor_lastname || "",
+		}
+	}
+
+	const allDates = masses.map((m) => new Date(m.date))
+	const firstDate = allDates[0]
+	const year = firstDate.getFullYear()
+	const month = firstDate.getMonth()
+	const daysInMonth = new Date(year, month + 1, 0).getDate()
+
+	const workbook = new ExcelJS.Workbook()
+	const worksheet = workbook.addWorksheet("Intentions par célébrant")
+
+	// En-tête
+	const celebrants = Object.keys(celebrantsMap)
+	const headerRow = ["Jour", ...celebrants]
+	worksheet.addRow(headerRow).font = { bold: true }
+
+	// Données ligne par ligne
+	for (let day = 1; day <= daysInMonth; day++) {
+		const pad = (n) => (n < 10 ? "0" + n : n)
+		const dateKey = `${year}-${pad(month + 1)}-${pad(day)}`
+		const row = [`${day}`]
+
+		for (const name of celebrants) {
+			const mass = celebrantsMap[name]?.[dateKey]
+			let text = ""
+
+			if (mass) {
+				text += mass.intention || ""
+				if (mass.deceased === 1 || mass.deceased === true || mass.deceased === "1") {
+					text += " (D)"
+				}
+				if (mass.date_type === "specifique") {
+					text += " (Fixe)"
+				} else if (mass.date_type === "indifferente") {
+					text += " (Mobile)"
+				}
+
+				const donor = `${mass.donor_firstname} ${mass.donor_lastname}`.trim()
+				text += donor ? `\nDonateur : ${donor}` : `\nDonateur : non renseigné`
+			}
+
+			row.push(text)
 		}
 
-		// Regroupement des données par célébrant et date
+		worksheet.addRow(row)
+	}
+
+	return await workbook.xlsx.writeBuffer()
+}
+
+	// Fonctionne, ajouter colonne vide si plus de celebrant
+	// Gérer intention_text qu'il soit bien aligné
+	async generatePDF(masses) {
+
 		const celebrantsMap = {}
 		for (const mass of masses) {
 			const date = new Date(mass.date)
 			const day = date.getDate()
 			const month = date.getMonth()
 			const year = date.getFullYear()
-			const key = `${mass.celebrant_title} ${mass.celebrant}`
+			const key = `${mass.celebrant_title} ${mass.celebrant_religious_name}`
 
 			if (!celebrantsMap[key]) celebrantsMap[key] = {}
 
@@ -69,9 +116,8 @@ class ExportService {
 
 		const celebrants = Object.keys(celebrantsMap)
 		const maxCelebrantsPerGroup = 3
-
-		// Découpage en groupes de 3 célébrants
 		const celebrantGroups = []
+
 		for (let i = 0; i < celebrants.length; i += maxCelebrantsPerGroup) {
 			const group = celebrants.slice(i, i + maxCelebrantsPerGroup)
 			while (group.length < maxCelebrantsPerGroup) group.push(null)
@@ -81,7 +127,6 @@ class ExportService {
 		const doc = new PDFDocument({ size: "A4", margin: 30 })
 		doc.font("Helvetica")
 
-		// Titre principal
 		doc.fontSize(15).text("Intentions de messes", { align: "center" })
 		doc.fontSize(10).text(`Mois : ${firstDate.toLocaleString("fr-FR", { month: "long", year: "numeric" })}`, {
 			align: "center",
@@ -89,19 +134,19 @@ class ExportService {
 		doc.moveDown(1)
 
 		for (const group of celebrantGroups) {
-			// Calculs dimension tableau
 			const pageWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right
-			const colWidth = pageWidth / (maxCelebrantsPerGroup * 2)
+			const jourWidth = 40 // largeur fixe pour la colonne "Jour"
+			const totalJourWidth = jourWidth * maxCelebrantsPerGroup
+			const intentionWidth = pageWidth - totalJourWidth // reste pour toutes les colonnes intention
+			const intentionWidthPerColumn = intentionWidth / maxCelebrantsPerGroup // largeur par colonne "Intention"
 
-			// Garde la position Y pour l'en-tête manuel
 			const startY = doc.y
 			let x = doc.page.margins.left
 
 			doc.fontSize(10).fillColor("black").font("Helvetica-Bold")
 
-			// Ligne 1 d'en-tête : noms des célébrants sur 2 colonnes (jour + intention)
 			for (const name of group) {
-				const cellWidth = colWidth * 2
+				const cellWidth = jourWidth + intentionWidthPerColumn
 				doc.rect(x, startY, cellWidth, 20).fill("#F5F5F5")
 				doc.fillColor("black").text(name || "", x, startY + 5, {
 					width: cellWidth,
@@ -111,17 +156,19 @@ class ExportService {
 				x += cellWidth
 			}
 
-			// Position Y pour début du tableau (sous la ligne d'en-tête manuelle)
 			const tableStartY = startY + 20 + 5
 
-			// Ligne 2 d'en-tête : "Jour" et "Intention" répétés pour chaque célébrant
 			const secondHeaderLabels = []
+			const columnsSize = []
+
 			for (let i = 0; i < maxCelebrantsPerGroup; i++) {
 				secondHeaderLabels.push("Jour")
 				secondHeaderLabels.push("Intention")
+
+				columnsSize.push(jourWidth) // largeur fixe pour "Jour"
+				columnsSize.push(intentionWidthPerColumn) // largeur calculée pour "Intention"
 			}
 
-			// Préparation des lignes du tableau (les données)
 			const tableRows = []
 
 			for (let day = 1; day <= daysInMonth; day++) {
@@ -131,7 +178,7 @@ class ExportService {
 				const row = []
 				for (const name of group) {
 					if (!name) {
-						row.push(`${day}`, "") // jour + cellule vide
+						row.push(`${day}`, "")
 						continue
 					}
 
@@ -140,10 +187,9 @@ class ExportService {
 
 					if (mass) {
 						text = mass.intention || ""
-						if (mass.deceased === 1 || mass.deceased === true || mass.deceased === "1") text += " (D)"
+						if (mass.deceased == 1 || mass.deceased === true || mass.deceased === "1") text += " (D)"
 						if (mass.date_type === "specifique") text += " (Fixe)"
 						else if (mass.date_type === "indifferente") text += " (Mobile)"
-
 						const donor = `${mass.donor_firstname} ${mass.donor_lastname}`.trim()
 						text += `\nDonateur : ${donor || "non renseigné"}`
 					}
@@ -153,19 +199,33 @@ class ExportService {
 				tableRows.push(row)
 			}
 
-			// Construction du tableau à passer à pdfkit-table
 			const table = {
 				headers: secondHeaderLabels,
 				rows: tableRows,
 			}
 
-			// Affichage du tableau sous l'en-tête manuelle
 			await doc.table(table, {
 				x: doc.page.margins.left,
 				y: tableStartY,
 				width: pageWidth,
-				prepareHeader: () => doc.font("Helvetica-Bold").fontSize(9),
-				prepareRow: () => doc.font("Helvetica").fontSize(8),
+				columnsSize: columnsSize,
+				prepareHeader: () => {
+					doc.font("Helvetica-Bold").fontSize(9)
+				},
+				prepareRow: () => {
+					doc.font("Helvetica").fontSize(8)
+				},
+				headerAlign: "center",
+				columnStyles: {
+					// Jour centrés
+					0: { align: "center", valign: "middle" },
+					2: { align: "center", valign: "middle" },
+					4: { align: "center", valign: "middle" },
+					// Intention alignée à gauche (avec toute la largeur de la colonne)
+					1: { align: "left", valign: "top" },
+					3: { align: "left", valign: "top" },
+					5: { align: "left", valign: "top" },
+				},
 			})
 
 			doc.moveDown()
@@ -186,7 +246,7 @@ class ExportService {
 		if (!masses || masses.length === 0) {
 			throw new Error("Aucune donnée à exporter")
 		}
-
+		
 		const celebrantsMap = {}
 
 		for (const mass of masses) {
@@ -195,9 +255,7 @@ class ExportService {
 			const month = date.getMonth()
 			const year = date.getFullYear()
 
-			const key = mass.celebrant_title && mass.celebrant_religious_name ? 
-				`${mass.celebrant_title} ${mass.celebrant_religious_name}` : 
-				"Non assigné"
+			const key = mass.celebrant_title && mass.celebrant_religious_name ? `${mass.celebrant_title} ${mass.celebrant_religious_name}` : "Non assigné"
 			if (!celebrantsMap[key]) celebrantsMap[key] = {}
 
 			const pad = (n) => (n < 10 ? "0" + n : n)

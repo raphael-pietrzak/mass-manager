@@ -110,8 +110,8 @@ export const massService = {
     }));
   },
 
-  updateMass: async (id: string, mass: any) => {
-    const response = await axios.put(`${API_URL}/${id}`, mass);
+  updateMass: async (mass: Mass) => {
+    const response = await axios.put(`${API_URL}/${mass.id}`, mass);
     return response.data;
   },
 

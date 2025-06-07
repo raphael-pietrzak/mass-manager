@@ -5,106 +5,65 @@ import { format } from "date-fns"
 const EXPORT_URL = `${API_BASE_URL}/api/export/masses`
 const EXPORTDON_URL = `${API_BASE_URL}/api/export/intentions`
 
+const downloadBlob = (blobData: BlobPart, filename: string) => {
+	const blobUrl = window.URL.createObjectURL(new Blob([blobData]))
+	const link = document.createElement("a")
+	link.href = blobUrl
+	link.setAttribute("download", filename)
+	document.body.appendChild(link)
+	link.click()
+	link.remove()
+}
+
+const buildQueryParams = (startDate?: Date | null, endDate?: Date | null, useFormattedDates = false) => {
+	const params = new URLSearchParams()
+	if (startDate) params.append("startDate", useFormattedDates ? format(startDate, "yyyy-MM-dd") : startDate.toISOString())
+	if (endDate) params.append("endDate", useFormattedDates ? format(endDate, "yyyy-MM-dd") : endDate.toISOString())
+	return params.toString() ? `?${params.toString()}` : ""
+}
+
+const getFileExtension = (format: "excel" | "pdf" | "word") => {
+	switch (format) {
+		case "excel":
+			return "xlsx"
+		case "pdf":
+			return "pdf"
+		case "word":
+			return "docx"
+	}
+}
+
+const exportMasses = async (formatType: "excel" | "pdf" | "word", startDate?: Date | null, endDate?: Date | null) => {
+	const useFormattedDates = formatType === "word"
+	const query = buildQueryParams(startDate, endDate, useFormattedDates)
+	const url = `${EXPORT_URL}/${formatType}${query}`
+	const response = await axios.get(url, { responseType: "blob" })
+	const extension = getFileExtension(formatType)
+	downloadBlob(response.data, `Intentions de messes.${extension}`)
+}
+
+const exportIntentions = async (formatType: "excel" | "pdf" | "word", intentionIds: string[]) => {
+	const url = `${EXPORTDON_URL}/${formatType}/don`
+	const extension = getFileExtension(formatType)
+	const filename = `Intentions de messes.${extension}`
+	try {
+		const response = await axios.post(url, { intentionIds }, { responseType: "blob" })
+		downloadBlob(response.data, filename)
+	} catch (error) {
+		console.error("Erreur lors de l'export des intentions :", error)
+	}
+}
+
 export const exportService = {
-	exportToExcel: async (startDate?: Date | null, endDate?: Date | null) => {
-		let url = `${EXPORT_URL}/excel`
-		if (startDate || endDate) {
-			url += "?"
-			if (startDate) url += `startDate=${startDate.toISOString()}`
-			if (startDate && endDate) url += "&"
-			if (endDate) url += `endDate=${endDate.toISOString()}`
-		}
-		const response = await axios.get(url, { responseType: "blob" })
-		const blobUrl = window.URL.createObjectURL(new Blob([response.data]))
-		const link = document.createElement("a")
-		link.href = blobUrl
-		link.setAttribute("download", "Intentions de messes.xlsx")
-		document.body.appendChild(link)
-		link.click()
-		link.remove()
-	},
+	exportToExcel: (startDate?: Date | null, endDate?: Date | null) => exportMasses("excel", startDate, endDate),
 
-	exportToPdf: async (startDate?: Date | null, endDate?: Date | null) => {
-		let url = `${EXPORT_URL}/pdf`
-		if (startDate || endDate) {
-			url += "?"
-			if (startDate) url += `startDate=${startDate.toISOString()}`
-			if (startDate && endDate) url += "&"
-			if (endDate) url += `endDate=${endDate.toISOString()}`
-		}
-		const response = await axios.get(url, { responseType: "blob" })
-		const blobUrl = window.URL.createObjectURL(new Blob([response.data]))
-		const link = document.createElement("a")
-		link.href = blobUrl
-		link.setAttribute("download", "Intentions de messes.pdf")
-		document.body.appendChild(link)
-		link.click()
-		link.remove()
-	},
+	exportToPdf: (startDate?: Date | null, endDate?: Date | null) => exportMasses("pdf", startDate, endDate),
 
-	exportToWord: async (startDate?: Date | null, endDate?: Date | null) => {
-		let url = `${EXPORT_URL}/word`
-		if (startDate || endDate) {
-			url += "?"
-			if (startDate) url += `startDate=${format(startDate, "yyyy-MM-dd")}`
-			if (startDate && endDate) url += "&"
-			if (endDate) url += `endDate=${format(endDate, "yyyy-MM-dd")}`
-		}
-		const response = await axios.get(url, { responseType: "blob" })
-		const blobUrl = window.URL.createObjectURL(new Blob([response.data]))
-		const link = document.createElement("a")
-		link.href = blobUrl
-		link.setAttribute("download", "Intentions de messes.docx")
-		document.body.appendChild(link)
-		link.click()
-		link.remove()
-	},
+	exportToWord: (startDate?: Date | null, endDate?: Date | null) => exportMasses("word", startDate, endDate),
 
-	exportIntentionToExcel: async (intentionIds: string[]) => {
-		const url = `${EXPORTDON_URL}/excel/don`
-		try {
-			const response = await axios.post(url, { intentionIds }, { responseType: "blob" })
-			const blobUrl = window.URL.createObjectURL(new Blob([response.data]))
-			const link = document.createElement("a")
-			link.href = blobUrl
-			link.setAttribute("download", "Intentions de messes.xlsx")
-			document.body.appendChild(link)
-			link.click()
-			link.remove()
-		} catch (error) {
-			console.error("Erreur lors de l'export des intentions :", error)
-		}
-	},
+	exportIntentionToExcel: (intentionIds: string[]) => exportIntentions("excel", intentionIds),
 
-	exportIntentionToWord: async (intentionIds: string[]) => {
-		const url = `${EXPORTDON_URL}/word/don`
-		try {
-			const response = await axios.post(url, { intentionIds }, { responseType: "blob" })
-			const blobUrl = window.URL.createObjectURL(new Blob([response.data]))
-			const link = document.createElement("a")
-			link.href = blobUrl
-			link.setAttribute("download", "Intentions de messes.docx")
-			document.body.appendChild(link)
-			link.click()
-			link.remove()
-		} catch (error) {
-			console.error("Erreur lors de l'export des intentions :", error)
-		}
-	},
+	exportIntentionToPdf: (intentionIds: string[]) => exportIntentions("pdf", intentionIds),
 
-	exportIntentionToPdf: async (intentionIds: string[]) => {
-		const url = `${EXPORTDON_URL}/pdf/don`
-		try {
-			const response = await axios.post(url, { intentionIds }, { responseType: "blob" })
-			const blobUrl = window.URL.createObjectURL(new Blob([response.data]))
-			const link = document.createElement("a")
-			link.href = blobUrl
-			link.setAttribute("download", "Intentions de messes.pdf")
-			document.body.appendChild(link)
-			link.click()
-			link.remove()
-		} catch (error) {
-			console.error("Erreur lors de l'export des intentions :", error)
-		}
-	},
+	exportIntentionToWord: (intentionIds: string[]) => exportIntentions("word", intentionIds),
 }
