@@ -3,90 +3,85 @@ const ExcelJS = require("exceljs")
 const PDFDocument = require("pdfkit-table")
 
 class ExportService {
-
 	async generateExcel(masses) {
-	if (!masses || masses.length === 0) {
-		throw new Error("Aucune donnée à exporter")
-	}
-
-	const celebrantsMap = {}
-
-	for (const mass of masses) {
-		const date = new Date(mass.date)
-		const day = date.getDate()
-		const month = date.getMonth()
-		const year = date.getFullYear()
-
-		const key =
-			mass.celebrant_title && mass.celebrant_religious_name
-				? `${mass.celebrant_title} ${mass.celebrant_religious_name}`
-				: "Non assigné"
-
-		if (!celebrantsMap[key]) celebrantsMap[key] = {}
-
-		const pad = (n) => (n < 10 ? "0" + n : n)
-		const massDateKey = `${year}-${pad(month + 1)}-${pad(day)}`
-		celebrantsMap[key][massDateKey] = {
-			intention: mass.intention,
-			deceased: mass.deceased,
-			date_type: mass.date_type,
-			donor_firstname: mass.donor_firstname || "",
-			donor_lastname: mass.donor_lastname || "",
+		if (!masses || masses.length === 0) {
+			throw new Error("Aucune donnée à exporter")
 		}
-	}
 
-	const allDates = masses.map((m) => new Date(m.date))
-	const firstDate = allDates[0]
-	const year = firstDate.getFullYear()
-	const month = firstDate.getMonth()
-	const daysInMonth = new Date(year, month + 1, 0).getDate()
+		const celebrantsMap = {}
 
-	const workbook = new ExcelJS.Workbook()
-	const worksheet = workbook.addWorksheet("Intentions par célébrant")
+		for (const mass of masses) {
+			const date = new Date(mass.date)
+			const day = date.getDate()
+			const month = date.getMonth()
+			const year = date.getFullYear()
 
-	// En-tête
-	const celebrants = Object.keys(celebrantsMap)
-	const headerRow = ["Jour", ...celebrants]
-	worksheet.addRow(headerRow).font = { bold: true }
+			const key = mass.celebrant_title && mass.celebrant_religious_name ? `${mass.celebrant_title} ${mass.celebrant_religious_name}` : "Non assigné"
 
-	// Données ligne par ligne
-	for (let day = 1; day <= daysInMonth; day++) {
-		const pad = (n) => (n < 10 ? "0" + n : n)
-		const dateKey = `${year}-${pad(month + 1)}-${pad(day)}`
-		const row = [`${day}`]
+			if (!celebrantsMap[key]) celebrantsMap[key] = {}
 
-		for (const name of celebrants) {
-			const mass = celebrantsMap[name]?.[dateKey]
-			let text = ""
+			const pad = (n) => (n < 10 ? "0" + n : n)
+			const massDateKey = `${year}-${pad(month + 1)}-${pad(day)}`
+			celebrantsMap[key][massDateKey] = {
+				intention: mass.intention,
+				deceased: mass.deceased,
+				date_type: mass.date_type,
+				donor_firstname: mass.donor_firstname || "",
+				donor_lastname: mass.donor_lastname || "",
+			}
+		}
 
-			if (mass) {
-				text += mass.intention || ""
-				if (mass.deceased === 1 || mass.deceased === true || mass.deceased === "1") {
-					text += " (D)"
+		const allDates = masses.map((m) => new Date(m.date))
+		const firstDate = allDates[0]
+		const year = firstDate.getFullYear()
+		const month = firstDate.getMonth()
+		const daysInMonth = new Date(year, month + 1, 0).getDate()
+
+		const workbook = new ExcelJS.Workbook()
+		const worksheet = workbook.addWorksheet("Intentions par célébrant")
+
+		// En-tête
+		const celebrants = Object.keys(celebrantsMap)
+		const headerRow = ["Jour", ...celebrants]
+		worksheet.addRow(headerRow).font = { bold: true }
+
+		// Données ligne par ligne
+		for (let day = 1; day <= daysInMonth; day++) {
+			const pad = (n) => (n < 10 ? "0" + n : n)
+			const dateKey = `${year}-${pad(month + 1)}-${pad(day)}`
+			const row = [`${day}`]
+
+			for (const name of celebrants) {
+				const mass = celebrantsMap[name]?.[dateKey]
+				let text = ""
+
+				if (mass) {
+					text += mass.intention || ""
+					if (mass.deceased === 1 || mass.deceased === true || mass.deceased === "1") {
+						text += " (D)"
+					}
+					if (mass.date_type === "specifique") {
+						text += " (Fixe)"
+					} else if (mass.date_type === "indifferente") {
+						text += " (Mobile)"
+					}
+
+					const donor = `${mass.donor_firstname} ${mass.donor_lastname}`.trim()
+					text += donor ? `\nDonateur : ${donor}` : `\nDonateur : non renseigné`
 				}
-				if (mass.date_type === "specifique") {
-					text += " (Fixe)"
-				} else if (mass.date_type === "indifferente") {
-					text += " (Mobile)"
-				}
 
-				const donor = `${mass.donor_firstname} ${mass.donor_lastname}`.trim()
-				text += donor ? `\nDonateur : ${donor}` : `\nDonateur : non renseigné`
+				row.push(text)
 			}
 
-			row.push(text)
+			worksheet.addRow(row)
 		}
 
-		worksheet.addRow(row)
+		return await workbook.xlsx.writeBuffer()
 	}
-
-	return await workbook.xlsx.writeBuffer()
-}
 
 	// Fonctionne, ajouter colonne vide si plus de celebrant
 	// Gérer intention_text qu'il soit bien aligné
 	async generatePDF(masses) {
-
 		const celebrantsMap = {}
 		for (const mass of masses) {
 			const date = new Date(mass.date)
@@ -246,7 +241,7 @@ class ExportService {
 		if (!masses || masses.length === 0) {
 			throw new Error("Aucune donnée à exporter")
 		}
-		
+
 		const celebrantsMap = {}
 
 		for (const mass of masses) {
@@ -446,8 +441,9 @@ class ExportService {
 						: intention.intention_type === "thirty"
 						? "Trentain"
 						: intention.intention_type === "unit"
-						? "Unité"
+						? `Unité${intention.number_of_masses !== 1 ? ` (${intention.number_of_masses} messes)` : ""}`
 						: ""
+
 				const donorText = `${intention.firstname || ""} ${intention.lastname || ""}`.trim() || "Non renseigné"
 
 				worksheet.addRow({
@@ -494,7 +490,7 @@ class ExportService {
 							: intention.intention_type === "thirty"
 							? "Trentain"
 							: intention.intention_type === "unit"
-							? "Unité"
+							? `Unité${intention.number_of_masses !== 1 ? ` \n(${intention.number_of_masses} messes)` : ""}`
 							: ""
 
 					const intentionText = `${intention.intention_text || ""} ${deceasedText} ${dateTypeText}`.trim()
@@ -511,7 +507,7 @@ class ExportService {
 				const table = {
 					headers: [
 						{ label: "Intention", property: "intention", width: 300, headerColor: "#D3D3D3", headerFont: "Helvetica-Bold" },
-						{ label: "Type", property: "type", width: 50, headerColor: "#D3D3D3", headerFont: "Helvetica-Bold" },
+						{ label: "Type", property: "type", width: 60, headerColor: "#D3D3D3", headerFont: "Helvetica-Bold" },
 						{ label: "Donateur", property: "donor", width: 150, headerColor: "#D3D3D3", headerFont: "Helvetica-Bold" },
 						{ label: "Montant (€)", property: "amount", width: 80, headerColor: "#D3D3D3", headerFont: "Helvetica-Bold" },
 					],
@@ -580,14 +576,14 @@ class ExportService {
 			intentions.forEach((intention) => {
 				const deceasedText = intention.deceased ? "(défunt)" : ""
 				const dateTypeText = intention.date_type === "specifique" ? "(fixe)" : intention.date_type === "indifferente" ? "(mobile)" : ""
-				const intentionTypeText =
+				const intentionTypeChildren =
 					intention.intention_type === "novena"
 						? "Neuvaine"
 						: intention.intention_type === "thirty"
 						? "Trentain"
 						: intention.intention_type === "unit"
-						? "Unité"
-						: ""
+						? [new Paragraph("Unité"), ...(intention.number_of_masses !== 1 ? [new Paragraph(`(${intention.number_of_masses} messes)`)] : [])]
+						: [new Paragraph("")]
 				const donorText = `${intention.firstname || ""} ${intention.lastname || ""}`.trim() || "Non renseigné"
 
 				rows.push(
@@ -597,7 +593,7 @@ class ExportService {
 								children: [new Paragraph(`${intention.intention_text || ""} ${deceasedText} ${dateTypeText}`.trim())],
 							}),
 							new TableCell({
-								children: [new Paragraph(intentionTypeText)],
+								children: intentionTypeChildren,
 							}),
 							new TableCell({
 								children: [new Paragraph(donorText)],
