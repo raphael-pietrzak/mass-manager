@@ -4,11 +4,13 @@ const Donor = require('../models/donor.model');
 const db = require('../../config/database');
 
 exports.getMasses = async (req, res) => {
+  console.log('Récupération des messes entre', req.query.startDate, 'et', req.query.endDate);
   try {
     const data = await Mass.getMassesByDateRange(req.query.startDate, req.query.endDate);
+    console.log(`${data.length} messes trouvées`);
     res.json(data);
   } catch (error) {
-    console.error(error);
+    console.error('Erreur getMasses:', error);
     res.status(500).send('Erreur lors de la récupération des données');
   }
 };
@@ -25,9 +27,10 @@ exports.getMass = async (req, res) => {
 };
 
 exports.createMass = async (req, res) => {
-  console.log('Création de la messe avec les données suivantes:', req.body);
+  console.log('Début création messe:', JSON.stringify(req.body, null, 2));
   try {
     // 1. Créer ou récupérer le donateur
+    console.log('Création/récupération du donateur...');
     let donorId = null;
 
     const donorData = {
@@ -41,8 +44,10 @@ exports.createMass = async (req, res) => {
     };
 
     donorId = await Donor.create(donorData);
+    console.log('Donateur créé avec ID:', donorId);
 
     // 2. Créer l'intention
+    console.log('Création de l\'intention...');
     const intentionData = {
       donor_id: donorId,
       intention_text: req.body.intention,
@@ -55,8 +60,10 @@ exports.createMass = async (req, res) => {
     };
 
     const intentionId = await Intention.create(intentionData);
+    console.log('Intention créée avec ID:', intentionId);
 
     // 3. Créer la messe associée
+    console.log('Création de la messe...');
     const massData = {
       date: req.body.date,
       celebrant_id: req.body.celebrant_id,
@@ -65,10 +72,11 @@ exports.createMass = async (req, res) => {
     };
 
     await Mass.create(massData);
+    console.log('Messe créée avec succès');
 
     res.status(201).send('Messe créée avec succès');
   } catch (error) {
-    console.error(error);
+    console.error('Erreur création messe:', error);
     res.status(500).send('Erreur lors de l\'enregistrement de la messe');
   }
 };

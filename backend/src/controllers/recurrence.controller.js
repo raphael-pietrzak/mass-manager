@@ -1,13 +1,18 @@
 const Recurrence = require("../models/recurrence.model")
+const Mass = require("../models/mass.model")
+const Intention = require("../models/intention.model")
+const { addDays, parseISO, format } = require('date-fns')
 
 exports.getRecurrences = async (req, res) => {
-	try {
-		const data = await Recurrence.getAll()
-		res.json(data)
-	} catch (error) {
-		console.error(error)
-		res.status(500).send("Erreur lors de la récupération des récurrences")
-	}
+  console.log('Récupération de toutes les récurrences');
+  try {
+    const data = await Recurrence.getAll()
+    console.log(`${data.length} récurrences trouvées`);
+    res.json(data)
+  } catch (error) {
+    console.error('Erreur getRecurrences:', error)
+    res.status(500).send("Erreur lors de la récupération des récurrences")
+  }
 }
 
 exports.getRecurrence = async (req, res) => {
@@ -25,40 +30,96 @@ exports.getRecurrence = async (req, res) => {
 }
 
 exports.createRecurrence = async (req, res) => {
-	try {
-		const recurrence = {
-			type: req.body.type,
-			start_date: req.body.start_date,
-			end_type: req.body.end_type,
-			occurrences: req.body.occurrences || null,
-			end_date: req.body.end_date || null,
-			position: req.body.position || null,
-			weekday: req.body.weekday || null
-		}
+  console.log('Début création récurrence:', JSON.stringify(req.body, null, 2));
+  try {
+    const recurrence = {
+      type: req.body.type,
+      start_date: req.body.start_date,
+      end_type: req.body.end_type,
+      occurrences: req.body.occurrences || null,
+      end_date: req.body.end_date || null,
+      position: req.body.position || null,
+      weekday: req.body.weekday || null
+    }
 
-		// Validation
-		if (!recurrence.type || !recurrence.start_date || !recurrence.end_type) {
-			return res.status(400).json({ message: "Type, date de début et type de fin sont requis" })
-		}
+    // Validation de la récurrence
+    if (!recurrence.type || !recurrence.start_date || !recurrence.end_type) {
+      console.log('Validation échouée: champs requis manquants');
+      return res.status(400).json({ message: "Type, date de début et type de fin sont requis" })
+    }
 
-		if (recurrence.end_type === 'occurrences' && !recurrence.occurrences) {
-			return res.status(400).json({ message: "Le nombre d'occurrences est requis" })
-		}
+    if (recurrence.end_type === 'occurrences' && !recurrence.occurrences) {
+      console.log('Validation échouée: nombre d\'occurrences manquant');
+      return res.status(400).json({ message: "Le nombre d'occurrences est requis" })
+    }
 
-		if (recurrence.end_type === 'date' && !recurrence.end_date) {
-			return res.status(400).json({ message: "La date de fin est requise" })
-		}
+    if (recurrence.end_type === 'date' && !recurrence.end_date) {
+      console.log('Validation échouée: date de fin manquante');
+      return res.status(400).json({ message: "La date de fin est requise" })
+    }
 
-		if (recurrence.type === 'relative_position' && (!recurrence.position || !recurrence.weekday)) {
-			return res.status(400).json({ message: "Position et jour de la semaine requis pour la récurrence relative mensuelle" })
-		}
+    console.log('Création de la récurrence...');
+    const recurrenceId = await Recurrence.create(recurrence)
+    console.log('Récurrence créée avec ID:', recurrenceId[0].id);
 
-		const result = await Recurrence.create(recurrence)
-		res.status(201).json({ message: "Récurrence créée avec succès", id: result[0] })
-	} catch (error) {
-		console.error(error)
-		res.status(500).send("Erreur lors de la création de la récurrence")
-	}
+    // Créer l'intention associée - Correction de l'ID de récurrence
+    const intention = {
+      donor_id: req.body.donor_id || null,
+      intention_text: req.body.intention_text || '',
+      deceased: req.body.deceased || false,
+      amount: req.body.amount || 0,
+      payment_method: req.body.payment_method || 'cash',
+      recurrence_id: recurrenceId[0].id,
+      status: 'pending'
+    }
+
+    const intentionId = await Intention.create(intention)
+    console.log('Intention créée avec ID:', intentionId);
+
+    // Générer les dates des messes
+    console.log('Génération des messes...');
+    const startDate = parseISO(recurrence.start_date)
+    const endDate = recurrence.end_date ? parseISO(recurrence.end_date) : null
+    let currentDate = startDate
+    let occurrenceCount = 0
+    const masses = []
+	console.log('Date de début:', format(startDate, 'yyyy-MM-dd'));
+	console.log('Date de fin:', endDate ? format(endDate, 'yyyy-MM-dd') : 'Aucune');
+	console.log('End Type:', recurrence.end_type);
+	console.log('Occurrences:', recurrence.occurrences || 'Aucune');
+	console.log('Position:', recurrence.position || 'Aucune');
+	console.log('Jour de la semaine:', recurrence.weekday !== null ? recurrence.weekday : 'Aucun');
+    while (
+      (recurrence.end_type === 'date' && currentDate <= endDate) ||
+      (recurrence.end_type === 'occurrences' && occurrenceCount < recurrence.occurrences)
+    ) {
+console.log('Traitement de la date:', format(currentDate, 'yyyy-MM-dd'));
+		console.log('Création messe pour la date:', format(currentDate, 'yyyy-MM-dd'));
+console.log('Traitement de la date:', format(currentDate, 'yyyy-MM-dd'));
+		console.log('Création messe pour la date:', format(currentDate, 'yyyy-MM-dd'));
+      const massData = {
+        date: format(currentDate, 'yyyy-MM-dd'),
+        celebrant_id: req.body.celebrant_id,
+        intention_id: intentionId,
+        status: 'scheduled'
+      }
+      await Mass.create(massData)
+      masses.push(massData)
+      occurrenceCount++
+      currentDate = addDays(currentDate, 1)
+    }
+
+    console.log(`${masses.length} messes créées avec succès`);
+    res.status(201).json({ 
+      message: "Récurrence, intention et messes créées avec succès", 
+      recurrence_id: recurrenceId[0].id,
+      intention_id: intentionId,
+      masses_created: masses.length 
+    })
+  } catch (error) {
+    console.error('Erreur création récurrence:', error)
+    res.status(500).send("Erreur lors de la création de la récurrence")
+  }
 }
 
 exports.updateRecurrence = async (req, res) => {
