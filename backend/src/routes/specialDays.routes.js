@@ -7,5 +7,6 @@ router.get('/:id', specialDayController.getSpecialDay);
 router.post('/', specialDayController.createSpecialDay);
 router.put('/:id', specialDayController.updateSpecialDay);
 router.delete('/:id', specialDayController.deleteSpecialDay);
+router.delete('/', specialDayController.deleteBeforeDate);
 
 module.exports = router;

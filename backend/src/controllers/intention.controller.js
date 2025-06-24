@@ -50,7 +50,7 @@ exports.createIntention = async (req, res) => {
 		}
 
 		// Logique pour initialiser number_of_masses selon le type
-		const intentionType = (intentionData.masses[0]?.intention_type || intentionData.masses[0]?.type || "").toLowerCase();
+		const intentionType = (intentionData.masses[0]?.intention_type || intentionData.masses[0]?.type || "").toLowerCase()
 		let number = 0
 		switch (intentionType) {
 			case "novena":
@@ -228,5 +228,19 @@ exports.getPonctualIntentions = async (req, res) => {
 	} catch (error) {
 		console.error(error)
 		res.status(500).send("Erreur lors de la récupération des intentions ponctuelles")
+	}
+}
+
+exports.deleteBeforeDate = async (req, res) => {
+	try {
+		const result = await Intention.deleteBeforeDate()
+		if (result > 0) {
+			res.status(204).send()
+		} else {
+			res.status(404).json({ message: "Aucune intentions trouvées avant cette date." })
+		}
+	} catch (error) {
+		console.error("Erreur lors de la suppression : ", error)
+		res.status(500).send("Erreur lors de la suppression des intentions")
 	}
 }

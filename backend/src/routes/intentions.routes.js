@@ -10,5 +10,6 @@ router.post('/', intentionController.createIntention);
 router.post('/preview', intentionController.previewIntention);
 router.put('/:id', intentionController.updateIntention);
 router.delete('/:id', intentionController.deleteIntention);
+router.delete('/', intentionController.deleteBeforeDate);
 
 module.exports = router;

@@ -49,7 +49,10 @@ const AdminPage = () => {
 
   const handleDeleteHistory = (date: Date) => {
     axios.delete(`${API_BASE_URL}/api/data/masses`, { params: { date: date } })
-    setSuccessMessage('Les messes antérieures à cette date ont bien été supprimées.');
+    axios.delete(`${API_BASE_URL}/api/data/special-days`, {params : {date: date}})
+    axios.delete(`${API_BASE_URL}/api/data/unavailable-days`, {params : {date: date}})
+    axios.delete(`${API_BASE_URL}/api/data/intentions`)
+    setSuccessMessage('Les données antérieures à cette date ont bien été supprimées.');
   };
 
   useEffect(() => {
@@ -216,7 +219,7 @@ const AdminPage = () => {
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Supprimer les intentions de messe antérieures à :</AlertDialogTitle>
+                <AlertDialogTitle>Supprimer les données antérieures à :</AlertDialogTitle>
                 <div className="mt-4">
                   <CalendarSelector
                     selectedDate={deleteBeforeDate}
@@ -225,7 +228,7 @@ const AdminPage = () => {
                   />
                 </div>
                 <AlertDialogDescription className="mt-4">
-                  ⚠ Cette action va supprimer définitivement toutes les messes antérieures à cette date.
+                  ⚠ Cette action va supprimer définitivement ttoutes les données non utilisées antérieures à cette date.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -243,7 +246,7 @@ const AdminPage = () => {
               <AlertDialogHeader>
                 <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Êtes-vous sûr de vouloir supprimer toutes les messes antérieures à cette date ?
+                  Êtes-vous sûr de vouloir supprimer toutes les données non utilisées antérieures à cette date ?
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

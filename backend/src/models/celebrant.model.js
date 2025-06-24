@@ -29,11 +29,16 @@ const Celebrant = {
 
 	getUnavailableDates: async (id) => {
 		return db
-			.select("m.date")
-			.from("Masses as m")
-			.where("m.celebrant_id", id)
-			.andWhere("m.date", ">=", db.raw("DATETIME('now')"))
-			.orderBy("m.date", "asc")
+			.select("date")
+			.from(function () {
+				this.select("m.date")
+					.from("Masses as m")
+					.where("m.celebrant_id", id)
+					.andWhere("m.date", ">=", db.raw("DATETIME('now')"))
+					.union([db.select("u.date").from("UnavailableDays as u").where("u.celebrant_id", id).andWhere("u.date", ">=", db.raw("DATETIME('now')"))])
+					.as("all_dates")
+			})
+			.orderBy("date", "asc")
 			.then((rows) => {
 				return rows.map((row) => row.date)
 			})

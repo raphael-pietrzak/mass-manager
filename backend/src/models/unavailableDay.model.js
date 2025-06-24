@@ -24,6 +24,14 @@ const UnavailableDay = {
 	delete: async (id) => {
 		return db("UnavailableDays").where("id", id).del()
 	},
+
+	deleteBeforeDate: async (date) => {
+		const formattedDate = new Date(date).toISOString().split("T")[0]
+		return db("UnavailableDays")
+			.where(db.raw("DATE(date) < DATE(?)", [formattedDate]))
+			.where(db.raw("is_recurrent = 0"))
+			.del()
+	},
 }
 
-module.exports = UnavailableDay;
+module.exports = UnavailableDay

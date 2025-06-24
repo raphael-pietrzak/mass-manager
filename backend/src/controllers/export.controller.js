@@ -25,13 +25,14 @@ exports.exportToExcel = async (req, res) => {
 
 exports.exportToPdf = async (req, res) => {
 	try {
-		const { startDate, endDate } = req.query
+		const { celebrant_id, startDate, endDate } = req.query
 
 		// Récupérer les masses selon les filtres de date fournis
-		const masses = await Mass.getMassesByDateRange(startDate, endDate)
+		const masses = await Mass.getMassesByDateRange(celebrant_id || null, startDate, endDate)
 
 		// Générer le PDF
-		const buffer = await exportService.generatePDF(masses)
+		if (celebrant_id) buffer = await exportService.generatePDFByCelebrant(masses, celebrant_id)
+		else buffer = await exportService.generatePDF(masses)
 
 		// Envoyer le PDF
 		res.setHeader("Content-Type", "application/pdf")

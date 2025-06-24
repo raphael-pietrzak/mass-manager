@@ -12,6 +12,7 @@ const unavailableDayRoutes = require('./routes/unavailableDays.routes');
 const recurrencesRoutes = require('./routes/recurrences.routes');
 const exportRoutes = require('./routes/export.routes');
 const authRoutes = require('./routes/auth.routes');
+const mailerRoutes = require('./routes/mailer.routes');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -35,6 +36,7 @@ app.use('/api/data/unavailable-days', unavailableDayRoutes)
 app.use('/api/data/recurrences', recurrencesRoutes);
 app.use('/api/export', exportRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/email', mailerRoutes);
 
 // Lancement du serveur
 app.listen(PORT, () => {
