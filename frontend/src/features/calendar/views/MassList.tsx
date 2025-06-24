@@ -113,10 +113,13 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
                   Statut
                 </th>
                 <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Type de date
+                </th>
+                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Célébrant
                 </th>
                 <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Type
+                  Type d'intention
                 </th>
                 <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Intention
@@ -142,14 +145,33 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
                   <td className="px-3 py-2 whitespace-nowrap text-sm">
                     {(() => {
                       const statusConfig = {
-                        scheduled: { label: 'Planifiée', color: 'bg-blue-100 text-blue-800' },
+                        scheduled: { label: 'Planifiée', color: 'bg-green-100 text-green-800' },
                         confirmed: { label: 'Confirmée', color: 'bg-green-100 text-green-800' },
                         celebrated: { label: 'Célébrée', color: 'bg-purple-100 text-purple-800' },
                         cancelled: { label: 'Annulée', color: 'bg-red-100 text-red-800' }
                       };
                       const status = mass.status || 'scheduled';
                       const config = statusConfig[status];
-                      
+
+                      return (
+                        <span className={`px-2 py-0.5 rounded-full text-xs ${config.color}`}>
+                          {config.label}
+                        </span>
+                      );
+                    })()}
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap text-sm">
+                    {(() => {
+                      const dateTypeConfig = {
+                        indifferente: { label: 'mobile', color: 'bg-blue-100 text-blue-800' },
+                        specifique: { label: 'fixe', color: 'bg-red-100 text-red-800' },
+                      };
+                      type DateTypeKey = keyof typeof dateTypeConfig;
+                      const dateType: DateTypeKey = (mass.dateType === 'indifferente' || mass.dateType === 'specifique')
+                        ? mass.dateType
+                        : 'indifferente';
+                      const config = dateTypeConfig[dateType];
+
                       return (
                         <span className={`px-2 py-0.5 rounded-full text-xs ${config.color}`}>
                           {config.label}
@@ -203,11 +225,11 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
 
       {/* Modale de détails */}
       {isDetailsModalOpen && selectedDetailMass && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
           onClick={() => setIsDetailsModalOpen(false)}
         >
-          <div 
+          <div
             className="bg-white rounded-lg shadow-lg max-w-2xl w-full mx-4 p-6"
             onClick={e => e.stopPropagation()}
           >
@@ -220,7 +242,7 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
                 <X className="w-5 h-5" />
               </button>
             </div>
-            
+
             <div className="space-y-4">
               <div>
                 <h3 className="text-sm font-medium text-gray-500">Date</h3>

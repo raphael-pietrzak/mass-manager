@@ -79,8 +79,6 @@ class ExportService {
 		return await workbook.xlsx.writeBuffer()
 	}
 
-	// Fonctionne, ajouter colonne vide si plus de celebrant
-	// Gérer intention_text qu'il soit bien aligné
 	async generatePDF(masses) {
 		const celebrantsMap = {}
 		for (const mass of masses) {
@@ -226,6 +224,119 @@ class ExportService {
 			doc.moveDown()
 			doc.addPage()
 		}
+
+		doc.end()
+
+		return new Promise((resolve, reject) => {
+			const chunks = []
+			doc.on("data", (chunk) => chunks.push(chunk))
+			doc.on("end", () => resolve(Buffer.concat(chunks)))
+			doc.on("error", reject)
+		})
+	}
+
+	async generatePDFByCelebrant(masses, celebrantId) {
+		// Filtrer les messes pour garder seulement celles du célébrant demandé
+		const filteredMasses = masses.filter((mass) => mass.celebrant_id == celebrantId)
+		if (filteredMasses.length === 0) throw new Error("Aucune messe trouvée pour ce célébrant.")
+
+		// Construire la map { "Nom Célébrant": { "date": details } }
+		const celebrantsMap = {}
+		const celebrant = filteredMasses[0]
+		const key = `${celebrant.celebrant_title} ${celebrant.celebrant_religious_name}`
+		celebrantsMap[key] = {}
+
+		for (const mass of filteredMasses) {
+			const date = new Date(mass.date)
+			const pad = (n) => (n < 10 ? "0" + n : n)
+			const dateKey = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+			celebrantsMap[key][dateKey] = {
+				intention: mass.intention,
+				deceased: mass.deceased,
+				date_type: mass.date_type,
+				donor_firstname: mass.donor_firstname || "",
+				donor_lastname: mass.donor_lastname || "",
+			}
+		}
+
+		const firstDate = new Date(filteredMasses[0].date)
+		const year = firstDate.getFullYear()
+		const month = firstDate.getMonth()
+		const daysInMonth = new Date(year, month + 1, 0).getDate()
+
+		const doc = new PDFDocument({ size: "A4", margin: 30 })
+		doc.font("Helvetica")
+
+		doc.fontSize(15).text("Intentions de messes", { align: "center" })
+		doc.fontSize(10).text(`Mois : ${firstDate.toLocaleString("fr-FR", { month: "long", year: "numeric" })}`, { align: "center" })
+		doc.moveDown(1)
+
+		const pageWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right
+		const jourWidth = 40 // largeur colonne jour
+		const intentionWidth = pageWidth - jourWidth // reste pour intention
+
+		// Nom du célébrant (unique)
+		const celebrantName = Object.keys(celebrantsMap)[0]
+
+		// Header du tableau avec fond gris sur toute la largeur
+		const startY = doc.y
+		doc.fontSize(10).fillColor("black").font("Helvetica-Bold")
+		doc.rect(doc.page.margins.left, startY, pageWidth, 20).fill("#F5F5F5")
+		doc.fillColor("black").text(celebrantName, doc.page.margins.left, startY + 5, {
+			width: pageWidth,
+			align: "center",
+			height: 20,
+		})
+
+		const tableStartY = startY + 25
+
+		// Préparer en-têtes et colonnes pour 2 colonnes (jour, intention)
+		const headers = ["Jour", "Intention"]
+		const columnsSize = [jourWidth, intentionWidth]
+
+		// Préparer les lignes
+		const pad = (n) => (n < 10 ? "0" + n : n)
+		const rows = []
+
+		for (let day = 1; day <= daysInMonth; day++) {
+			const dateKey = `${year}-${pad(month + 1)}-${pad(day)}`
+			const mass = celebrantsMap[celebrantName][dateKey]
+			let text = ""
+			if (mass) {
+				text = mass.intention || ""
+				if (mass.deceased == 1 || mass.deceased === true || mass.deceased === "1") text += " (D)"
+				if (mass.date_type === "specifique") text += " (Fixe)"
+				else if (mass.date_type === "indifferente") text += " (Mobile)"
+				const donor = `${mass.donor_firstname} ${mass.donor_lastname}`.trim()
+				text += `\nDonateur : ${donor || "non renseigné"}`
+			}
+			rows.push([`${day}`, text])
+		}
+
+		// Générer le tableau
+		await doc.table(
+			{
+				headers,
+				rows,
+			},
+			{
+				x: doc.page.margins.left,
+				y: tableStartY,
+				width: pageWidth,
+				columnsSize,
+				prepareHeader: () => {
+					doc.font("Helvetica-Bold").fontSize(9)
+				},
+				prepareRow: () => {
+					doc.font("Helvetica").fontSize(8)
+				},
+				headerAlign: "center",
+				columnStyles: {
+					0: { align: "center", valign: "middle" },
+					1: { align: "left", valign: "top" },
+				},
+			}
+		)
 
 		doc.end()
 

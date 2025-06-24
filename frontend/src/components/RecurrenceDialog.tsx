@@ -5,13 +5,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import { CalendarIcon } from 'lucide-react';
-import { fr } from 'date-fns/locale';
 import { recurrenceService, Recurrence } from '../api/recurrenceService';
-import { formatDateForDisplay, formatDateForApi, parseApiDate } from '../utils/dateUtils';
+import { formatDateForApi, parseApiDate } from '../utils/dateUtils';
 import { toast } from 'sonner';
+import CalendarSelector from './CalendarSelector';
 
 interface RecurrenceDialogProps {
   open: boolean;
@@ -73,7 +70,7 @@ const RecurrenceDialog: React.FC<RecurrenceDialogProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.type || !formData.start_date || !formData.end_type) {
       toast.error('Veuillez remplir tous les champs requis');
       return;
@@ -96,7 +93,7 @@ const RecurrenceDialog: React.FC<RecurrenceDialogProps> = ({
 
     try {
       setLoading(true);
-      
+
       if (recurrence?.id) {
         await recurrenceService.update(recurrence.id, formData);
         toast.success('Récurrence mise à jour avec succès');
@@ -104,8 +101,9 @@ const RecurrenceDialog: React.FC<RecurrenceDialogProps> = ({
         await recurrenceService.create(formData as Omit<Recurrence, 'id' | 'created_at' | 'updated_at'>);
         toast.success('Récurrence créée avec succès');
       }
-      
+
       onSave();
+      onOpenChange(false);
     } catch (error) {
       console.error('Erreur lors de la sauvegarde:', error);
       toast.error('Erreur lors de la sauvegarde de la récurrence');
@@ -125,29 +123,17 @@ const RecurrenceDialog: React.FC<RecurrenceDialogProps> = ({
             {recurrence ? 'Modifier la récurrence' : 'Nouvelle récurrence'}
           </DialogTitle>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label>Date de début</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-start text-left font-normal">
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {startDate ? formatDateForDisplay(startDate) : <span>Sélectionner une date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={startDate}
-                  onSelect={(date: Date | null) => {
-                    setFormData({ ...formData, start_date: formatDateForApi(date) });
-                  }}
-                  initialFocus
-                  locale={fr}
-                />
-              </PopoverContent>
-            </Popover>
+            <CalendarSelector
+              selectedDate={startDate || undefined}
+              onDateChange={(date: Date | undefined) => {
+                return setFormData({ ...formData, start_date: formatDateForApi(date) });
+              }}
+              ignoreAvailability={true}
+            />
           </div>
 
           <div className="space-y-2">
@@ -189,7 +175,7 @@ const RecurrenceDialog: React.FC<RecurrenceDialogProps> = ({
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div className="space-y-2">
                 <Label>Jour de la semaine</Label>
                 <Select
@@ -215,7 +201,7 @@ const RecurrenceDialog: React.FC<RecurrenceDialogProps> = ({
             <Label>Fin de la récurrence</Label>
             <RadioGroup
               value={formData.end_type || ''}
-              onValueChange={(value: 'occurrences' | 'date') => 
+              onValueChange={(value: 'occurrences' | 'date') =>
                 setFormData({ ...formData, end_type: value })}
             >
               <div className="flex items-center space-x-2">
@@ -225,7 +211,7 @@ const RecurrenceDialog: React.FC<RecurrenceDialogProps> = ({
                   type="number"
                   min="1"
                   value={formData.occurrences || ''}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setFormData({ ...formData, occurrences: parseInt(e.target.value) || 1 })}
                   className="w-20"
                 />
@@ -239,25 +225,15 @@ const RecurrenceDialog: React.FC<RecurrenceDialogProps> = ({
             </RadioGroup>
 
             {formData.end_type === 'date' && (
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-start text-left font-normal">
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {endDate ? formatDateForDisplay(endDate) : <span>Sélectionner une date de fin</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={endDate}
-                    onSelect={(date: Date | null) => {
-                      setFormData({ ...formData, end_date: formatDateForApi(date) });
-                    }}
-                    initialFocus
-                    locale={fr}
-                  />
-                </PopoverContent>
-              </Popover>
+              <div>
+                <CalendarSelector
+                  selectedDate={endDate || undefined}
+                  onDateChange={(date: Date | undefined) => {
+                    return setFormData({ ...formData, end_date: formatDateForApi(date) });
+                  }}
+                  ignoreAvailability={true}
+                />
+              </div>
             )}
           </div>
 

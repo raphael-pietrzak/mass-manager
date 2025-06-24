@@ -532,6 +532,17 @@ exports.seed = function (knex) {
 					intention_type: "unit",
 					number_of_masses: 5,
 				},
+				{
+					donor_id: 5,
+					intention_text: "Messes test pour suppression",
+					deceased: false,
+					amount: 45,
+					payment_method: "cheque",
+					wants_celebration_date: false,
+					date_type: "indifferente",
+					intention_type: "unit",
+					number_of_masses: 1,
+				},
 			])
 		})
 		.then(function () {
@@ -560,6 +571,7 @@ exports.seed = function (knex) {
 				{ date: "2025-07-20", celebrant_id: 21, intention_id: 21, status: "scheduled" },
         { date: "2025-07-20", celebrant_id: 22, intention_id: 22, status: "scheduled" },
 				{ date: "2025-07-20", celebrant_id: 23, intention_id: 23, status: "scheduled" },
+				{ date: "2025-08-20", celebrant_id: 29, intention_id: 29, status: "scheduled" },
 			])
 		})
 		.then(function () {

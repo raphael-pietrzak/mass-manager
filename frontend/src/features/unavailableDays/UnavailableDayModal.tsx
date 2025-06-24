@@ -39,11 +39,13 @@ export const UnavailableDayModal: React.FC<Props> = ({ isOpen, onClose }) => {
   const [selectedCelebrantId, setSelectedCelebrantId] = useState<number | null>(null); // célébrant sélectionné dans la liste
 
   const handleSelectCelebrant = (value: string) => {
+    resetForm();
     const id = parseInt(value, 10);
     handleChange('celebrant_id', id);
   };
 
   const handleSelectFilterCelebrant = async (value: string) => {
+    resetForm();
     const id = parseInt(value, 10);
     setSelectedCelebrantId(id);
   };
@@ -51,6 +53,11 @@ export const UnavailableDayModal: React.FC<Props> = ({ isOpen, onClose }) => {
   useEffect(() => {
     if (isOpen) {
       loadUnavailableDays();
+      fetchCelebrants();
+      setUnavailableDay([]);
+    } else {
+      resetForm();
+      setSelectedCelebrantId(null);
     }
   }, [selectedCelebrantId]);
 

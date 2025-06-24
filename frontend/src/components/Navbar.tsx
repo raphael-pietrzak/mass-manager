@@ -13,8 +13,8 @@ interface NavLinkItem {
 
 const NAV_LINKS: NavLinkItem[] = [
   { label: "Messes", href: "/calendar" },
-  { label: "Intentions ponctuelles", href: "/intentions" },
-  { label: "Intentions récurrentes", href: "/recurrences" },
+  { label: "Intentions ponctuelles", href: "/ponctual-intentions" },
+  { label: "Intentions récurrentes", href: "/recurring-intentions" },
   { label: "Administrateur", href: "/admin" },
 ];
 

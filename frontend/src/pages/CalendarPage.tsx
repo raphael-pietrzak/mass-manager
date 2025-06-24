@@ -33,16 +33,16 @@ function CalendarPage() {
 
   const fetchMasses = async () => {
     try {
-      setLoading(true);
+       setLoading(true);
       const data = await massService.getMassesByDateRange(filters.startDate, filters.endDate);
       setMasses(data);
+      setLoading(false);
     } catch (err) {
       setError('Erreur lors du chargement des messes');
-    } finally {
       setLoading(false);
     }
   };
-  
+
   useEffect(() => {
     fetchMasses();
   }, [filters.startDate, filters.endDate]);
@@ -62,7 +62,6 @@ function CalendarPage() {
     await massService.updateMass(mass);
     setIsMassModalOpen(true);
     fetchMasses();
-
   };
 
   const handleDeleteMass = async (massToDelete: Mass) => {
