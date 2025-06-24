@@ -7,5 +7,6 @@ router.get('/:id', unavailableDaycontroller.getUnavailableDay);
 router.post('/', unavailableDaycontroller.createUnavailableDay);
 router.put('/:id', unavailableDaycontroller.updateUnavailableDay);
 router.delete('/:id', unavailableDaycontroller.deleteUnavailableDay);
+router.delete('/', unavailableDaycontroller.deleteBeforeDate);
 
 module.exports = router;

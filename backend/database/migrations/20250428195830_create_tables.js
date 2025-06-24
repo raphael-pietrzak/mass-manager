@@ -46,7 +46,10 @@ exports.up = function(knex) {
       table.boolean('wants_celebration_date').defaultTo(false);
       table.enu('date_type', ['specifique', 'indifferente']);
 			table.enu('intention_type', ['thirty', 'novena', 'unit']);
-      table.enum('status', ['pending', 'sheduled', 'in_progress', 'completed', 'cancelled']).defaultTo('pending');
+      table.enum('status', ['pending', 'scheduled', 'in_progress', 'completed', 'cancelled']).defaultTo('pending');
+      table.integer('number_of_masses').defaultTo(1);
+      
+      // Référence vers la table récurrence
       table.integer('recurrence_id').unsigned().nullable().references('id').inTable('Recurrences').onDelete('SET NULL');
       table.timestamps(true, true);
     })

@@ -1,4 +1,5 @@
 const db = require("../../config/database")
+const { deleteBeforeDate } = require("./mass.model")
 
 const Intention = {
 	getAll: () =>
@@ -28,11 +29,18 @@ const Intention = {
 
 	getPonctualIntentions: () =>
 		db("Intentions")
-			.where("date_type", "indifferente")
 			.whereNull("recurrence_id")
 			.select("Intentions.*", "Donors.firstname as donor_firstname", "Donors.lastname as donor_lastname", "Donors.email as donor_email")
 			.orderBy("created_at", "asc")
 			.leftJoin("Donors", "Intentions.donor_id", "Donors.id"),
+
+	deleteBeforeDate: () =>
+		db("Intentions")
+			.whereNull("recurrence_id")
+			.whereNotIn("id", function () {
+				this.select("intention_id").from("Masses").whereNotNull("intention_id")
+			})
+			.del()
 }
 
 module.exports = Intention

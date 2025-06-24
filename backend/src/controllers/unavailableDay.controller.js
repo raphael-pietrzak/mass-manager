@@ -68,3 +68,25 @@ exports.deleteUnavailableDay = async (req, res) => {
 		res.status(500).send("Erreur lors de la suppression du jour indisponible")
 	}
 }
+
+exports.deleteBeforeDate = async (req, res) => {
+	try {
+		const date = req.query.date
+		if (!date) {
+			return res.status(400).json({ message: "La date est requise." })
+		}
+		const parsedDate = new Date(date)
+		if (isNaN(parsedDate)) {
+			return res.status(400).json({ message: "Date invalide." })
+		}
+		const result = await UnavailableDay.deleteBeforeDate(parsedDate.toISOString())
+		if (result > 0) {
+			res.status(204).send()
+		} else {
+			res.status(404).json({ message: "Aucun jours indisponibles trouvés avant cette date." })
+		}
+	} catch (error) {
+		console.error("Erreur lors de la suppression : ", error)
+		res.status(500).send("Erreur lors de la suppression des jours indisponibles")
+	}
+}

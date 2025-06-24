@@ -14,6 +14,7 @@ export interface Intention {
     status?: IntentionStatus;
     deceased?: boolean;
     intention_type?: 'unit' | 'thirty' | 'novena';
+    number_of_masses?: number;
 
     // Données du donateur
     donor_firstname?: string;
