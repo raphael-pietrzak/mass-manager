@@ -103,7 +103,10 @@ const IntentionPage: React.FC = () => {
 		<div className="min-h-screen bg-gray-100">
 			<main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
 				<h1 className="text-2xl font-bold mb-6">Liste des intentions de messe ponctuelles</h1>
-				<IntentionFilterBar onExport={handleExport}/>
+				<IntentionFilterBar 
+					onExport={handleExport} 
+					selectedCount={selectedIntentionIds.length}
+				/>
 				
 				<div className="mt-6 mb-6">
 					{error && (

@@ -123,13 +123,13 @@ export const IntentionList: React.FC<IntentionListProps> = ({ intentions, onSele
                     </th>
                     <th className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-1/5">
                       <div className="flex items-center gap-2">
-                        <span>Sélectionner tout</span>
                         <input
                           type="checkbox"
                           checked={isAllSelected}
                           onChange={(e) => handleSelectAll(e.target.checked)}
-                          className="form-checkbox h-6 w-6 text-blue-600"
+                          className="form-checkbox h-5 w-5 rounded border-gray-300 text-blue-600 transition-colors duration-150 ease-in-out focus:ring-0 focus:ring-offset-0"
                         />
+                        <span>Sélectionner tout</span>
                       </div>
                     </th>
                   </tr>
@@ -205,7 +205,7 @@ export const IntentionList: React.FC<IntentionListProps> = ({ intentions, onSele
                       <td className="px-3 py-2 text-center">
                         <input
                           type="checkbox"
-                          className="form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out"
+                          className="form-checkbox h-5 w-5 rounded border-gray-300 text-blue-600 transition-colors duration-150 ease-in-out focus:ring-0 focus:ring-offset-0"
                           checked={selectedIntentionId.includes(intention.id)}
                           onClick={(e) => e.stopPropagation()}
                           onChange={(e) => handleSelectIntention(intention.id, e.target.checked)}

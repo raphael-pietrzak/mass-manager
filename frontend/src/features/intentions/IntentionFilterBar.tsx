@@ -3,9 +3,10 @@ import { useEffect, useRef, useState } from "react";
 
 interface DateFilterBarProps {
   onExport?: (format: 'excel' | 'pdf' | 'word') => Promise<void>;
+  selectedCount: number;
 }
 
-const IntentionFilterBar: React.FC<DateFilterBarProps> = ({ onExport }) => {
+const IntentionFilterBar: React.FC<DateFilterBarProps> = ({ onExport, selectedCount }) => {
   const exportMenuRef = useRef<HTMLDivElement>(null);
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
 
@@ -20,32 +21,43 @@ const IntentionFilterBar: React.FC<DateFilterBarProps> = ({ onExport }) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [exportMenuRef]);
+
+  const isDisabled = selectedCount === 0;
+
   return (
     <div className="bg-white rounded-lg shadow p-4 mb-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        {/* <div className="flex flex-wrap items-center gap-4"> */}
           <div className="flex items-center space-x-2">
             <button
               type="button"
-              className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              disabled={isDisabled}
+              className={`flex items-center gap-2 px-4 py-2 rounded transition-colors duration-200
+                ${isDisabled 
+                  ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
+                  : 'bg-blue-500 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400'
+                }`}
             >
               <CalendarCheck className="w-5 h-5" />
-              <span>Répartir les intentions</span>
+              <span>Répartir les intentions ({selectedCount})</span>
             </button>
           </div>
           <div className='flex gap-4'>
             {onExport && (
               <div className="relative" ref={exportMenuRef}>
                 <button
-                  onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
-                  className="transition-colors duration-200 px-3 py-2 text-sm font-medium bg-card border border-border 
-                                     rounded-md shadow-sm hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary/30 
-                                     flex items-center gap-2"
+                  onClick={() => !isDisabled && setIsExportMenuOpen(!isExportMenuOpen)}
+                  disabled={isDisabled}
+                  className={`transition-colors duration-200 px-3 py-2 text-sm font-medium rounded-md shadow-sm
+                    flex items-center gap-2 ${
+                      isDisabled
+                        ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                        : 'bg-card border border-border hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary/30'
+                    }`}
                 >
                   <ExportIcon className="h-4 w-4" />
-                  <span>Exporter & Supprimer</span>
+                  <span>Exporter & Supprimer ({selectedCount})</span>
                   <ChevronDownIcon className={`h-4 w-4 transition-transform duration-200 
-                                                     ${isExportMenuOpen ? 'rotate-180' : ''}`} />
+                    ${isExportMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {isExportMenuOpen && (
@@ -78,7 +90,6 @@ const IntentionFilterBar: React.FC<DateFilterBarProps> = ({ onExport }) => {
               </div>
             )}
           </div>
-        {/* </div> */}
       </div>
     </div>
   )
