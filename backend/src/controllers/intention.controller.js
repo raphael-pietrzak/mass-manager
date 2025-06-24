@@ -25,11 +25,12 @@ exports.getIntention = async (req, res) => {
 }
 
 exports.createIntention = async (req, res) => {
+	console.log('Début création intention:', JSON.stringify(req.body, null, 2));
 	try {
 		const intentionData = req.body
 		let donorId
 
-		// Préparer les données du donateur
+		console.log('Traitement des données du donateur...');
 		const donorData = {
 			firstname: intentionData.donor.firstname,
 			lastname: intentionData.donor.lastname,
@@ -40,13 +41,15 @@ exports.createIntention = async (req, res) => {
 			city: intentionData.donor.city || null,
 		}
 
-		// Vérifier si le donateur existe déjà
+		console.log('Vérification existence donateur...');
 		const existingDonor = await Donor.findByEmail(intentionData.donor.email)
 		if (existingDonor) {
+			console.log('Donateur existant trouvé:', existingDonor.id);
 			donorId = existingDonor.id
 		} else {
-			// Si le donateur n'existe pas, le créer
+			console.log('Création nouveau donateur...');
 			donorId = await Donor.create(donorData)
+			console.log('Nouveau donateur créé:', donorId);
 		}
 
 		// Logique pour initialiser number_of_masses selon le type
@@ -81,35 +84,33 @@ exports.createIntention = async (req, res) => {
 		}
 
 		const intentionId = await Intention.create(intention)
+		console.log('Intention créée:', intentionId);
 
-		// Traiter les messes associées
+		console.log('Traitement des messes associées...');
 		if (intentionData.masses && intentionData.masses.length > 0) {
-			// Map pour suivre les célébrants déjà assignés par date
+			console.log(`${intentionData.masses.length} messes à créer`);
 			const assignedCelebrantsByDate = new Map()
 
 			for (const mass of intentionData.masses) {
+				console.log('Traitement messe:', JSON.stringify(mass, null, 2));
 				const massDate = mass.date
 				const celebrantId = mass.celebrant_id
 
-				// Vérifier si un célébrant est déjà assigné pour cette date
 				if (celebrantId && massDate) {
 					const dateKey = new Date(massDate).toISOString().split("T")[0]
+					console.log(`Vérification disponibilité célébrant ${celebrantId} pour ${dateKey}`);
 
-					// Si un célébrant est déjà assigné pour cette date et que c'est le même
 					if (assignedCelebrantsByDate.has(dateKey) && assignedCelebrantsByDate.get(dateKey) === celebrantId) {
-						// Ne pas permettre la création de cette messe avec ce célébrant
+						console.log('Célébrant déjà assigné pour cette date, messe ignorée');
 						continue
 					}
 
-					// Vérifier également si ce célébrant n'est pas déjà assigné à une autre messe ce jour-là
 					const isCelebrantAvailable = await MassModel.isCelebrantAvailable(celebrantId, dateKey)
 					if (!isCelebrantAvailable) {
-						// Le célébrant est déjà assigné à une autre messe ce jour-là
-						// On pourrait soit sauter cette messe, soit lui assigner un autre célébrant
-						// Dans cet exemple, on continue sans assigner de célébrant
+						console.log('Célébrant non disponible, assignation annulée');
 						mass.celebrant_id = null
 					} else {
-						// Marquer ce célébrant comme assigné pour cette date
+						console.log('Célébrant disponible et assigné');
 						assignedCelebrantsByDate.set(dateKey, celebrantId)
 					}
 				}
@@ -122,15 +123,17 @@ exports.createIntention = async (req, res) => {
 				}
 
 				await MassModel.create(massData)
+				console.log('Messe créée avec succès');
 			}
 		}
 
-		// Récupérer les données complètes pour la réponse
+		console.log('Récupération données finales...');
 		const result = await Intention.findById(intentionId)
+		console.log('Opération terminée avec succès');
 
 		res.status(201).json(result)
 	} catch (error) {
-		console.error("Erreur lors de la création de l'intention:", error)
+		console.error("Erreur détaillée lors de la création de l'intention:", error);
 		res.status(500).json({ message: "Erreur lors de la création de l'intention" })
 	}
 }
@@ -177,6 +180,7 @@ exports.deleteIntention = async (req, res) => {
 }
 
 exports.previewIntention = async (req, res) => {
+	console.log('Début prévisualisation intention:', JSON.stringify(req.body, null, 2));
 	try {
 		const preview = await MassService.generateMassPreview({
 			celebrant_id: req.body.celebrant_id,
@@ -191,9 +195,10 @@ exports.previewIntention = async (req, res) => {
 			end_date: req.body.end_date,
 			end_type: req.body.end_type,
 		})
+		console.log('Prévisualisation générée:', JSON.stringify(preview, null, 2));
 		res.status(200).json(preview)
 	} catch (error) {
-		console.error("Erreur lors de la prévisualisation de l'intention:", error)
+		console.error("Erreur détaillée lors de la prévisualisation:", error);
 		res.status(500).json({ message: "Erreur lors de la prévisualisation de l'intention" })
 	}
 }
