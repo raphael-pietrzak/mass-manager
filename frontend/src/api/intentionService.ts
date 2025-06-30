@@ -13,7 +13,7 @@ export interface Intention {
     celebrant_name?: string;
     status?: IntentionStatus;
     deceased?: boolean;
-    intention_type?: 'unit' | 'thirty' | 'novena';
+    intention_type: 'unit' | 'thirty' | 'novena';
     number_of_masses?: number;
 
     // Données du donateur
@@ -34,8 +34,7 @@ export interface Intention {
     
     // Données de masse
     mass_count?: number;
-    mass_type?: string;
-    date_type?: 'imperative' | 'preferred' | 'indifferent';
+    date_type?: 'indifferent' | 'desired' | 'imperative';
     
     // Données de récurrence
     is_recurrent?: boolean;
@@ -56,9 +55,6 @@ export interface Intention {
 
 export interface Masses {
     date: string | null; // peut être null pour les messes sans date assignée
-    intention: string;
-    type: 'defunts' | 'vivants';
-    celebrant_title: string;
     celebrant_id: string | null; // peut être null si non assigné
     celebrant_name: string;
     status: MassStatus;

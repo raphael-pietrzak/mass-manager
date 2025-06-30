@@ -29,7 +29,7 @@ const MassService = {
             const usedCelebrantsByDate = {};
             
             // Si une date de début est fournie (impérative ou souhaitée)
-            if (start_date && (date_type === 'imperative' || date_type === 'preferred')) {
+            if (start_date && (date_type === 'imperative' || date_type === 'desired')) {
                 // Générer un tableau de dates à partir de start_date
                 const dates = [];
                 for (let i = 0; i < mass_count; i++) {
@@ -56,7 +56,7 @@ const MassService = {
                             masses.push({
                                 date,
                                 intention: intention_text,
-                                type: deceased ? 'defunts' : 'vivants',
+                                type: deceased ? 'defunt' : '',
                                 celebrant_id: null,
                                 celebrant_name: "Aucun célébrant disponible",
                                 status: 'error',
@@ -71,7 +71,7 @@ const MassService = {
                         }
                     } 
                     // CAS 3 & 4: Date souhaitée
-                    else if (date_type === 'preferred') {
+                    else if (date_type === 'desired') {
                         const massData = await MassService.handlePreferredDate(
                             date, celebrant_id, intention_text, deceased, usedCelebrantsByDate
                         );

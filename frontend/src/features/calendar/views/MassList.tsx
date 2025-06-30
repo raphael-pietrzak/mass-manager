@@ -163,15 +163,15 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
                   <td className="px-3 py-2 whitespace-nowrap text-sm">
                     {(() => {
                       const dateTypeConfig = {
-                        indifferente: { label: 'mobile', color: 'bg-blue-100 text-blue-800' },
-                        specifique: { label: 'fixe', color: 'bg-red-100 text-red-800' },
+                        indifferent: { label: 'mobile', color: 'bg-blue-100 text-blue-800' },
+                        imperative: { label: 'fixe', color: 'bg-red-100 text-red-800' },
+                        desired: { label: 'fixe', color: 'bg-red-100 text-red-800' },
                       };
                       type DateTypeKey = keyof typeof dateTypeConfig;
-                      const dateType: DateTypeKey = (mass.dateType === 'indifferente' || mass.dateType === 'specifique')
+                      const dateType: DateTypeKey = (mass.dateType === 'indifferent' || mass.dateType === 'imperative' || mass.dateType === 'desired')
                         ? mass.dateType
-                        : 'indifferente';
+                        : 'indifferent';
                       const config = dateTypeConfig[dateType];
-
                       return (
                         <span className={`px-2 py-0.5 rounded-full text-xs ${config.color}`}>
                           {config.label}

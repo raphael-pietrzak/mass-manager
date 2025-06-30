@@ -4,10 +4,9 @@ const Donor = require('../models/donor.model');
 const db = require('../../config/database');
 
 exports.getMasses = async (req, res) => {
-  console.log('Récupération des messes entre', req.query.startDate, 'et', req.query.endDate);
+  const {startDate, endDate, celebrant_id} = req.query
   try {
-    const data = await Mass.getMassesByDateRange(req.query.startDate, req.query.endDate);
-    console.log(`${data.length} messes trouvées`);
+    const data = await Mass.getMassesByDateRange(startDate, endDate, celebrant_id);
     res.json(data);
   } catch (error) {
     console.error('Erreur getMasses:', error);

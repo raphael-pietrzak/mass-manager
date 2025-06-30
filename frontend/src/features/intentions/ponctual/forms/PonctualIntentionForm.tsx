@@ -2,12 +2,12 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { DropdownSearch } from '../../../components/DropdownSearch';
+import { DropdownSearch } from '../../../../components/DropdownSearch';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from '@/components/ui/checkbox';
-import CalendarSelector from '../../../components/CalendarSelector';
-import { Intention } from '../../../api/intentionService';
+import CalendarSelector from '../../../../components/CalendarSelector';
+import { Intention } from '../../../../api/intentionService';
 
 interface DropdownOption {
   value: string;
@@ -24,7 +24,7 @@ interface IntentionFormProps {
   unavailableDates?: string[]; // Nouvelles dates indisponibles du célébrant sélectionné
 }
 
-const IntentionForm: React.FC<IntentionFormProps> = ({
+const PonctualIntentionForm: React.FC<IntentionFormProps> = ({
   formData,
   updateFormData,
   selectedDate,
@@ -33,11 +33,17 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
   nextStep,
   unavailableDates = [] // Valeur par défaut comme tableau vide
 }) => {
-  
+
+  const massTypes = [
+    { value: "unite", label: "Unité" },
+    { value: "neuvaine", label: "Neuvaine (9 messes)" },
+    { value: "trentain", label: "Trentain (30 messes)" }
+  ];
+
   return (
     <div className="flex flex-col flex-1 h-[550px]">
       <div className="flex-grow space-y-6 overflow-y-auto">
-
+        
         {/* Intention */}
         <div className="space-y-2">
           <Label htmlFor="intention_text">
@@ -55,7 +61,7 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
 
         {/* Type d'intention (défunt/vivant) */}
         <div className="flex items-center space-x-2">
-          <Checkbox
+          <Checkbox 
             id="deceased"
             checked={formData.deceased}
             onCheckedChange={(checked: boolean | "indeterminate") => updateFormData({ deceased: checked as boolean })}
@@ -69,38 +75,35 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
         <div className="space-y-2">
           <Label htmlFor="mass_count">Nombre de messes</Label>
           <div className="flex gap-4">
-            <Input
-              id="mass_count"
-              type="number"
-              min="1"
+            <Input 
+              id="mass_count" 
+              type="number" 
+              min="1" 
               className="w-24"
               value={formData.mass_count}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ mass_count: parseInt(e.target.value) })}
-              disabled={formData.intention_type === "novena" || formData.intention_type === "thirty"}
+              disabled={formData.mass_type === "neuvaine" || formData.mass_type === "trentain"}
             />
-            <Select
+            <Select 
               onValueChange={(value: string) => {
+                // Mettre à jour automatiquement le nombre de messes en fonction du type
                 let newMassCount = formData.mass_count;
-                if (value === "novena") {
+                if (value === "neuvaine") {
                   newMassCount = 9;
-                } else if (value === "thirty") {
+                } else if (value === "trentain") {
                   newMassCount = 30;
                 } else {
                   newMassCount = 1;
                 }
-                updateFormData({ intention_type: value as "unit" | "novena" | "thirty", mass_count: newMassCount });
+                updateFormData({ mass_type: value, mass_count: newMassCount });
               }}
-              value={formData.intention_type}
+              value={formData.mass_type}
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Type de messe" />
               </SelectTrigger>
               <SelectContent>
-                {[
-                  { value: "unit", label: "Unité" },
-                  { value: "novena", label: "Neuvaine" },
-                  { value: "thirty", label: "Trentain" },
-                ].map((type) => (
+                {massTypes.map((type) => (
                   <SelectItem key={type.value} value={type.value}>
                     {type.label}
                   </SelectItem>
@@ -124,9 +127,9 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
         {/* Type de date */}
         <div className="space-y-4">
           <Label>Type de date</Label>
-          <RadioGroup
+          <RadioGroup 
             value={formData.date_type}
-            onValueChange={(value: 'imperative' | 'desired' | 'indifferent') => updateFormData({ date_type: value })}
+            onValueChange={(value: 'imperative' | 'preferred' | 'indifferent') => updateFormData({ date_type: value })}
             className="flex flex-col space-y-2"
           >
             <div className="flex items-center space-x-2">
@@ -134,8 +137,8 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
               <Label htmlFor="indifferent">Indifférente</Label>
             </div>
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="desired" id="desired" />
-              <Label htmlFor="desired">Souhaitée</Label>
+              <RadioGroupItem value="preferred" id="preferred" />
+              <Label htmlFor="preferred">Souhaitée</Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="imperative" id="imperative" />
@@ -179,4 +182,4 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
   );
 };
 
-export default IntentionForm;
+export default PonctualIntentionForm;

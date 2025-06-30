@@ -5,7 +5,7 @@ interface DateFilterBarProps {
   onExport?: (format: 'excel' | 'pdf' | 'word') => Promise<void>;
 }
 
-const IntentionFilterBar: React.FC<DateFilterBarProps> = ({ onExport }) => {
+const PonctualIntentionFilterBar: React.FC<DateFilterBarProps> = ({ onExport }) => {
   const exportMenuRef = useRef<HTMLDivElement>(null);
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
 
@@ -100,4 +100,4 @@ const ChevronDownIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-export default IntentionFilterBar;
+export default PonctualIntentionFilterBar;
