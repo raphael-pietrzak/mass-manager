@@ -37,20 +37,6 @@ export interface Intention {
     date_type?: 'indifferent' | 'desired' | 'imperative';
     
     // Données de récurrence
-    is_recurrent?: boolean;
-    recurrence_type?: string | null;
-    occurrences?: number | null;
-    start_date?: string | null; 
-    end_date?: string | null;
-    end_type?: string | null;
-
-    // Options de récurrence avancées
-    position?: string | null;        // Pour "Position relative" (1er, 2eme, 3eme, 4eme, dernier)
-    weekday?: string | null;         // Pour "Position relative" (lundi, mardi, etc.)
-    
-    // Horodatage
-    created_at?: string;
-    updated_at?: string;
 }
 
 export interface Masses {
@@ -73,6 +59,9 @@ export interface IntentionSubmission {
     city?: string;
     wants_celebration_date: boolean;
   };
+  number_of_masses: number
+  date_type: string
+  deceased:boolean
   payment: {
     amount: string;
     payment_method: 'cheque' | 'cash' | 'card' | 'transfer';

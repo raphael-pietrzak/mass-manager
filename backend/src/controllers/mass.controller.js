@@ -50,7 +50,7 @@ exports.createMass = async (req, res) => {
     const intentionData = {
       donor_id: donorId,
       intention_text: req.body.intention,
-      type: req.body.type || 'defunts',
+      intention_type: req.body.intention_type,
       amount: req.body.amount,
       payment_method: req.body.paymentMethod,
       brother_name: req.body.brotherName || '',

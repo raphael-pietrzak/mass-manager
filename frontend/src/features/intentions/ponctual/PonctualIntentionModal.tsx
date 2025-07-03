@@ -19,6 +19,7 @@ interface IntentionModalProps {
 const testFormData: Partial<Intention> = {
   intention_text: 'Intention test',
   mass_count: 1,
+  deceased: true,
   intention_type: 'unit',
   date_type: 'indifferent',
   date: undefined,
@@ -35,13 +36,6 @@ const testFormData: Partial<Intention> = {
   donor_address: '',
   donor_postal_code: '',
   donor_city: '',
-  is_recurrent: false,
-  start_date: undefined,
-  recurrence_type: 'weekly',
-  end_type: 'occurrences',
-  occurrences: 1,
-  end_date: undefined,
-  deceased: true,
 };
 
 export const PonctualIntentionModal: React.FC<IntentionModalProps> = ({
@@ -146,12 +140,6 @@ export const PonctualIntentionModal: React.FC<IntentionModalProps> = ({
         mass_count: formData.mass_count,
         intention_type: formData.intention_type,
         date_type: formData.date_type,
-        is_recurrent: !!formData.start_date,
-        recurrence_type: formData.recurrence_type,
-        occurrences: formData.occurrences,
-        start_date: formData.start_date,
-        end_date: formData.end_date,
-        end_type: formData.end_type,
       });
       setPreviewData(preview);
       setStep(2); // Passer à l'étape de récapitulatif
@@ -168,7 +156,6 @@ export const PonctualIntentionModal: React.FC<IntentionModalProps> = ({
     try {
       setIsLoading(true);
       onSave({
-        masses: previewData,
         donor: {
           firstname: formData.donor_firstname || '',
           lastname: formData.donor_lastname || '',
@@ -179,11 +166,15 @@ export const PonctualIntentionModal: React.FC<IntentionModalProps> = ({
           city: formData.donor_city,
           wants_celebration_date: formData.wants_celebration_date || false,
         },
+        deceased: formData.deceased || true,
+        date_type: formData.date_type || '',
+        number_of_masses: formData.mass_count ?? 1,
         payment: {
           amount: formData.amount || '',
           payment_method: formData.payment_method as 'cheque' | 'cash' | 'card' | 'transfer',
-          brother_name: formData.brother_name || '',
+          brother_name: formData.brother_name || undefined,
         },
+        masses: previewData
       });
       onClose();
     } catch (error) {
@@ -197,101 +188,80 @@ export const PonctualIntentionModal: React.FC<IntentionModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      {/* {showRecurrenceModal ? (
-        <div className="bg-white rounded-lg max-w-md w-full mx-4 max-h-[95vh] overflow-y-auto">
-          <div className="p-4 flex justify-between items-center border-b">
-            <h3 className="font-medium">Configuration de la récurrence</h3>
+      <Card className="max-w-lg w-full mx-4">
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle>
+              {getStepTitle()} - {step}/4
+            </CardTitle>
             <button
-              onClick={() => setShowRecurrenceModal(false)}
+              onClick={onClose}
               className="p-1 hover:bg-gray-100 rounded-full"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
-          <div className="p-4">
-            <RegularityForm
-              formData={formData}
-              updateFormData={handleFormUpdate}
-              onValidate={() => setShowRecurrenceModal(false)}
+          <div className="w-full bg-muted h-2 rounded-full mt-4">
+            <div
+              className="bg-primary h-2 rounded-full"
+              style={{ width: `${(step / 4) * 100}%` }}
             />
           </div>
-        </div>
-      ) : ( */}
-        <Card className="max-w-lg w-full mx-4">
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle>
-                {getStepTitle()} - {step}/4
-              </CardTitle>
-              <button
-                onClick={onClose}
-                className="p-1 hover:bg-gray-100 rounded-full"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="w-full bg-muted h-2 rounded-full mt-4">
-              <div
-                className="bg-primary h-2 rounded-full"
-                style={{ width: `${(step / 4) * 100}%` }}
+        </CardHeader>
+        <CardContent className="h-[600px] flex flex-col">
+          {step === 1 && (
+            <div className="space-y-4 flex-1 flex flex-col">
+              <PonctualIntentionForm
+                formData={formData}
+                updateFormData={handleFormUpdate}
+                selectedDate={selectedDate}
+                setSelectedDate={setSelectedDate}
+                celebrantOptions={celebrantOptions}
+                nextStep={previewMasses}
+                unavailableDates={unavailableDates}
               />
             </div>
-          </CardHeader>
-          <CardContent className="h-[600px] flex flex-col">
-            {step === 1 && (
-              <div className="space-y-4 flex-1 flex flex-col">
-                <PonctualIntentionForm
-                  formData={formData}
-                  updateFormData={handleFormUpdate}
-                  selectedDate={selectedDate}
-                  setSelectedDate={setSelectedDate}
-                  celebrantOptions={celebrantOptions}
-                  nextStep={previewMasses}
-                  unavailableDates={unavailableDates}
-                />
-              </div>
-            )}
+          )}
 
-            {step === 2 && (
-              <div className="space-y-4 flex-1 flex flex-col">
-                <SummaryForm
-                  previewData={previewData}
-                  isLoading={isLoading}
-                  formData={formData}
-                  celebrantOptions={celebrantOptions}
-                  onValidate={confirmAndSave}
-                  onEdit={() => setStep(1)}
-                  nextStep={nextStep}
-                  prevStep={prevStep}
-                />
-              </div>
-            )}
+          {step === 2 && (
+            <div className="space-y-4 flex-1 flex flex-col">
+              <SummaryForm
+                previewData={previewData}
+                isLoading={isLoading}
+                formData={formData}
+                celebrantOptions={celebrantOptions}
+                onValidate={confirmAndSave}
+                onEdit={() => setStep(1)}
+                nextStep={nextStep}
+                prevStep={prevStep}
+              />
+            </div>
+          )}
 
-            {step === 3 && (
-              <div className="space-y-4 flex-1 flex flex-col">
-                <OfferingForm
-                  formData={formData}
-                  updateFormData={handleFormUpdate}
-                  nextStep={nextStep}
-                  prevStep={prevStep}
-                />
-              </div>
-            )}
+          {step === 3 && (
+            <div className="space-y-4 flex-1 flex flex-col">
+              <OfferingForm
+                formData={formData}
+                updateFormData={handleFormUpdate}
+                nextStep={nextStep}
+                prevStep={prevStep}
+              />
+            </div>
+          )}
 
-            {step === 4 && (
-              <div className="space-y-4 flex-1 flex flex-col">
-                <DonorForm
-                  formData={formData}
-                  updateFormData={handleFormUpdate}
-                  prevStep={prevStep}
-                  onValidate={confirmAndSave}
-                />
-              </div>
-            )}
+          {step === 4 && (
+            <div className="space-y-4 flex-1 flex flex-col">
+              <DonorForm
+                formData={formData}
+                updateFormData={handleFormUpdate}
+                prevStep={prevStep}
+                onValidate={confirmAndSave}
+              />
+            </div>
+          )}
 
-          </CardContent>
-        </Card>
-      {/* )} */}
+        </CardContent>
+      </Card>
     </div>
   );
 };

@@ -33,7 +33,6 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
   nextStep,
   unavailableDates = [] // Valeur par défaut comme tableau vide
 }) => {
-  
   return (
     <div className="flex flex-col flex-1 h-[550px]">
       <div className="flex-grow space-y-6 overflow-y-auto">
@@ -93,16 +92,24 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
               value={formData.intention_type}
             >
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Type de messe" />
+                <SelectValue>
+                  {
+                    {
+                      unit: "Unité",
+                      novena: "Neuvaine",
+                      thirty: "Trentain",
+                    }[formData.intention_type || "unit"]
+                  }
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {[
-                  { value: "unit", label: "Unité" },
-                  { value: "novena", label: "Neuvaine" },
-                  { value: "thirty", label: "Trentain" },
-                ].map((type) => (
-                  <SelectItem key={type.value} value={type.value}>
-                    {type.label}
+                  ["unit", "Unité"],
+                  ["novena", "Neuvaine"],
+                  ["thirty", "Trentain"],
+                ].map(([value, label]) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
                   </SelectItem>
                 ))}
               </SelectContent>

@@ -14,8 +14,8 @@ export interface Mass {
 	celebrant_title?: string // Titre du célébrant pour l'affichage
 	status?: MassStatus // Statut de la messe
 	// Données du donateur
-	firstName?: string
-	lastName?: string
+	firstname?: string
+	lastname?: string
 	email?: string
 	phone?: string
 	address?: string
@@ -28,16 +28,11 @@ export interface Mass {
 	brotherName?: string
 	// Données de masse
 	massCount?: number
-	massType?: string
+	intention_type: 'unit' | 'thirty' | 'novena';
+	//massType?: string
 	dateType?: string
 	// Données de récurrence
-	isRecurrent?: boolean
-	recurrenceType?: string
-	occurrences?: number
-	startDate?: string
-	endDate?: string
-	endType?: string
-	is_recurring?: boolean
+
 }
 
 // Type pour la réponse de prévisualisation avec une structure simplifiée des masses
@@ -45,7 +40,7 @@ export interface MassPreview {
 	masses: {
 		date: string | null // peut être null pour les messes sans date assignée
 		intention: string
-		type: "defunts" | "vivants"
+		intention_type: 'unit' | 'thirty' | 'novena';
 		celebrant_id: string | null // peut être null si non assigné
 		celebrant_name: string
 		status: MassStatus
