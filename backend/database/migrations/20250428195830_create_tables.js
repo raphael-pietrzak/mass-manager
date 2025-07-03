@@ -44,7 +44,7 @@ exports.up = function(knex) {
       table.enu('payment_method', ['cash', 'cheque', 'card', 'transfer']).notNullable();
       table.string('brother_name').nullable();
       table.boolean('wants_celebration_date').defaultTo(false);
-      table.enu('date_type', ['specifique', 'indifferente']);
+      table.enu('date_type', ['imperative', 'desired', 'indifferent']);
 			table.enu('intention_type', ['thirty', 'novena', 'unit']);
       table.enum('status', ['pending', 'scheduled', 'in_progress', 'completed', 'cancelled']).defaultTo('pending');
       table.integer('number_of_masses').defaultTo(1);

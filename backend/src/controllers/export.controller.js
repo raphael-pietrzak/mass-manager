@@ -25,7 +25,7 @@ exports.exportToExcel = async (req, res) => {
 
 exports.exportToPdf = async (req, res) => {
 	try {
-		const { celebrant_id, startDate, endDate } = req.query
+		const { startDate, endDate, celebrant_id } = req.query
 
 		// Récupérer les masses selon les filtres de date fournis
 		const masses = await Mass.getMassesByDateRange(celebrant_id || null, startDate, endDate)

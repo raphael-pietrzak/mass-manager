@@ -53,7 +53,7 @@ exports.createIntention = async (req, res) => {
 		}
 
 		// Logique pour initialiser number_of_masses selon le type
-		const intentionType = (intentionData.masses[0]?.intention_type || intentionData.masses[0]?.type || "").toLowerCase()
+		const intentionType = (intentionData.intention_type).toLowerCase()
 		let number = 0
 		switch (intentionType) {
 			case "novena":
@@ -73,12 +73,12 @@ exports.createIntention = async (req, res) => {
 		const intention = {
 			donor_id: donorId,
 			intention_text: intentionData.masses[0]?.intention || "Intention de messe",
-			deceased: intentionData.deceased || false,
+			deceased: intentionData.deceased,
 			amount: parseFloat(intentionData.payment.amount),
 			payment_method: intentionData.payment.payment_method,
 			brother_name: intentionData.payment.brother_name || null,
 			wants_celebration_date: intentionData.donor.wants_celebration_date,
-			date_type: intentionData.donor.wants_celebration_date ? "specifique" : "indifferente",
+			date_type: intentionData.date_type,
 			intention_type: intentionType,
 			number_of_masses: number,
 		}

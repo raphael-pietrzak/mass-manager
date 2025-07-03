@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { intentionService, Intention, Masses } from '../../../api/intentionService';
+import { intentionService, Intention, Masses } from '../../../../api/intentionService';
 import { User, Trash2, AlertTriangle, X, Info } from 'lucide-react';
 import { IntentionMassesModal } from './IntentionMassesModal';
 
@@ -10,7 +10,7 @@ interface IntentionListProps {
   loading: boolean;
 };
 
-export const IntentionList: React.FC<IntentionListProps> = ({ intentions, onSelectionChange, onRefresh, loading }) => {
+export const PonctualIntentionList: React.FC<IntentionListProps> = ({ intentions, onSelectionChange, onRefresh, loading }) => {
   const [selectedIntention, setSelectedIntention] = useState<Intention | null>(null);
   const [associatedMasses, setAssociatedMasses] = useState<Masses[]>([]);
   const [showMassesModal, setShowMassesModal] = useState(false);

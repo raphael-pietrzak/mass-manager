@@ -6,9 +6,9 @@ import AdminPage from '../pages/AdminPage';
 import DatabaseTabs from '../pages/DatabasePage';
 import ProtectedRoute from './ProtectedRoute';
 import LoginPage from '../pages/LoginPage';
-import IntentionPage from '../pages/IntentionPage';
 import Navbar from '../components/Navbar';
 import RecurrencePage from '../pages/RecurrencePage';
+import PonctualIntentionPage from '../pages/PonctualIntentionPage';
 
 const AppRouter: React.FC = () => (
   <Router>
@@ -20,7 +20,7 @@ const AppRouter: React.FC = () => (
       {/* Routes accessibles à admin ou secretary */}
       <Route path="/" element={<ProtectedRoute requiredRole={['admin', 'secretary']}><CalendarPage /></ProtectedRoute>} />
       <Route path="/calendar" element={<ProtectedRoute requiredRole={['admin', 'secretary']}> <CalendarPage /></ProtectedRoute>} />
-      <Route path="/ponctual-intentions" element={<ProtectedRoute requiredRole={['admin', 'secretary']}> <IntentionPage /> </ProtectedRoute>} />
+      <Route path="/ponctual-intentions" element={<ProtectedRoute requiredRole={['admin', 'secretary']}> <PonctualIntentionPage /> </ProtectedRoute>} />
       <Route path="/recurring-intentions" element={<ProtectedRoute requiredRole={['admin', 'secretary']}> <RecurrencePage /> </ProtectedRoute>} />
 
       {/* Routes réservées à admin uniquement */}
