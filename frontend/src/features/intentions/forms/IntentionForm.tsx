@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from '@/components/ui/checkbox';
 import CalendarSelector from '../../../components/CalendarSelector';
 import { Intention } from '../../../api/intentionService';
+import { AlertDescription } from '../../../components/ui/alert';
+import { AlertTriangle } from 'lucide-react';
 
 interface DropdownOption {
   value: string;
@@ -33,6 +35,18 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
   nextStep,
   unavailableDates = [] // Valeur par défaut comme tableau vide
 }) => {
+
+  const [error, setError] = useState<string>();
+
+  const handleNextStep = () => {
+    if (!formData.intention_text || formData.intention_text.trim() === "") {
+      setError("L'intention est requise")
+      return
+    }
+    setError("")
+    nextStep();
+  };
+
   return (
     <div className="flex flex-col flex-1 h-[550px]">
       <div className="flex-grow space-y-6 overflow-y-auto">
@@ -50,6 +64,13 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
             required
             placeholder="Votre intention..."
           />
+
+          {error && (
+            <div className="flex items-center gap-2 text-red-500">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </div>
+          )}
         </div>
 
         {/* Type d'intention (défunt/vivant) */}
@@ -158,17 +179,9 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
                   selectedDate={selectedDate}
                   onDateChange={(date: Date | undefined) => setSelectedDate(date)}
                   unavailableDates={unavailableDates}
+                  position='top'
                 />
               </div>
-              {/* <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={onRecurrenceClick}
-                title="Programmer une récurrence"
-              >
-                <RotateCw className="w-5 h-5" />
-              </Button> */}
             </div>
           )}
         </div>
@@ -177,7 +190,7 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
       <div className="pt-6 flex justify-end">
         <Button
           type="button"
-          onClick={nextStep}
+          onClick={handleNextStep}
         >
           Suivant
         </Button>

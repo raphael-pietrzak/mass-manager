@@ -1,5 +1,4 @@
 const db = require("../../config/database")
-const { deleteBeforeDate } = require("./mass.model")
 
 const Intention = {
 	getAll: () =>
