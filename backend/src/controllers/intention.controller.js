@@ -53,7 +53,7 @@ exports.createIntention = async (req, res) => {
 		}
 
 		// Logique pour initialiser number_of_masses selon le type
-		const intentionType = (intentionData.masses[0]?.intention_type || intentionData.masses[0]?.type || "").toLowerCase()
+		const intentionType = (intentionData.intention_type).toLowerCase()
 		let number = 0
 		switch (intentionType) {
 			case "novena":

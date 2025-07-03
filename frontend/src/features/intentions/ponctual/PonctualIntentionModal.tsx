@@ -17,7 +17,7 @@ interface IntentionModalProps {
 }
 
 const testFormData: Partial<Intention> = {
-  intention_text: 'Intention test',
+  intention_text: '',
   mass_count: 1,
   deceased: true,
   intention_type: 'unit',
@@ -166,6 +166,7 @@ export const PonctualIntentionModal: React.FC<IntentionModalProps> = ({
           city: formData.donor_city,
           wants_celebration_date: formData.wants_celebration_date || false,
         },
+        intention_type: formData.intention_type ?? 'unit',
         deceased: formData.deceased || true,
         date_type: formData.date_type || '',
         number_of_masses: formData.mass_count ?? 1,
