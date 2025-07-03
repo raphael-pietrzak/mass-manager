@@ -11,6 +11,7 @@ export interface Intention {
 	intention_text?: string
 	celebrant_id?: string
 	celebrant_name?: string
+	celebrant_title?: string
 	status?: IntentionStatus
 	deceased?: boolean
 	intention_type: "unit" | "thirty" | "novena"
@@ -43,6 +44,7 @@ export interface Masses {
 	date: string | null // peut être null pour les messes sans date assignée
 	celebrant_id: string | null // peut être null si non assigné
 	celebrant_name: string
+	celebrant_title: string
 	status: MassStatus
 }
 
@@ -61,7 +63,7 @@ export interface IntentionSubmission {
 	}
 	intention_type: "unit" | "thirty" | "novena"
 	number_of_masses: number
-	date_type: string
+	date_type: "indifferent" | "desired" | "imperative"
 	deceased: boolean
 	payment: {
 		amount: string

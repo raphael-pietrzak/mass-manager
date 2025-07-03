@@ -6,8 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatDateForApi, parseApiDate } from '../../../utils/dateUtils';
 import DonorForm from '../forms/DonorForm';
 import OfferingForm from '../forms/OfferingForm';
-import PonctualIntentionForm from './forms/PonctualIntentionForm';
 import SummaryForm from '../forms/SummaryForm';
+import IntentionForm from '../forms/IntentionForm';
 
 interface IntentionModalProps {
   intention: Intention | null;
@@ -139,7 +139,7 @@ export const PonctualIntentionModal: React.FC<IntentionModalProps> = ({
         deceased: formData.deceased,
         mass_count: formData.mass_count,
         intention_type: formData.intention_type,
-        date_type: formData.date_type,
+        date_type: formData.date_type ?? 'indifferent',
       });
       setPreviewData(preview);
       setStep(2); // Passer à l'étape de récapitulatif
@@ -168,7 +168,7 @@ export const PonctualIntentionModal: React.FC<IntentionModalProps> = ({
         },
         intention_type: formData.intention_type ?? 'unit',
         deceased: formData.deceased || true,
-        date_type: formData.date_type || '',
+        date_type: formData.date_type ?? 'indifferent',
         number_of_masses: formData.mass_count ?? 1,
         payment: {
           amount: formData.amount || '',
@@ -212,7 +212,7 @@ export const PonctualIntentionModal: React.FC<IntentionModalProps> = ({
         <CardContent className="h-[600px] flex flex-col">
           {step === 1 && (
             <div className="space-y-4 flex-1 flex flex-col">
-              <PonctualIntentionForm
+              <IntentionForm
                 formData={formData}
                 updateFormData={handleFormUpdate}
                 selectedDate={selectedDate}

@@ -232,6 +232,7 @@ const RecurrenceDialog: React.FC<RecurrenceDialogProps> = ({
                     return setFormData({ ...formData, end_date: formatDateForApi(date) });
                   }}
                   ignoreAvailability={true}
+                  position='top'
                 />
               </div>
             )}
