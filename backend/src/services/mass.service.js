@@ -53,7 +53,7 @@ const MassService = {
                             masses.push({
                                 date,
                                 intention: intention_text,
-                                type: deceased ? 'defunt' : '',
+                                //type: deceased ? 'defunt' : '',
                                 celebrant_id: null,
                                 celebrant_title: null,
                                 celebrant_name: "Aucun célébrant disponible",
@@ -109,7 +109,7 @@ const MassService = {
     /**
      * Gère le cas d'une date impérative
      */
-    handleImperativeDate: async (date, celebrant_id, intention_text, deceased, usedCelebrantsByDate) => {
+    handleImperativeDate: async (date, celebrant_id, intention_text, usedCelebrantsByDate) => {
         // Si un célébrant spécifique est sélectionné
         if (celebrant_id) {
             // Vérifier si le célébrant est disponible à cette date précise
@@ -143,7 +143,6 @@ const MassService = {
                 return {
                     date,
                     intention: intention_text,
-                    type: deceased ? 'defunts' : 'vivants',
                     celebrant_id: availableCelebrant.id,
                     celebrant_title: availableCelebrant.celebrant_title,
                     celebrant_name: availableCelebrant.religious_name,
@@ -159,7 +158,7 @@ const MassService = {
     /**
      * Gère le cas d'une date souhaitée
      */
-    handlePreferredDate: async (date, celebrant_id, intention_text, deceased, usedCelebrantsByDate) => {
+    handlePreferredDate: async (date, celebrant_id, intention_text, usedCelebrantsByDate) => {
         // Si un célébrant spécifique est sélectionné
         if (celebrant_id) {
             // Vérifier si le célébrant est disponible à cette date
@@ -171,7 +170,6 @@ const MassService = {
                 return {
                     date,
                     intention: intention_text,
-                    type: deceased ? 'defunts' : 'vivants',
                     celebrant_id: celebrant.id,
                     celebrant_title: celebrant.celebrant_title,
                     celebrant_name: celebrant.religious_name,
@@ -186,7 +184,6 @@ const MassService = {
                         original_date: date, // Conserver la date souhaitée initialement
                         date: slot.date.toISOString().split('T')[0],
                         intention: intention_text,
-                        type: deceased ? 'defunts' : 'vivants',
                         celebrant_id: slot.celebrant.id,
                         celebrant_title: slot.celebrant.celebrant_title,
                         celebrant_name: slot.celebrant.religious_name,
@@ -198,7 +195,6 @@ const MassService = {
                     return {
                         date: null,
                         intention: intention_text,
-                        type: deceased ? 'defunts' : 'vivants',
                         celebrant_id: celebrant_id,
                         celebrant_name: "Aucune disponibilité",
                         status: 'error',
@@ -217,7 +213,6 @@ const MassService = {
                 return {
                     date,
                     intention: intention_text,
-                    type: deceased ? 'defunts' : 'vivants',
                     celebrant_id: availableCelebrant.id,
                     celebrant_title: availableCelebrant.celebrant_title,
                     celebrant_name: availableCelebrant.religious_name,
@@ -232,7 +227,7 @@ const MassService = {
                         original_date: date, // Conserver la date souhaitée initialement
                         date: slot.date.toISOString().split('T')[0],
                         intention: intention_text,
-                        type: deceased ? 'defunts' : 'vivants',
+                        //type: deceased ? 'defunts' : 'vivants',
                         celebrant_id: slot.celebrant.id,
                         celebrant_name: slot.celebrant.religious_name,
                         celebrant_title: slot.celebrant.celebrant_title,
@@ -244,7 +239,7 @@ const MassService = {
                     return {
                         date: null,
                         intention: intention_text,
-                        type: deceased ? 'defunts' : 'vivants',
+                        //type: deceased ? 'defunts' : 'vivants',
                         celebrant_id: null,
                         celebrant_name: "Aucune disponibilité",
                         status: 'error',
@@ -312,11 +307,10 @@ const MassService = {
             return {
                 date: slot.date.toISOString().split('T')[0],
                 intention: intention_text,
-                type: deceased ? 'defunts' : 'vivants',
                 celebrant_id: slot.celebrant.id,
                 celebrant_title: slot.celebrant.celebrant_title,
                 celebrant_name: slot.celebrant.religious_name,
-                status: 'scheduled'
+                status: 'pending'
             };
         } else {
             // Aucune date disponible pour ce célébrant
@@ -347,11 +341,11 @@ const MassService = {
                 return {
                     date: slot.date.toISOString().split('T')[0],
                     intention: intention_text,
-                    type: deceased ? 'defunts' : 'vivants',
+                    //type: deceased ? 'defunts' : 'vivants',
                     celebrant_id: slot.celebrant.id,
                     celebrant_title: slot.celebrant.title,
                     celebrant_name: slot.celebrant.religious_name,
-                    status: 'scheduled'
+                    status: 'pending'
                 };
             }
         }
@@ -363,18 +357,18 @@ const MassService = {
             return {
                 date: slot.date.toISOString().split('T')[0],
                 intention: intention_text,
-                type: deceased ? 'defunts' : 'vivants',
+                //type: deceased ? 'defunts' : 'vivants',
                 celebrant_id: slot.celebrant.id,
                 celebrant_title: slot.celebrant.celebrant_title,
                 celebrant_name: slot.celebrant.religious_name,
-                status: 'scheduled'
+                status: 'pending'
             };
         } else {
             // Aucune date disponible
             return {
                 date: null,
                 intention: intention_text,
-                type: deceased ? 'defunts' : 'vivants',
+                //type: deceased ? 'defunts' : 'vivants',
                 celebrant_id: null,
                 celebrant_name: "Aucune disponibilité",
                 celebrant_title: null,
