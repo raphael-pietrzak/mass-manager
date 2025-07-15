@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 interface DateFilterBarProps {
   onExport?: (format: 'excel' | 'pdf' | 'word') => Promise<void>;
   selectedCount: number;
-  onDistribute: () => Promise<void>
+  onDistribute: () => void;
 }
 
 const PonctualIntentionFilterBar: React.FC<DateFilterBarProps> = ({ onExport, selectedCount, onDistribute }) => {

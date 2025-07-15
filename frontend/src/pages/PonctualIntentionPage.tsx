@@ -5,8 +5,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { exportService } from "../api/exportService";
 import PonctualIntentionFilterBar from "../features/intentions/ponctual/PonctualIntentionFilterBar";
 import { PonctualIntentionModal } from "../features/intentions/ponctual/PonctualIntentionModal";
+import { MassProgrammationModal } from "../features/intentions/ponctual/MassProgrammationModal";
 
-const IntentionPage: React.FC = () => {
+const PonctualIntentionPage: React.FC = () => {
 	const [isIntentionModalOpen, setIsIntentionModalOpen] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [loading, setLoading] = useState(true);
@@ -22,6 +23,7 @@ const IntentionPage: React.FC = () => {
 	}, [error]);
 	const [selectedIntentionIds, setSelectedIntentionIds] = useState<string[]>([]);
 	const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false);
+	const [isDistributeModalOpen, setIsDistributeModalOpen] = useState(false);
 
 	const fetchIntentions = async () => {
 		try {
@@ -103,12 +105,12 @@ const IntentionPage: React.FC = () => {
 		<div className="min-h-screen bg-gray-100">
 			<main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
 				<h1 className="text-2xl font-bold mb-6">Liste des intentions de messe ponctuelles</h1>
-				<PonctualIntentionFilterBar 
+				<PonctualIntentionFilterBar
 					onExport={handleExport}
 					selectedCount={selectedIntentionIds.length}
-					onDistribute={}
+					onDistribute={() => setIsDistributeModalOpen(true)}
 				/>
-				
+
 				<div className="mt-6 mb-6">
 					{error && (
 						<div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded z-50">
@@ -154,6 +156,13 @@ const IntentionPage: React.FC = () => {
 					onSave={handleSaveIntention}
 				/>
 
+				{isDistributeModalOpen && (
+					<MassProgrammationModal
+						onClose={() => setIsDistributeModalOpen(false)}
+						slidesCount={selectedIntentionIds.length}
+					/>
+				)}
+
 				{!isIntentionModalOpen && (
 					<button
 						onClick={handleAddIntention}
@@ -181,4 +190,4 @@ const IntentionPage: React.FC = () => {
 
 }
 
-export default IntentionPage;
+export default PonctualIntentionPage;
