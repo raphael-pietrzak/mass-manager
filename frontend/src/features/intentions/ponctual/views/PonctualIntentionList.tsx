@@ -123,13 +123,13 @@ export const PonctualIntentionList: React.FC<IntentionListProps> = ({ intentions
                     </th>
                     <th className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-1/5">
                       <div className="flex items-center gap-2">
-                        <span>Sélectionner tout</span>
                         <input
                           type="checkbox"
                           checked={isAllSelected}
                           onChange={(e) => handleSelectAll(e.target.checked)}
-                          className="form-checkbox h-6 w-6 text-blue-600"
+                          className="form-checkbox h-4 w-4 rounded border-gray-300 text-blue-600 transition-colors duration-150 ease-in-out focus:ring-0 focus:ring-offset-0"
                         />
+                        <span>Sélectionner tout</span>
                       </div>
                     </th>
                   </tr>
@@ -138,8 +138,7 @@ export const PonctualIntentionList: React.FC<IntentionListProps> = ({ intentions
                   {intentions.map(intention => (
                     <tr
                       key={intention.id}
-                      onClick={() => handleIntentionClick(intention)}
-                      className="hover:bg-gray-50 cursor-pointer"
+                      className="hover:bg-gray-50"
                     >
                       <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-90 truncate max-w-xs">
                         <span className='italic'>{intention.intention_text}</span>
@@ -183,10 +182,7 @@ export const PonctualIntentionList: React.FC<IntentionListProps> = ({ intentions
                       <td className="px-3 py-2 whitespace-nowrap text-sm">
                         <div className="flex space-x-2">
                           <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleIntentionClick(intention);
-                            }}
+                            onClick={(e) => handleIntentionClick(intention)}
                             className="p-1 text-gray-400 hover:text-blue-500 rounded-full hover:bg-gray-100 transition-colors"
                             title="Voir les messes associées"
                           >
@@ -205,7 +201,7 @@ export const PonctualIntentionList: React.FC<IntentionListProps> = ({ intentions
                       <td className="px-3 py-2 text-center">
                         <input
                           type="checkbox"
-                          className="form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out"
+                          className="form-checkbox h-4 w-4 rounded border-gray-300 text-blue-600 transition-colors duration-150 ease-in-out focus:ring-0 focus:ring-offset-0"
                           checked={selectedIntentionId.includes(intention.id)}
                           onClick={(e) => e.stopPropagation()}
                           onChange={(e) => handleSelectIntention(intention.id, e.target.checked)}
