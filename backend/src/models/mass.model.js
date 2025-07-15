@@ -20,7 +20,6 @@ class Mass {
 				"Donors.firstname as donor_firstname",
 				"Donors.lastname as donor_lastname"
 			)
-			//.whereNotNull('Masses.celebrant_id')
 			.leftJoin("Celebrants", "Masses.celebrant_id", "Celebrants.id")
 			.leftJoin("Intentions", "Masses.intention_id", "Intentions.id")
 			.leftJoin("Donors", "Intentions.donor_id", "Donors.id")
@@ -242,6 +241,7 @@ class Mass {
 				"Donors.lastname as donor_lastname",
 				"Donors.email as donor_email"
 			)
+			.where('Masses.status', '=', 'scheduled')
 			.orderBy("Masses.date")
 
 		if (celebrant_id) {

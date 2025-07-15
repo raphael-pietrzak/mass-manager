@@ -119,7 +119,7 @@ exports.createIntention = async (req, res) => {
 					date: mass.date,
 					intention_id: intentionId,
 					celebrant_id: mass.celebrant_id || null,
-					status: "scheduled",
+					status: mass.status,
 				}
 
 				await MassModel.create(massData)

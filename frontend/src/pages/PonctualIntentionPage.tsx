@@ -106,6 +106,7 @@ const IntentionPage: React.FC = () => {
 				<PonctualIntentionFilterBar 
 					onExport={handleExport}
 					selectedCount={selectedIntentionIds.length}
+					onDistribute={}
 				/>
 				
 				<div className="mt-6 mb-6">
