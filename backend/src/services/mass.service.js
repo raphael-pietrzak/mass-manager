@@ -96,9 +96,14 @@ const MassService = {
                     deceased,
                     usedCelebrantsByDate
                 );
-                masses.push(...indifferentDatesResult);
+                for (const mass of indifferentDatesResult) {
+                    // Si on a pas de célebrant spécifique (pas de celebrant_id passé), on affiche "Non attribuée"
+                    if (!mass.celebrant_id && mass.status === 'pending') {
+                        mass.celebrant_name = "Non attribuée";
+                    }
+                    masses.push(mass);
+                }
             }
-            
             return masses;
         } catch (error) {
             console.error('Erreur lors de la génération de prévisualisation de messes:', error);
@@ -267,7 +272,7 @@ const MassService = {
                 );
             } else {
                 massData = await MassService.handleIndifferentDate(
-                    intention_text, deceased, usedCelebrantsByDate
+                    intention_text
                 );
             }
             
@@ -277,6 +282,7 @@ const MassService = {
 
         console.log(`Fin du traitement des dates indifférentes. ${masses.length} messes traitées`);
         return masses;
+        
     },
 
     /**
@@ -299,83 +305,30 @@ const MassService = {
     /**
      * Gère le cas d'une date indifférente avec un célébrant spécifique
      */
-    handleIndifferentDateWithCelebrant: async (celebrant_id, intention_text, deceased, usedCelebrantsByDate) => {
-        // Chercher la prochaine date disponible pour ce célébrant
-        const slot = await Mass.findNextAvailableSlotForCelebrant(celebrant_id, usedCelebrantsByDate);
+    handleIndifferentDateWithCelebrant: async (celebrant_id, intention_text) => {
+        // On garde le célébrant, mais on n'affecte aucune date
+        const celebrant = await MassService.getCelebrantById(celebrant_id);
         
-        if (slot) {
-            return {
-                date: slot.date.toISOString().split('T')[0],
-                intention: intention_text,
-                celebrant_id: slot.celebrant.id,
-                celebrant_title: slot.celebrant.celebrant_title,
-                celebrant_name: slot.celebrant.religious_name,
-                status: 'pending'
-            };
-        } else {
-            // Aucune date disponible pour ce célébrant
-            return {
-                date: null,
-                intention: intention_text,
-                celebrant_id: celebrant_id,
-                celebrant_name: "Aucune disponibilité",
-                status: 'error',
-                error: 'no_availability'
-            };
-        }
+        return {
+            date: null, // Pas de date attribuée
+            intention: intention_text,
+            celebrant_id: celebrant.id,
+            celebrant_title: celebrant.celebrant_title,
+            celebrant_name: celebrant.religious_name,
+            status: 'pending'
+        };
     },
     
     /**
      * Gère le cas d'une date indifférente sans célébrant spécifique
      * Cherche la combinaison qui optimise l'équilibre des charges
      */
-    handleIndifferentDate: async (intention_text, deceased, usedCelebrantsByDate) => {
-        // Chercher le célébrant qui a le moins de messes assignées
-        const leastBusyCelebrant = await MassService.getLeastBusyCelebrant();
-        
-        if (leastBusyCelebrant) {
-            // Chercher la prochaine date disponible pour ce célébrant
-            const slot = await Mass.findNextAvailableSlotForCelebrant(leastBusyCelebrant.id, usedCelebrantsByDate);
-            
-            if (slot) {
-                return {
-                    date: slot.date.toISOString().split('T')[0],
-                    intention: intention_text,
-                    //type: deceased ? 'defunts' : 'vivants',
-                    celebrant_id: slot.celebrant.id,
-                    celebrant_title: slot.celebrant.title,
-                    celebrant_name: slot.celebrant.religious_name,
-                    status: 'pending'
-                };
-            }
-        }
-        
-        // Si aucun célébrant spécifique n'est trouvé ou disponible, chercher n'importe quelle combinaison disponible
-        const slot = await Mass.findNextAvailableSlot(usedCelebrantsByDate);
-        
-        if (slot) {
-            return {
-                date: slot.date.toISOString().split('T')[0],
-                intention: intention_text,
-                //type: deceased ? 'defunts' : 'vivants',
-                celebrant_id: slot.celebrant.id,
-                celebrant_title: slot.celebrant.celebrant_title,
-                celebrant_name: slot.celebrant.religious_name,
-                status: 'pending'
-            };
-        } else {
-            // Aucune date disponible
-            return {
-                date: null,
-                intention: intention_text,
-                //type: deceased ? 'defunts' : 'vivants',
-                celebrant_id: null,
-                celebrant_name: "Aucune disponibilité",
-                celebrant_title: null,
-                status: 'error',
-                error: 'no_availability'
-            };
-        }
+    handleIndifferentDate: async (intention_text) => {        
+        return {
+            date: null, // Pas de date
+            intention: intention_text,
+            status: 'pending'
+        };
     },
     
     /**
