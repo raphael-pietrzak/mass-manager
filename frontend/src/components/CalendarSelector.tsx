@@ -11,6 +11,7 @@ interface CalendarSelectorProps {
   disabled?: boolean; // si on veut empecher l'entrée du champ date
   unavailableDates?: string[]; // Nouvelles dates indisponibles
   ignoreAvailability?: boolean; // si on veut donner la possibilités de choisir n'importe qu'elle date même dans le passé
+  position?: "top" | "bottom";
 }
 
 const CalendarSelector: React.FC<CalendarSelectorProps> = ({
@@ -18,7 +19,8 @@ const CalendarSelector: React.FC<CalendarSelectorProps> = ({
   onDateChange,
   disabled = false,
   unavailableDates = [],
-  ignoreAvailability = false
+  ignoreAvailability = false,
+  position = "bottom"
 }) => {
   const [showCalendar, setShowCalendar] = useState(false);
   const today = startOfDay(new Date()); // Date d'aujourd'hui sans les heures, minutes, etc.
@@ -87,7 +89,12 @@ const CalendarSelector: React.FC<CalendarSelectorProps> = ({
       </Button>
 
       {showCalendar && (
-        <div className="absolute mt-2 p-2 bg-white border rounded-md shadow-lg z-10">
+        <div
+          className={`absolute p-2 bg-white border rounded-md shadow-lg z-10 ${position === "top"
+              ? "bottom-full mb-2 translate-y-[-4px]"
+              : "top-full mt-2"
+            }`}
+        >
           <Calendar
             mode="single"
             selected={selectedDate}

@@ -1,14 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { DropdownSearch } from '../../../components/DropdownSearch';
-import { RotateCw } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from '@/components/ui/checkbox';
 import CalendarSelector from '../../../components/CalendarSelector';
 import { Intention } from '../../../api/intentionService';
+import { AlertDescription } from '../../../components/ui/alert';
+import { AlertTriangle } from 'lucide-react';
 
 interface DropdownOption {
   value: string;
@@ -21,7 +22,6 @@ interface IntentionFormProps {
   selectedDate?: Date;
   setSelectedDate: (date: Date | undefined) => void;
   celebrantOptions: DropdownOption[];
-  onRecurrenceClick: () => void;
   nextStep: () => void;
   unavailableDates?: string[]; // Nouvelles dates indisponibles du célébrant sélectionné
 }
@@ -32,21 +32,25 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
   selectedDate,
   setSelectedDate,
   celebrantOptions,
-  onRecurrenceClick,
   nextStep,
   unavailableDates = [] // Valeur par défaut comme tableau vide
 }) => {
 
-  const massTypes = [
-    { value: "unite", label: "Unité" },
-    { value: "neuvaine", label: "Neuvaine (9 messes)" },
-    { value: "trentain", label: "Trentain (30 messes)" }
-  ];
+  const [error, setError] = useState<string>();
+
+  const handleNextStep = () => {
+    if (!formData.intention_text || formData.intention_text.trim() === "") {
+      setError("L'intention est requise")
+      return
+    }
+    setError("")
+    nextStep();
+  };
 
   return (
     <div className="flex flex-col flex-1 h-[550px]">
       <div className="flex-grow space-y-6 overflow-y-auto">
-        
+
         {/* Intention */}
         <div className="space-y-2">
           <Label htmlFor="intention_text">
@@ -60,11 +64,18 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
             required
             placeholder="Votre intention..."
           />
+
+          {error && (
+            <div className="flex items-center gap-2 text-red-500">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </div>
+          )}
         </div>
 
         {/* Type d'intention (défunt/vivant) */}
         <div className="flex items-center space-x-2">
-          <Checkbox 
+          <Checkbox
             id="deceased"
             checked={formData.deceased}
             onCheckedChange={(checked: boolean | "indeterminate") => updateFormData({ deceased: checked as boolean })}
@@ -78,37 +89,48 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
         <div className="space-y-2">
           <Label htmlFor="mass_count">Nombre de messes</Label>
           <div className="flex gap-4">
-            <Input 
-              id="mass_count" 
-              type="number" 
-              min="1" 
+            <Input
+              id="mass_count"
+              type="number"
+              min="1"
               className="w-24"
               value={formData.mass_count}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ mass_count: parseInt(e.target.value) })}
-              disabled={formData.mass_type === "neuvaine" || formData.mass_type === "trentain"}
+              disabled={formData.intention_type === "novena" || formData.intention_type === "thirty"}
             />
-            <Select 
+            <Select
               onValueChange={(value: string) => {
-                // Mettre à jour automatiquement le nombre de messes en fonction du type
                 let newMassCount = formData.mass_count;
-                if (value === "neuvaine") {
+                if (value === "novena") {
                   newMassCount = 9;
-                } else if (value === "trentain") {
+                } else if (value === "thirty") {
                   newMassCount = 30;
                 } else {
                   newMassCount = 1;
                 }
-                updateFormData({ mass_type: value, mass_count: newMassCount });
+                updateFormData({ intention_type: value as "unit" | "novena" | "thirty", mass_count: newMassCount });
               }}
-              value={formData.mass_type}
+              value={formData.intention_type}
             >
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Type de messe" />
+                <SelectValue>
+                  {
+                    {
+                      unit: "Unité",
+                      novena: "Neuvaine",
+                      thirty: "Trentain",
+                    }[formData.intention_type || "unit"]
+                  }
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                {massTypes.map((type) => (
-                  <SelectItem key={type.value} value={type.value}>
-                    {type.label}
+                {[
+                  ["unit", "Unité"],
+                  ["novena", "Neuvaine"],
+                  ["thirty", "Trentain"],
+                ].map(([value, label]) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -130,9 +152,9 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
         {/* Type de date */}
         <div className="space-y-4">
           <Label>Type de date</Label>
-          <RadioGroup 
+          <RadioGroup
             value={formData.date_type}
-            onValueChange={(value: 'imperative' | 'preferred' | 'indifferent') => updateFormData({ date_type: value })}
+            onValueChange={(value: 'imperative' | 'desired' | 'indifferent') => updateFormData({ date_type: value })}
             className="flex flex-col space-y-2"
           >
             <div className="flex items-center space-x-2">
@@ -140,8 +162,8 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
               <Label htmlFor="indifferent">Indifférente</Label>
             </div>
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="preferred" id="preferred" />
-              <Label htmlFor="preferred">Souhaitée</Label>
+              <RadioGroupItem value="desired" id="desired" />
+              <Label htmlFor="desired">Souhaitée</Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="imperative" id="imperative" />
@@ -157,17 +179,9 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
                   selectedDate={selectedDate}
                   onDateChange={(date: Date | undefined) => setSelectedDate(date)}
                   unavailableDates={unavailableDates}
+                  position='top'
                 />
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={onRecurrenceClick}
-                title="Programmer une récurrence"
-              >
-                <RotateCw className="w-5 h-5" />
-              </Button>
             </div>
           )}
         </div>
@@ -176,7 +190,7 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
       <div className="pt-6 flex justify-end">
         <Button
           type="button"
-          onClick={nextStep}
+          onClick={handleNextStep}
         >
           Suivant
         </Button>

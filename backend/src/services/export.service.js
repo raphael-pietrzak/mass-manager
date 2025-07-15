@@ -60,9 +60,9 @@ class ExportService {
 					if (mass.deceased === 1 || mass.deceased === true || mass.deceased === "1") {
 						text += " (D)"
 					}
-					if (mass.date_type === "specifique") {
+					if (mass.date_type === "desired" || "imperative") {
 						text += " (Fixe)"
-					} else if (mass.date_type === "indifferente") {
+					} else if (mass.date_type === "indifferent") {
 						text += " (Mobile)"
 					}
 
@@ -181,8 +181,8 @@ class ExportService {
 					if (mass) {
 						text = mass.intention || ""
 						if (mass.deceased == 1 || mass.deceased === true || mass.deceased === "1") text += " (D)"
-						if (mass.date_type === "specifique") text += " (Fixe)"
-						else if (mass.date_type === "indifferente") text += " (Mobile)"
+						if (mass.date_type === "imperative" || "desired") text += " (Fixe)"
+						else if (mass.date_type === "indifferent") text += " (Mobile)"
 						const donor = `${mass.donor_firstname} ${mass.donor_lastname}`.trim()
 						text += `\nDonateur : ${donor || "non renseigné"}`
 					}
@@ -305,8 +305,8 @@ class ExportService {
 			if (mass) {
 				text = mass.intention || ""
 				if (mass.deceased == 1 || mass.deceased === true || mass.deceased === "1") text += " (D)"
-				if (mass.date_type === "specifique") text += " (Fixe)"
-				else if (mass.date_type === "indifferente") text += " (Mobile)"
+				if (mass.date_type === "imperative" || "desired") text += " (Fixe)"
+				else if (mass.date_type === "indifferent") text += " (Mobile)"
 				const donor = `${mass.donor_firstname} ${mass.donor_lastname}`.trim()
 				text += `\nDonateur : ${donor || "non renseigné"}`
 			}
@@ -459,9 +459,9 @@ class ExportService {
 							if (mass.deceased === 1 || mass.deceased === true || mass.deceased === "1") {
 								text += " (D)"
 							}
-							if (mass.date_type === "specifique") {
+							if (mass.date_type === "desired" || "imperative") {
 								text += " (Fixe)"
-							} else if (mass.date_type === "indifferente") {
+							} else if (mass.date_type === "indifferent") {
 								text += " (Mobile)"
 							}
 
@@ -545,7 +545,7 @@ class ExportService {
 			// Remplir les lignes avec les données des intentions
 			intentions.forEach((intention) => {
 				const deceasedText = intention.deceased ? "(défunt)" : ""
-				const dateTypeText = intention.date_type === "specifique" ? "(fixe)" : intention.date_type === "indifferente" ? "(mobile)" : ""
+				const dateTypeText = intention.date_type === "imperative" | "desired" ? "(fixe)" : intention.date_type === "indifferent" ? "(mobile)" : ""
 				const intentionTypeText =
 					intention.intention_type === "novena"
 						? "Neuvaine"
@@ -594,7 +594,7 @@ class ExportService {
 
 				intentions.forEach((intention) => {
 					const deceasedText = intention.deceased ? "(défunt)" : ""
-					const dateTypeText = intention.date_type === "specifique" ? "(fixe)" : intention.date_type === "indifferente" ? "(mobile)" : ""
+					const dateTypeText = intention.date_type === "imperative" | "desired" ? "(fixe)" : intention.date_type === "indifferent" ? "(mobile)" : ""
 					const intentionTypeText =
 						intention.intention_type === "novena"
 							? "Neuvaine"
@@ -686,7 +686,7 @@ class ExportService {
 
 			intentions.forEach((intention) => {
 				const deceasedText = intention.deceased ? "(défunt)" : ""
-				const dateTypeText = intention.date_type === "specifique" ? "(fixe)" : intention.date_type === "indifferente" ? "(mobile)" : ""
+				const dateTypeText = intention.date_type === "imperative" | "desired" ? "(fixe)" : intention.date_type === "indifferent" ? "(mobile)" : ""
 				const intentionTypeChildren =
 					intention.intention_type === "novena"
 						? "Neuvaine"

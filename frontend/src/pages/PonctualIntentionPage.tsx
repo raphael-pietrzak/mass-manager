@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { IntentionList } from "../features/intentions/views/IntentionList";
-import { IntentionModal } from "../features/intentions/IntentionModal";
+import { PonctualIntentionList } from "../features/intentions/ponctual/views/PonctualIntentionList";
 import { Intention, IntentionSubmission, intentionService } from "../api/intentionService";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { exportService } from "../api/exportService";
-import IntentionFilterBar from "../features/intentions/IntentionFilterBar";
+import PonctualIntentionFilterBar from "../features/intentions/ponctual/PonctualIntentionFilterBar";
+import { PonctualIntentionModal } from "../features/intentions/ponctual/PonctualIntentionModal";
 
 const IntentionPage: React.FC = () => {
 	const [isIntentionModalOpen, setIsIntentionModalOpen] = useState(false);
@@ -103,8 +103,8 @@ const IntentionPage: React.FC = () => {
 		<div className="min-h-screen bg-gray-100">
 			<main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
 				<h1 className="text-2xl font-bold mb-6">Liste des intentions de messe ponctuelles</h1>
-				<IntentionFilterBar 
-					onExport={handleExport} 
+				<PonctualIntentionFilterBar 
+					onExport={handleExport}
 					selectedCount={selectedIntentionIds.length}
 				/>
 				
@@ -140,13 +140,13 @@ const IntentionPage: React.FC = () => {
 					</AlertDialogContent>
 				</AlertDialog>
 
-				<IntentionList
+				<PonctualIntentionList
 					intentions={intentions}
 					onSelectionChange={setSelectedIntentionIds}
 					onRefresh={fetchIntentions}
 					loading={loading}
 				/>
-				<IntentionModal
+				<PonctualIntentionModal
 					intention={null}
 					isOpen={isIntentionModalOpen}
 					onClose={() => setIsIntentionModalOpen(false)}

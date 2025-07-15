@@ -6,7 +6,7 @@ interface DateFilterBarProps {
   selectedCount: number;
 }
 
-const IntentionFilterBar: React.FC<DateFilterBarProps> = ({ onExport, selectedCount }) => {
+const PonctualIntentionFilterBar: React.FC<DateFilterBarProps> = ({ onExport, selectedCount }) => {
   const exportMenuRef = useRef<HTMLDivElement>(null);
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
 
@@ -111,4 +111,4 @@ const ChevronDownIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-export default IntentionFilterBar;
+export default PonctualIntentionFilterBar;

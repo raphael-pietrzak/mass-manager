@@ -6,6 +6,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Intention } from '../../../api/intentionService';
 import { Donor, donorsService } from '../../../api/donorService';
 import { DropdownSearch } from '../../../components/DropdownSearch';
+import { AlertTriangle } from 'lucide-react';
+import { AlertDescription } from '../../../components/ui/alert';
 
 interface DonorFormProps {
   formData: Partial<Intention>;
@@ -28,6 +30,7 @@ const DonorForm: React.FC<DonorFormProps> = ({
   }));
   const UNASSIGNED_VALUE = "unassigned";
   const [selectedDonor, setSelectedDonor] = useState<string | undefined>(undefined);
+  const [errors, setErrors] = useState<{ firstname?: string; lastname?: string }>({});
 
   const handleSelectDonor = (value: string) => {
     setSelectedDonor(value);
@@ -82,6 +85,23 @@ const DonorForm: React.FC<DonorFormProps> = ({
     fetchDonors(); // Appel de la fonction pour récupérer les données
   }, []);
 
+  const handleValidate = () => {
+    const newErrors: { firstname?: string; lastname?: string } = {};
+    if (!formData.donor_firstname || formData.donor_firstname.trim() === "") {
+      newErrors.firstname = "Le prénom est requis";
+    }
+    if (!formData.donor_lastname || formData.donor_lastname.trim() === "") {
+      newErrors.lastname = "Le nom est requis";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+    setErrors({});
+    onValidate();
+  };
+
   return (
     <div className="flex flex-col flex-1 h-[550px]">
       <div className="flex-grow space-y-6 overflow-y-auto">
@@ -104,6 +124,12 @@ const DonorForm: React.FC<DonorFormProps> = ({
               value={formData.donor_firstname || ''}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ donor_firstname: e.target.value })}
             />
+            {errors.firstname && (
+              <div className="flex items-center gap-2 text-red-500">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>{errors.firstname}</AlertDescription>
+              </div>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="lastname">Nom</Label>
@@ -113,6 +139,12 @@ const DonorForm: React.FC<DonorFormProps> = ({
               value={formData.donor_lastname || ''}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ donor_lastname: e.target.value })}
             />
+            {errors.lastname && (
+              <div className="flex items-center gap-2 text-red-500">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>{errors.lastname}</AlertDescription>
+              </div>
+            )}
           </div>
         </div>
         <div className="space-y-2">
@@ -175,7 +207,7 @@ const DonorForm: React.FC<DonorFormProps> = ({
         <Button variant="outline" type="button" onClick={prevStep}>
           Précédent
         </Button>
-        <Button type="button" onClick={onValidate}>
+        <Button type="button" onClick={handleValidate}>
           Finaliser
         </Button>
       </div>

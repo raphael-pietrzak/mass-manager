@@ -27,9 +27,8 @@ const MassService = {
             
             const masses = [];
             const usedCelebrantsByDate = {};
-            
             // Si une date de début est fournie (impérative ou souhaitée)
-            if (start_date && (date_type === 'imperative' || date_type === 'preferred')) {
+            if (start_date && (date_type === 'imperative' || date_type === 'desired')) {
                 // Générer un tableau de dates à partir de start_date
                 const dates = [];
                 for (let i = 0; i < mass_count; i++) {
@@ -37,7 +36,6 @@ const MassService = {
                     date.setDate(date.getDate() + i);
                     dates.push(date.toISOString().split('T')[0]);
                 }
-
                 for (let i = 0; i < dates.length; i++) {
                     const date = dates[i];
                     
@@ -50,14 +48,14 @@ const MassService = {
                         const massData = await MassService.handleImperativeDate(
                             date, celebrant_id, intention_text, deceased, usedCelebrantsByDate
                         );
-                        
                         // Si massData est null, c'est un échec (pas de célébrant disponible)
                         if (!massData) {
                             masses.push({
                                 date,
                                 intention: intention_text,
-                                type: deceased ? 'defunts' : 'vivants',
+                                type: deceased ? 'defunt' : '',
                                 celebrant_id: null,
+                                celebrant_title: null,
                                 celebrant_name: "Aucun célébrant disponible",
                                 status: 'error',
                                 error: 'no_celebrant_available'
@@ -71,7 +69,7 @@ const MassService = {
                         }
                     } 
                     // CAS 3 & 4: Date souhaitée
-                    else if (date_type === 'preferred') {
+                    else if (date_type === 'desired') {
                         const massData = await MassService.handlePreferredDate(
                             date, celebrant_id, intention_text, deceased, usedCelebrantsByDate
                         );
@@ -119,12 +117,13 @@ const MassService = {
                                (!usedCelebrantsByDate[date] || !usedCelebrantsByDate[date].has(parseInt(celebrant_id)));
             
             if (isAvailable) {
+                console.log("Test s'il arrive la")
                 const celebrant = await MassService.getCelebrantById(celebrant_id);
                 return {
                     date,
                     intention: intention_text,
-                    type: deceased ? 'defunts' : 'vivants',
                     celebrant_id: celebrant.id,
+                    celebrant_title: celebrant.celebrant_title,
                     celebrant_name: celebrant.religious_name,
                     status: 'scheduled'
                 };
@@ -146,6 +145,7 @@ const MassService = {
                     intention: intention_text,
                     type: deceased ? 'defunts' : 'vivants',
                     celebrant_id: availableCelebrant.id,
+                    celebrant_title: availableCelebrant.celebrant_title,
                     celebrant_name: availableCelebrant.religious_name,
                     status: 'scheduled'
                 };
@@ -173,6 +173,7 @@ const MassService = {
                     intention: intention_text,
                     type: deceased ? 'defunts' : 'vivants',
                     celebrant_id: celebrant.id,
+                    celebrant_title: celebrant.celebrant_title,
                     celebrant_name: celebrant.religious_name,
                     status: 'scheduled'
                 };
@@ -187,6 +188,7 @@ const MassService = {
                         intention: intention_text,
                         type: deceased ? 'defunts' : 'vivants',
                         celebrant_id: slot.celebrant.id,
+                        celebrant_title: slot.celebrant.celebrant_title,
                         celebrant_name: slot.celebrant.religious_name,
                         status: 'scheduled',
                         changed_date: true
@@ -217,6 +219,7 @@ const MassService = {
                     intention: intention_text,
                     type: deceased ? 'defunts' : 'vivants',
                     celebrant_id: availableCelebrant.id,
+                    celebrant_title: availableCelebrant.celebrant_title,
                     celebrant_name: availableCelebrant.religious_name,
                     status: 'scheduled'
                 };
@@ -232,6 +235,7 @@ const MassService = {
                         type: deceased ? 'defunts' : 'vivants',
                         celebrant_id: slot.celebrant.id,
                         celebrant_name: slot.celebrant.religious_name,
+                        celebrant_title: slot.celebrant.celebrant_title,
                         status: 'scheduled',
                         changed_date: true
                     };
@@ -310,6 +314,7 @@ const MassService = {
                 intention: intention_text,
                 type: deceased ? 'defunts' : 'vivants',
                 celebrant_id: slot.celebrant.id,
+                celebrant_title: slot.celebrant.celebrant_title,
                 celebrant_name: slot.celebrant.religious_name,
                 status: 'scheduled'
             };
@@ -318,7 +323,6 @@ const MassService = {
             return {
                 date: null,
                 intention: intention_text,
-                type: deceased ? 'defunts' : 'vivants',
                 celebrant_id: celebrant_id,
                 celebrant_name: "Aucune disponibilité",
                 status: 'error',
@@ -345,6 +349,7 @@ const MassService = {
                     intention: intention_text,
                     type: deceased ? 'defunts' : 'vivants',
                     celebrant_id: slot.celebrant.id,
+                    celebrant_title: slot.celebrant.title,
                     celebrant_name: slot.celebrant.religious_name,
                     status: 'scheduled'
                 };
@@ -360,6 +365,7 @@ const MassService = {
                 intention: intention_text,
                 type: deceased ? 'defunts' : 'vivants',
                 celebrant_id: slot.celebrant.id,
+                celebrant_title: slot.celebrant.celebrant_title,
                 celebrant_name: slot.celebrant.religious_name,
                 status: 'scheduled'
             };
@@ -371,6 +377,7 @@ const MassService = {
                 type: deceased ? 'defunts' : 'vivants',
                 celebrant_id: null,
                 celebrant_name: "Aucune disponibilité",
+                celebrant_title: null,
                 status: 'error',
                 error: 'no_availability'
             };
@@ -385,7 +392,8 @@ const MassService = {
         const celebrantsWithCount = await db.raw(`
             SELECT 
                 c.id, 
-                c.religious_name, 
+                c.religious_name,
+                c.title as celebrant_title,
                 COUNT(m.id) as mass_count
             FROM 
                 Celebrants c
@@ -408,7 +416,7 @@ const MassService = {
      */
     getCelebrantById: async (id) => {
         return db('Celebrants')
-            .select('id', 'religious_name', 'title')
+            .select('id', 'religious_name', 'title as celebrant_title')
             .where('id', id)
             .first();
     }

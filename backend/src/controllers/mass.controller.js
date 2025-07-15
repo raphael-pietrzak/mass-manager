@@ -4,10 +4,9 @@ const Donor = require('../models/donor.model');
 const db = require('../../config/database');
 
 exports.getMasses = async (req, res) => {
-  console.log('Récupération des messes entre', req.query.startDate, 'et', req.query.endDate);
+  const {startDate, endDate, celebrant_id} = req.query
   try {
-    const data = await Mass.getMassesByDateRange(req.query.startDate, req.query.endDate);
-    console.log(`${data.length} messes trouvées`);
+    const data = await Mass.getMassesByDateRange(startDate, endDate, celebrant_id);
     res.json(data);
   } catch (error) {
     console.error('Erreur getMasses:', error);
@@ -51,7 +50,7 @@ exports.createMass = async (req, res) => {
     const intentionData = {
       donor_id: donorId,
       intention_text: req.body.intention,
-      type: req.body.type || 'defunts',
+      intention_type: req.body.intention_type,
       amount: req.body.amount,
       payment_method: req.body.paymentMethod,
       brother_name: req.body.brotherName || '',

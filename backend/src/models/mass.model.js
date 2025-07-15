@@ -103,7 +103,7 @@ class Mass {
 
 		// Trouver un célébrant disponible qui n'est pas déjà assigné ce jour-là
 		const availableCelebrant = await db("Celebrants")
-			.select("id", "religious_name", "title")
+			.select("id", "religious_name", "title as celebrant_title")
 			.whereNotIn(
 				"id",
 				allExcludedIds.filter((id) => id != null)
@@ -149,7 +149,7 @@ class Mass {
 			const isAvailable = await Mass.isCelebrantAvailable(celebrantId, formattedDate)
 
 			if (isAvailable) {
-				const celebrant = await db("Celebrants").select("id", "religious_name", "title").where("id", celebrantId).first()
+				const celebrant = await db("Celebrants").select("id", "religious_name", "title as celebrant_title").where("id", celebrantId).first()
 
 				return {
 					date: dateToCheck,
@@ -211,6 +211,7 @@ class Mass {
 			.select(
 				"Masses.*",
 				"Celebrants.religious_name as celebrant_name",
+				"Celebrants.title as celebrant_title",
 				"Intentions.intention_text as intention",
 				"Intentions.amount",
 				"Intentions.wants_celebration_date as wants_notification",
@@ -235,7 +236,7 @@ class Mass {
 				"Intentions.intention_text as intention",
 				"Intentions.deceased as deceased",
 				"Intentions.amount",
-				"Intentions.date_type as date_type",
+				"Intentions.date_type as dateType",
 				"Intentions.wants_celebration_date as wants_notification",
 				"Donors.firstname as donor_firstname",
 				"Donors.lastname as donor_lastname",
@@ -266,6 +267,7 @@ class Mass {
 				"Masses.date",
 				"Masses.status",
 				"Celebrants.religious_name as celebrant_name",
+				"Celebrants.title as celebrant_name",
 				"Celebrants.id as celebrant_id",
 				"Celebrants.title as celebrant_title",
 				"Intentions.intention_text as intention",
