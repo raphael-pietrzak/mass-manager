@@ -13,7 +13,7 @@ export interface Intention {
 	celebrant_name?: string
 	celebrant_title?: string
 	status?: IntentionStatus
-	deceased?: boolean
+	deceased: boolean
 	intention_type: "unit" | "thirty" | "novena"
 	number_of_masses?: number
 	created_at: Date
@@ -47,6 +47,7 @@ export interface Masses {
 	celebrant_name: string
 	celebrant_title: string
 	status: MassStatus
+	intention_id: number
 }
 
 export interface IntentionSubmission {

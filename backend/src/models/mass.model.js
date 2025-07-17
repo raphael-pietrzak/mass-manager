@@ -270,7 +270,8 @@ class Mass {
 				"Celebrants.title as celebrant_title",
 				"Celebrants.id as celebrant_id",
 				"Intentions.intention_text as intention",
-				"Intentions.deceased"
+				"Intentions.deceased",
+				"Intentions.id as intention_id"
 			)
 			.leftJoin("Celebrants", "Masses.celebrant_id", "Celebrants.id")
 			.leftJoin("Intentions", "Masses.intention_id", "Intentions.id")

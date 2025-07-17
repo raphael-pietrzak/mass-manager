@@ -47,7 +47,7 @@ const SummaryForm: React.FC<SummaryFormProps> = ({
 
         {/* Informations communes à toutes les messes */}
         <div className="border p-3 rounded-md mb-4 bg-gray-50">
-          <p><span className="font-medium">Intention: </span>{formData.intention_text} <span>{formData.deceased === true ? '(Défunt)' : ''}</span></p>
+          <p><span className="font-medium">Intention: </span>{formData.intention_text} <span>{formData.deceased ? '(Défunt)' : ''}</span></p>
           <p><span className="font-medium">Date:</span> {(formData.date_type === 'imperative' || formData.date_type === 'desired') ? 'Fixe' : 'Mobile'}</p>
           <p>
             <span className="font-medium">Type:</span>{" "}

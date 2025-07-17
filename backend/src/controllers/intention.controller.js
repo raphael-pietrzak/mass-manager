@@ -217,6 +217,7 @@ exports.getIntentionMasses = async (req, res) => {
 			celebrant_name: mass.celebrant_name || "",
 			celebrant_title: mass.celebrant_title || "",
 			status: mass.status,
+			intention_id: mass.intention_id
 		}))
 
 		res.json(formattedMasses)

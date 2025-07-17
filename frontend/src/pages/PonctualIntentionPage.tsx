@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { PonctualIntentionList } from "../features/intentions/ponctual/views/PonctualIntentionList";
-import { Intention, IntentionSubmission, intentionService } from "../api/intentionService";
+import { Intention, IntentionSubmission, Masses, intentionService } from "../api/intentionService";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { exportService } from "../api/exportService";
 import PonctualIntentionFilterBar from "../features/intentions/ponctual/PonctualIntentionFilterBar";
@@ -31,6 +31,30 @@ const PonctualIntentionPage: React.FC = () => {
 	const [selectedIntentionIds, setSelectedIntentionIds] = useState<string[]>([]);
 	const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false);
 	const [isDistributeModalOpen, setIsDistributeModalOpen] = useState(false);
+	const [associatedMasses, setAssociatedMasses] = useState<Masses[]>([]);
+
+	const loadMassesForSelectedIntentions = async () => {
+		try {
+			const selectedIntentions = intentions.filter((i) =>
+				selectedIntentionIds.includes(i.id)
+			);
+
+			const allMasses = await Promise.all(
+				selectedIntentions.map((intention) =>
+					intentionService.getIntentionMasses(intention.id)
+				)
+			);
+
+			// Aplatir le tableau de tableaux de messes
+			const flattened = allMasses.flat();
+
+			setAssociatedMasses(flattened);
+			setIsDistributeModalOpen(true);
+		} catch (error) {
+			console.error("Erreur lors du chargement des messes :", error);
+			setError("Impossible de récupérer les messes.");
+		}
+	};
 
 	const fetchIntentions = async () => {
 		try {
@@ -117,7 +141,7 @@ const PonctualIntentionPage: React.FC = () => {
 				<PonctualIntentionFilterBar
 					onExport={handleExport}
 					selectedCount={selectedIntentionIds.length}
-					onDistribute={() => setIsDistributeModalOpen(true)}
+					onDistribute={loadMassesForSelectedIntentions}
 				/>
 
 				<div className="mt-6 mb-6">
@@ -174,8 +198,9 @@ const PonctualIntentionPage: React.FC = () => {
 
 				{isDistributeModalOpen && (
 					<MassProgrammationModal
+						intentions={intentions.filter(i => selectedIntentionIds.includes(i.id))}
+						masses={associatedMasses}
 						onClose={() => setIsDistributeModalOpen(false)}
-						slidesCount={selectedIntentionIds.length}
 					/>
 				)}
 
