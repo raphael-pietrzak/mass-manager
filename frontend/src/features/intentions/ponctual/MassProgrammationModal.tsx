@@ -26,7 +26,7 @@ export const MassProgrammationModal: React.FC<MassProgrammationModalProps> = ({
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle>
-              Répartition des messes ponctuelles – {currentSlide + 1}/{slidesCount}
+              Répartition des intentions ponctuelles – {currentSlide + 1}/{slidesCount}
             </CardTitle>
             <button
               onClick={onClose}

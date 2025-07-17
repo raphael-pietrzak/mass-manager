@@ -10,6 +10,7 @@ import { MassProgrammationModal } from "../features/intentions/ponctual/MassProg
 const PonctualIntentionPage: React.FC = () => {
 	const [isIntentionModalOpen, setIsIntentionModalOpen] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [success, setSuccess] = useState<string | null>(null)
 	const [loading, setLoading] = useState(true);
 	const [intentions, setIntentions] = useState<Intention[]>([]);
 	useEffect(() => {
@@ -20,7 +21,13 @@ const PonctualIntentionPage: React.FC = () => {
 
 			return () => clearTimeout(timer);
 		}
-	}, [error]);
+		if (success) {
+			const timer = setTimeout(() => {
+				setSuccess(null);
+			}, 5000);
+			return () => clearTimeout(timer);
+		}
+	}, [error, success]);
 	const [selectedIntentionIds, setSelectedIntentionIds] = useState<string[]>([]);
 	const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false);
 	const [isDistributeModalOpen, setIsDistributeModalOpen] = useState(false);
@@ -49,8 +56,10 @@ const PonctualIntentionPage: React.FC = () => {
 		try {
 			if (newIntention.id) {
 				await intentionService.updateMass(newIntention.id, newIntention);
+				setSuccess("Intention mise à jour avec succès.");
 			} else {
 				await intentionService.createMass(newIntention);
+				setSuccess("Intention créée avec succès.");
 			}
 			await fetchIntentions();
 			setIsIntentionModalOpen(false);
@@ -115,6 +124,13 @@ const PonctualIntentionPage: React.FC = () => {
 					{error && (
 						<div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded z-50">
 							{error}
+						</div>
+					)}
+				</div>
+				<div className="mt-6 mb-6">
+					{success && (
+						<div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded z-50">
+							{success}
 						</div>
 					)}
 				</div>

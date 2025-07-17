@@ -267,9 +267,8 @@ class Mass {
 				"Masses.date",
 				"Masses.status",
 				"Celebrants.religious_name as celebrant_name",
-				"Celebrants.title as celebrant_name",
-				"Celebrants.id as celebrant_id",
 				"Celebrants.title as celebrant_title",
+				"Celebrants.id as celebrant_id",
 				"Intentions.intention_text as intention",
 				"Intentions.deceased"
 			)
