@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Intention, Masses } from "../../../api/intentionService";
+import { Intention, intentionService, Masses } from "../../../api/intentionService";
 
 interface MassProgrammationModalProps {
   intentions: Intention[];
@@ -24,6 +24,38 @@ export const MassProgrammationModal: React.FC<MassProgrammationModalProps> = ({
   const currentIntention = intentions[currentSlide];
   const currentMasses = masses.filter(m => String(m.intention_id) === String(currentIntention.id));
   const progressPercentage = ((currentSlide + 1) / intentions.length) * 100;
+
+  const [previewData, setPreviewData] = useState<Masses[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const loadPreviewMasses = async () => {
+      setIsLoading(true);
+      try {
+        const allPreviews = await Promise.all(
+          intentions.map((intention) =>
+            intentionService.previewMassesForPonctualIntentions({
+              intention_text: intention.intention_text,
+              deceased: intention.deceased,
+              mass_count: intention.mass_count || 1,
+              intention_type: intention.intention_type,
+              celebrant_id: intention.celebrant_id || '',
+            })
+          )
+        );
+
+        const merged = allPreviews.flat();
+        setPreviewData(merged);
+      } catch (err) {
+        console.error("Erreur lors de la prévisualisation groupée :", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadPreviewMasses();
+  }, [intentions]);
+
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -55,83 +87,41 @@ export const MassProgrammationModal: React.FC<MassProgrammationModalProps> = ({
             {currentIntention.intention_text}
           </div> */}
 
-          {currentMasses.length > 0 ? (
-            <ul className="list-disc pl-5 space-y-1 text-sm text-black">
-              <h3 className="font-semibold text-lg mb-2 mt-4">Récapitulatif de l'intention</h3>
-              {/* Informations communes à toutes les messes */}
-              <div className="border p-3 rounded-md mb-4 bg-gray-50">
-                <p>
-                  <span className="font-medium">Intention: </span>{currentIntention.intention_text}
-                  <span>{currentIntention.deceased ? '(Défunt)' : ''}</span>
-                </p>
-                <p>
-                  <span className="font-medium">Type:</span>{" "}
-                  {currentIntention.intention_type === "unit" ? (
-                    `Unité${currentIntention.mass_count && currentIntention.mass_count > 1 ? ` (${currentIntention.mass_count} Messes)` : " (1 Messe)"}`
-                  ) : currentIntention.intention_type === "novena" ? (
-                    "Neuvaine"
-                  ) : currentIntention.intention_type === "thirty" ? (
-                    "Trentain"
-                  ) : (
-                    "Mobile"
-                  )}
-                </p>
-              </div>
+          <div className="space-y-6">
+            <h3 className="font-semibold text-lg mb-2">Messes prévisualisées</h3>
 
-              <div className="flex-col relative mt-10">
-                <h3 className="font-semibold text-lg mb-2 mt-4">Messes planifiées</h3>
-                {/* Indicateur de défilement */}
-                {currentMasses.length > 5 && (
-                  <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-gray-100 to-transparent pointer-events-none z-10 rounded-b-md"></div>
-                )}
-                <div className="overflow-auto max-h-[250px] border rounded-md scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                  <table className="w-full table-fixed">
-                    <thead className="bg-gray-50 sticky top-0 z-20">
-                      <tr>
-                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[10%]">
-                          #
-                        </th>
-                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[45%]">
-                          Date
-                        </th>
-                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[45%]">
-                          Célébrant
-                        </th>
+            {isLoading ? (
+              <div className="flex justify-center items-center h-32">
+                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary" />
+              </div>
+            ) : previewData.length === 0 ? (
+              <p className="text-sm text-gray-600 italic">Aucune messe générée</p>
+            ) : (
+              <div className="overflow-auto max-h-[300px] border rounded-md scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                <table className="w-full table-fixed">
+                  <thead className="bg-gray-50 sticky top-0">
+                    <tr>
+                      <th className="px-3 py-2 text-left text-xs text-gray-500 uppercase tracking-wider w-[10%]">#</th>
+                      <th className="px-3 py-2 text-left text-xs text-gray-500 uppercase tracking-wider w-[40%]">Date</th>
+                      <th className="px-3 py-2 text-left text-xs text-gray-500 uppercase tracking-wider w-[50%]">Célébrant</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {previewData.map((mass, index) => (
+                      <tr key={index}>
+                        <td className="px-3 py-2 text-sm text-gray-900">{index + 1}</td>
+                        <td className="px-3 py-2 text-sm text-gray-700">{mass.date || 'Non définie'}</td>
+                        <td className="px-3 py-2 text-sm text-gray-700">
+                          {mass.celebrant_title} {mass.celebrant_name || '—'}
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {currentMasses.map((mass, index) => (
-                        <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                          <td className="px-3 py-2 text-sm font-medium text-gray-900">
-                            {index + 1}
-                          </td>
-                          <td className="px-3 py-2 text-sm text-gray-500 truncate">
-                            {/* {mass.date || "Date à déterminer"} */}
-                            DATE
-                          </td>
-                          <td className="px-3 py-2 text-sm text-gray-500 truncate">
-                            {/* {mass.celebrant_title} {mass.celebrant_name || (celebrantOptions.find(c => c.value === mass.celebrant_id)?.label || 'Non assigné')} */}
-                            CELEBRANT
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Texte d'indication de défilement si plusieurs éléments - Style amélioré */}
-                {currentMasses.length > 5 && (
-                  <p className="text-sm text-gray-600 mt-2 text-center font-medium bg-gray-100 p-1 rounded border border-gray-200">
-                    Faites défiler pour voir toutes les messes ({currentMasses.length} au total)
-                  </p>
-                )}
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            </ul>
-          ) : (
-            <div className="text-sm text-gray-500 italic">
-              Aucune messe associée à cette intention.
-            </div>
-          )}
+            )}
+          </div>
+
 
           <div className="pt-6 flex justify-between space-x-4">
             {currentSlide > 0 ? (

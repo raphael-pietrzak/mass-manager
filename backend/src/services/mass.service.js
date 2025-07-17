@@ -53,7 +53,6 @@ const MassService = {
                             masses.push({
                                 date,
                                 intention: intention_text,
-                                //type: deceased ? 'defunt' : '',
                                 celebrant_id: null,
                                 celebrant_title: null,
                                 celebrant_name: "Aucun célébrant disponible",
@@ -232,7 +231,6 @@ const MassService = {
                         original_date: date, // Conserver la date souhaitée initialement
                         date: slot.date.toISOString().split('T')[0],
                         intention: intention_text,
-                        //type: deceased ? 'defunts' : 'vivants',
                         celebrant_id: slot.celebrant.id,
                         celebrant_name: slot.celebrant.religious_name,
                         celebrant_title: slot.celebrant.celebrant_title,
@@ -244,7 +242,6 @@ const MassService = {
                     return {
                         date: null,
                         intention: intention_text,
-                        //type: deceased ? 'defunts' : 'vivants',
                         celebrant_id: null,
                         celebrant_name: "Aucune disponibilité",
                         status: 'error',
@@ -364,9 +361,145 @@ const MassService = {
     getCelebrantById: async (id) => {
         return db('Celebrants')
             .select('id', 'religious_name', 'title as celebrant_title')
-            .where('id', id)
+             .where('id', id)
             .first();
+    },
+
+
+
+    /**
+     * ------------------------------------------------
+     * Répartition des meses des intentions ponctuelles
+     * ------------------------------------------------
+     */
+
+    handleIndifferentDateWithCelebrantForPonctualIntentions: async (celebrant_id, intention_text, deceased, usedCelebrantsByDate) => {
+        // Chercher la prochaine date disponible pour ce célébrant
+        const slot = await Mass.findNextAvailableSlotForCelebrant(celebrant_id, usedCelebrantsByDate);
+        
+        if (slot) {
+            return {
+                date: slot.date.toISOString().split('T')[0],
+                intention: intention_text,
+                celebrant_id: slot.celebrant.id,
+                celebrant_name: slot.celebrant.religious_name,
+                status: 'scheduled'
+            };
+        } else {
+            // Aucune date disponible pour ce célébrant
+            return {
+                date: null,
+                intention: intention_text,
+                celebrant_id: celebrant_id,
+                celebrant_name: "Aucune disponibilité",
+                status: 'error',
+                error: 'no_availability'
+            };
+        }
+    },
+    //     try {
+    //         const { 
+    //             intention_text, 
+    //             deceased = false,
+    //             mass_count = 1, 
+    //             celebrant_id = null,
+    //         } = params;
+            
+    //         const masses = [];
+    //         const usedCelebrantsByDate = {};
+            
+    //         console.log(`Traitement de ${mass_count} messes avec date indifférente`);
+    //         const indifferentDatesResult = await MassService.handleIndifferentDatesForPonctualIntentions(
+    //             mass_count,
+    //             celebrant_id,
+    //             intention_text,
+    //             deceased,
+    //             usedCelebrantsByDate
+    //         );
+    //         masses.push(...indifferentDatesResult);
+
+            
+    //         return masses;
+    //     } catch (error) {
+    //         console.error('Erreur lors de la génération de prévisualisation de messes:', error);
+    //         throw error;
+    //     }
+    // },
+
+    handleIndifferentDateWithoutCelebrantForPonctualIntention: async (intention_text, deceased, usedCelebrantsByDate) => {
+        // Chercher la prochaine date avec un célébrant dispo
+        const slot = await Mass.findNextAvailableSlot(usedCelebrantsByDate);
+
+        if (slot) {
+            return {
+                date: slot.date.toISOString().split('T')[0],
+                intention: intention_text,
+                celebrant_id: slot.celebrant.id,
+                celebrant_name: slot.celebrant.religious_name,
+                status: 'scheduled'
+            };
+        } else {
+            return {
+                date: null,
+                intention: intention_text,
+                celebrant_id: null,
+                celebrant_name: "Aucune disponibilité",
+                status: 'error',
+                error: 'no_availability'
+            };
+        }
+    },
+
+    assignToExistingMasses: async (intentions) => {
+        const allUpdatedMasses = []
+        const usedCelebrantsByDate = {}
+
+        for (const intention of intentions) {
+            const { id: intention_id, intention_text, deceased, celebrant_id } = intention
+
+            const masses = await Mass.findUnscheduledMassesByIntention(intention_id)
+
+            for (const mass of masses) {
+                let assignedData
+
+                if (celebrant_id) {
+                    assignedData = await MassService.handleIndifferentDateWithCelebrantForPonctualIntentions(
+                        celebrant_id,
+                        intention_text,
+                        deceased,
+                        usedCelebrantsByDate
+                    )
+                } else {
+                    assignedData = await MassService.handleIndifferentDateWithoutCelebrantForPonctualIntention(
+                        intention_text,
+                        deceased,
+                        usedCelebrantsByDate
+                    )
+                }
+
+                await Mass.update({
+                    id: mass.id,
+                    date: assignedData.date,
+                    celebrant_id: assignedData.celebrant_id,
+                    intention_id: intention_id,
+                    status: "scheduled"
+                })
+
+                allUpdatedMasses.push({
+                    ...mass,
+                    date: assignedData.date,
+                    celebrant_id: assignedData.celebrant_id,
+                    status: "scheduled"
+                })
+
+                await MassService.updateUsedCelebrants(assignedData, usedCelebrantsByDate)
+            }
+        }
+
+        return allUpdatedMasses
     }
+
+
 };
 
 module.exports = MassService;

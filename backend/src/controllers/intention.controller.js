@@ -250,3 +250,24 @@ exports.deleteBeforeDate = async (req, res) => {
 		res.status(500).send("Erreur lors de la suppression des intentions")
 	}
 }
+
+exports.assignToExistingMasses = async (req, res) => {
+  try {
+    const intentionId = req.params.id
+
+    // Récupérer l'intention (à adapter selon ton modèle)
+    const intention = await Intention.findById(intentionId)
+
+    if (!intention) {
+      return res.status(404).json({ error: 'Intention non trouvée' })
+    }
+
+    // Passer sous forme de tableau car ta fonction attend un tableau d'intentions
+    const updatedMasses = await MassService.assignToExistingMasses([intention])
+
+    res.json(updatedMasses)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: 'Erreur lors de l\'assignation des messes' })
+  }
+}

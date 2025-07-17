@@ -13,7 +13,7 @@ export interface Intention {
 	celebrant_name?: string
 	celebrant_title?: string
 	status?: IntentionStatus
-	deceased: boolean
+	deceased?: boolean
 	intention_type: "unit" | "thirty" | "novena"
 	number_of_masses?: number
 	created_at: Date
@@ -85,6 +85,11 @@ export const intentionService = {
 		const response = await axios.post(`${API_URL}/preview`, data)
 		return response.data // Retourne les données de prévisualisation
 	},
+
+	// async previewMassesForPonctualIntentions(data: Partial<Intention>) {
+	// 	const response = await axios.post(`${API_URL}/preview`, data)
+	// 	return response.data // Retourne les données de prévisualisation
+	// },
 
 	async createMass(data: IntentionSubmission) {
 		const response = await axios.post(`${API_URL}`, data)

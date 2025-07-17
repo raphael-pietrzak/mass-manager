@@ -241,7 +241,7 @@ class Mass {
 				"Donors.lastname as donor_lastname",
 				"Donors.email as donor_email"
 			)
-			.where('Masses.status', '=', 'scheduled')
+			.where("Masses.status", "=", "scheduled")
 			.orderBy("Masses.date")
 
 		if (celebrant_id) {
@@ -277,6 +277,14 @@ class Mass {
 			.leftJoin("Intentions", "Masses.intention_id", "Intentions.id")
 			.where("Masses.intention_id", intentionId)
 			.orderBy("Masses.date")
+	}
+
+	static async findUnscheduledMassesByIntention(intentionId) {
+		return db("Masses")
+			.where("intention_id", intentionId)
+			.andWhere(function () {
+				this.whereNull("date").orWhereNull("celebrant_id")
+			})
 	}
 }
 
