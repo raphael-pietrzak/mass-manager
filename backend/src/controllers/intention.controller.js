@@ -131,6 +131,7 @@ exports.createIntention = async (req, res) => {
 		const result = await Intention.findById(intentionId)
 		console.log('Opération terminée avec succès');
 
+		if(result.date_type === "imperative" || "desired") await Intention.update(result.id, { status: "in_progress" })
 		res.status(201).json(result)
 	} catch (error) {
 		console.error("Erreur détaillée lors de la création de l'intention:", error);

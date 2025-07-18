@@ -177,7 +177,6 @@ export const PonctualIntentionModal: React.FC<IntentionModalProps> = ({
         },
         masses: previewData
       });
-      console.log("📦 formData.deceased :", formData.deceased)
       onClose();
     } catch (error) {
       console.error("Erreur lors de la sauvegarde des messes:", error);
