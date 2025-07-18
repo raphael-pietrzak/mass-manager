@@ -55,7 +55,7 @@ exports.up = function(knex) {
     })
     .createTable('Masses', function(table) {
       table.increments('id').primary();
-      table.datetime('date').nullable();
+      table.date('date').nullable();
       table.integer('celebrant_id').unsigned().nullable().references('id').inTable('Celebrants').onDelete('SET NULL');
       table.integer('intention_id').unsigned().references('id').inTable('Intentions').onDelete('CASCADE');
       table.enum('status', ['pending', 'scheduled']).defaultTo('pending');
@@ -63,7 +63,7 @@ exports.up = function(knex) {
     })
     .createTable('SpecialDays', function(table) {
       table.increments('id').primary();
-      table.date('date').notNullable();
+      table.date('date').notNullable().unique();
       table.text('description').notNullable();
       table.integer('number_of_masses').defaultTo(0);
       table.boolean('is_recurrent').defaultTo(false);

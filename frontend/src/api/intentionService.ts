@@ -90,6 +90,9 @@ export const intentionService = {
 	// 	const response = await axios.post(`${API_URL}/preview`, data)
 	// 	return response.data // Retourne les données de prévisualisation
 	// },
+	async assignIntentions(intentionId: number) {
+		return await axios.post(`${API_URL}/${intentionId}/assignMasses`)
+	},
 
 	async createMass(data: IntentionSubmission) {
 		const response = await axios.post(`${API_URL}`, data)

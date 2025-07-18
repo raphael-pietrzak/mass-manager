@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { PonctualIntentionList } from "../features/intentions/ponctual/views/PonctualIntentionList";
-import { Intention, IntentionSubmission, Masses, intentionService } from "../api/intentionService";
+import { Intention, IntentionSubmission, intentionService } from "../api/intentionService";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { exportService } from "../api/exportService";
 import PonctualIntentionFilterBar from "../features/intentions/ponctual/PonctualIntentionFilterBar";
 import { PonctualIntentionModal } from "../features/intentions/ponctual/PonctualIntentionModal";
-import { MassProgrammationModal } from "../features/intentions/ponctual/MassProgrammationModal";
 
 const PonctualIntentionPage: React.FC = () => {
 	const [isIntentionModalOpen, setIsIntentionModalOpen] = useState(false);
@@ -30,31 +29,6 @@ const PonctualIntentionPage: React.FC = () => {
 	}, [error, success]);
 	const [selectedIntentionIds, setSelectedIntentionIds] = useState<string[]>([]);
 	const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false);
-	const [isDistributeModalOpen, setIsDistributeModalOpen] = useState(false);
-	const [associatedMasses, setAssociatedMasses] = useState<Masses[]>([]);
-
-	const loadMassesForSelectedIntentions = async () => {
-		try {
-			const selectedIntentions = intentions.filter((i) =>
-				selectedIntentionIds.includes(i.id)
-			);
-
-			const allMasses = await Promise.all(
-				selectedIntentions.map((intention) =>
-					intentionService.getIntentionMasses(intention.id)
-				)
-			);
-
-			// Aplatir le tableau de tableaux de messes
-			const flattened = allMasses.flat();
-
-			setAssociatedMasses(flattened);
-			setIsDistributeModalOpen(true);
-		} catch (error) {
-			console.error("Erreur lors du chargement des messes :", error);
-			setError("Impossible de récupérer les messes.");
-		}
-	};
 
 	const fetchIntentions = async () => {
 		try {
@@ -134,6 +108,20 @@ const PonctualIntentionPage: React.FC = () => {
 		}
 	};
 
+	const handleDistributeIntentions = async () => {
+		// Répartition des messes pour chaque intention séléectionnée
+		try {
+			for (const id of selectedIntentionIds) {
+				const res = await intentionService.assignIntentions(Number(id));
+			}
+			await fetchIntentions();
+			setSelectedIntentionIds([]);
+		} catch (error: any) {
+			if(error.status===422) setError("Répartition impossible, mois suivant complet")
+			else setError("Erreur lors de la répartition.");
+		}
+	}
+
 	return (
 		<div className="min-h-screen bg-gray-100">
 			<main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
@@ -141,7 +129,7 @@ const PonctualIntentionPage: React.FC = () => {
 				<PonctualIntentionFilterBar
 					onExport={handleExport}
 					selectedCount={selectedIntentionIds.length}
-					onDistribute={loadMassesForSelectedIntentions}
+					onDistribute={handleDistributeIntentions}
 				/>
 
 				<div className="mt-6 mb-6">
@@ -195,14 +183,6 @@ const PonctualIntentionPage: React.FC = () => {
 					onClose={() => setIsIntentionModalOpen(false)}
 					onSave={handleSaveIntention}
 				/>
-
-				{isDistributeModalOpen && (
-					<MassProgrammationModal
-						intentions={intentions.filter(i => selectedIntentionIds.includes(i.id))}
-						masses={associatedMasses}
-						onClose={() => setIsDistributeModalOpen(false)}
-					/>
-				)}
 
 				{!isIntentionModalOpen && (
 					<button

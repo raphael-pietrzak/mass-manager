@@ -32,7 +32,8 @@ export const specialDayService = {
       try {
         const response = await axios.post(`${API_URL}/special-days`, specialDay);
         return response.data;
-      } catch (error) {
+      } catch (error: any) {
+        if (error.response.status === 400) throw new Error("Un jour spécial avec cette date existe déjà")
         console.error('Erreur lors de la création du jour spécial:', error);
         throw new Error('Erreur lors de la création du jour spécial');
       }

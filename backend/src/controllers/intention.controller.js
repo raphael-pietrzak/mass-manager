@@ -257,14 +257,12 @@ exports.assignToExistingMasses = async (req, res) => {
 
     // Récupérer l'intention (à adapter selon ton modèle)
     const intention = await Intention.findById(intentionId)
-
     if (!intention) {
       return res.status(404).json({ error: 'Intention non trouvée' })
     }
 
-    // Passer sous forme de tableau car ta fonction attend un tableau d'intentions
     const updatedMasses = await MassService.assignToExistingMasses([intention])
-
+		if(!updatedMasses) return res.status(422).json("Répartition impossible, mois suivant complet")
     res.json(updatedMasses)
   } catch (error) {
     console.error(error)

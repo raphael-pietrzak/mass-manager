@@ -34,6 +34,10 @@ exports.createSpecialDay = async (req, res) => {
 		res.status(201).send("Jour particulier enregistrée !")
 	} catch (error) {
 		console.error(error)
+		// Vérifier si c'est une erreur de contrainte unique (SQLite error code 19)
+    if (error.code === 'SQLITE_CONSTRAINT' && error.message.includes('UNIQUE constraint failed: SpecialDays.date')) {
+      return res.status(400).json({ message: "Un jour particulier avec cette date existe déjà." })
+    }
 		res.status(500).send("Erreur lors de l'enregistrement du jour particulier")
 	}
 }

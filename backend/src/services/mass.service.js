@@ -103,6 +103,7 @@ const MassService = {
                     masses.push(mass);
                 }
             }
+           
             return masses;
         } catch (error) {
             console.error('Erreur lors de la génération de prévisualisation de messes:', error);
@@ -121,7 +122,6 @@ const MassService = {
                                (!usedCelebrantsByDate[date] || !usedCelebrantsByDate[date].has(parseInt(celebrant_id)));
             
             if (isAvailable) {
-                console.log("Test s'il arrive la")
                 const celebrant = await MassService.getCelebrantById(celebrant_id);
                 return {
                     date,
@@ -369,7 +369,7 @@ const MassService = {
 
     /**
      * ------------------------------------------------
-     * Répartition des meses des intentions ponctuelles
+     * Répartition des messes des intentions ponctuelles
      * ------------------------------------------------
      */
 
@@ -397,34 +397,6 @@ const MassService = {
             };
         }
     },
-    //     try {
-    //         const { 
-    //             intention_text, 
-    //             deceased = false,
-    //             mass_count = 1, 
-    //             celebrant_id = null,
-    //         } = params;
-            
-    //         const masses = [];
-    //         const usedCelebrantsByDate = {};
-            
-    //         console.log(`Traitement de ${mass_count} messes avec date indifférente`);
-    //         const indifferentDatesResult = await MassService.handleIndifferentDatesForPonctualIntentions(
-    //             mass_count,
-    //             celebrant_id,
-    //             intention_text,
-    //             deceased,
-    //             usedCelebrantsByDate
-    //         );
-    //         masses.push(...indifferentDatesResult);
-
-            
-    //         return masses;
-    //     } catch (error) {
-    //         console.error('Erreur lors de la génération de prévisualisation de messes:', error);
-    //         throw error;
-    //     }
-    // },
 
     handleIndifferentDateWithoutCelebrantForPonctualIntention: async (intention_text, deceased, usedCelebrantsByDate) => {
         // Chercher la prochaine date avec un célébrant dispo
@@ -476,6 +448,9 @@ const MassService = {
                         usedCelebrantsByDate
                     )
                 }
+                if (assignedData.status === "error") {
+                    return null; // Pas de disponibilité pour cette messe, on arrête ici
+                }
 
                 await Mass.update({
                     id: mass.id,
@@ -495,10 +470,8 @@ const MassService = {
                 await MassService.updateUsedCelebrants(assignedData, usedCelebrantsByDate)
             }
         }
-
         return allUpdatedMasses
     }
-
 
 };
 

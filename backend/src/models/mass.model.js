@@ -118,14 +118,17 @@ class Mass {
 	}
 
 	static async findNextAvailableSlotForCelebrant(celebrantId, usedCelebrantsByDate = {}) {
-		// Commencer à partir d'un mois après la date actuelle
-		let currentDate = new Date()
-		currentDate.setMonth(currentDate.getMonth() + 1)
+		// Commencer à partir du 1er du mois suivant
+		const now = new Date()
+		// 1er jour du mois suivant
+		const startDate = new Date(now.getFullYear(), now.getMonth() + 1, 1)
+		startDate.setHours(12, 0, 0, 0)
 
-		// Rechercher sur les 60 prochains jours
-		for (let i = 0; i < 60; i++) {
-			const dateToCheck = new Date(currentDate)
-			dateToCheck.setDate(currentDate.getDate() + i)
+		// Dernier jour du mois suivant
+		const endDate = new Date(now.getFullYear(), now.getMonth() + 2, 0)
+		endDate.setHours(12, 0, 0, 0)
+
+		for (let dateToCheck = new Date(startDate); dateToCheck <= endDate; dateToCheck.setDate(dateToCheck.getDate() + 1)) {
 
 			// Formater la date pour les comparaisons
 			const formattedDate = dateToCheck.toISOString().split("T")[0]
@@ -135,9 +138,15 @@ class Mass {
 				.where(db.raw("DATE(date) = DATE(?)", [dateToCheck]))
 				.first()
 
-			if (specialDay) {
-				continue
-			}
+			if (specialDay) continue
+
+			// Vérifier s'il s'agit d'un jour d'indisponibilité à exclure
+			const unavailableDay = await db("UnavailableDays")
+				.where("celebrant_id", celebrantId)
+				.andWhere(db.raw("DATE(date) = DATE(?)", [formattedDate]))
+				.first()
+
+			if (unavailableDay) continue
 
 			// Vérifier si ce célébrant est déjà utilisé pour cette date dans usedCelebrantsByDate
 			if (usedCelebrantsByDate[formattedDate] && usedCelebrantsByDate[formattedDate].has(parseInt(celebrantId))) {
@@ -162,30 +171,39 @@ class Mass {
 	}
 
 	static async findNextAvailableSlot(usedCelebrantsByDate = {}) {
-		// Commencer à partir d'un mois après la date actuelle
-		let currentDate = new Date()
-		currentDate.setMonth(currentDate.getMonth() + 1)
+		const now = new Date()
+		const startDate = new Date(now.getFullYear(), now.getMonth() + 1, 1)
+		startDate.setHours(12, 0, 0, 0)
 
-		for (let i = 0; i < 30; i++) {
-			const dateToCheck = new Date(currentDate)
-			dateToCheck.setDate(currentDate.getDate() + i)
+		const endDate = new Date(now.getFullYear(), now.getMonth() + 2, 0)
+		endDate.setHours(12, 0, 0, 0)
 
-			// Formater la date pour les comparaisons
+		for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+			const dateToCheck = new Date(d)
 			const formattedDate = dateToCheck.toISOString().split("T")[0]
-
+			// Exclure les jours spéciaux
 			const specialDay = await db("SpecialDays")
-				.where(db.raw("DATE(date) = DATE(?)", [dateToCheck]))
+				.where(db.raw("DATE(date) = DATE(?)", [formattedDate]))
 				.first()
-
-			if (specialDay) {
-				continue
-			}
+			if (specialDay) continue
 
 			// Récupérer les célébrants déjà utilisés pour cette date
-			const usedCelebrantsForDate = usedCelebrantsByDate[formattedDate] ? Array.from(usedCelebrantsByDate[formattedDate]) : []
+			const usedCelebrantsForDate = usedCelebrantsByDate[formattedDate]
+				? Array.from(usedCelebrantsByDate[formattedDate])
+				: []
 
-			// Trouver un célébrant disponible en excluant ceux déjà utilisés
-			const availableCelebrant = await Mass.getRandomAvailableCelebrant(dateToCheck, usedCelebrantsForDate)
+			// Récupérer les célébrants indisponibles pour cette date
+			const unavailableCelebrants = await db("UnavailableDays")
+				.where(db.raw("DATE(date) = DATE(?)", [formattedDate]))
+				.select("celebrant_id")
+
+			const unavailableIds = unavailableCelebrants.map((row) => row.celebrant_id)
+
+			// Exclure à la fois les déjà utilisés et les indisponibles
+			const excludedIds = [...new Set([...usedCelebrantsForDate, ...unavailableIds])]
+
+			// Trouver un célébrant dispo
+			const availableCelebrant = await Mass.getRandomAvailableCelebrant(dateToCheck, excludedIds)
 
 			if (availableCelebrant) {
 				return {
