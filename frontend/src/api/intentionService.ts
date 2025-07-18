@@ -3,7 +3,7 @@ import { API_BASE_URL } from "."
 
 import { MassStatus } from "./massService"
 
-export type IntentionStatus = "received" | "scheduled" | "cancelled" | "in_progress" | "completed"
+export type IntentionStatus = "pending" | "scheduled" | "cancelled" | "in_progress" | "completed"
 
 export interface Intention {
 	id: string
