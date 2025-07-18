@@ -182,7 +182,7 @@ export const PonctualIntentionList: React.FC<IntentionListProps> = ({ intentions
                       <td className="px-3 py-2 whitespace-nowrap text-sm">
                         <div className="flex space-x-2">
                           <button
-                            onClick={(e) => handleIntentionClick(intention)}
+                            onClick={() => handleIntentionClick(intention)}
                             className="p-1 text-gray-400 hover:text-blue-500 rounded-full hover:bg-gray-100 transition-colors"
                             title="Voir les messes associées"
                           >

@@ -97,7 +97,8 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
         setSuccessMessage(response);
       }
       await loadSpecialDays();
-    } catch (error) {
+    } catch (error: any) {
+      setValidationError(error.message)
       console.error("Erreur lors de l'enregistrement du jour spécial", error);
     }
   };

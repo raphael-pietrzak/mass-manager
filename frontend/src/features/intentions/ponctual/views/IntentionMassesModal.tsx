@@ -2,7 +2,7 @@ import React from 'react';
 import { Intention, Masses } from '../../../../api/intentionService';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { X, Calendar, User, Repeat, Clock } from 'lucide-react';
+import { X, Calendar, User, Clock } from 'lucide-react';
 
 interface IntentionMassesModalProps {
   intention: Intention;
@@ -28,72 +28,67 @@ export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ inte
           <div className="mb-6">
             <h4 className="font-medium text-lg mb-3">Informations de l'intention</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
-              <div>
-                <p className="text-sm text-gray-500">Intention</p>
-                <p className="font-medium">{intention.intention_text || "Non spécifiée"}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Type</p>
-                <p className="font-medium">{intention.deceased ? "Défunts" : "Vivants"}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Donateur</p>
-                <p className="font-medium">{`${intention.donor_firstname || ''} ${intention.donor_lastname || ''}`}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Montant</p>
-                <p className="font-medium">{intention.amount ? `${intention.amount}€` : "Non spécifié"}</p>
-              </div>
-              {intention.payment_method && (
+              {/* Colonne gauche */}
+              <div className="space-y-4">
                 <div>
-                  <p className="text-sm text-gray-500">Méthode de paiement</p>
+                  <p className="text-sm text-gray-500">Intention</p>
+                  <p className="font-medium">{intention.intention_text || "Non spécifiée"}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Préférence de date</p>
                   <p className="font-medium">
-                    {intention.payment_method === 'cash' && 'Espèces'}
-                    {intention.payment_method === 'cheque' && 'Chèque'}
-                    {intention.payment_method === 'card' && 'Carte bancaire'}
-                    {intention.payment_method === 'transfer' && 'Virement'}
+                    {intention.wants_celebration_date ? (
+                      intention.date_type === 'indifferent' ? 'Date indifférente' : intention.date_type
+                    ) : 'Aucune préférence'}
                   </p>
                 </div>
-              )}
-              {intention.donor_email && (
                 <div>
-                  <p className="text-sm text-gray-500">Email</p>
-                  <p className="font-medium">{intention.donor_email}</p>
-                </div>
-              )}
-              <div>
-                <p className="text-sm text-gray-500">Préférence de date</p>
-                <p className="font-medium">
-                  {intention.wants_celebration_date ? (
-                    intention.date_type === 'indifferent' ? 'Date indifférente' : intention.date_type
-                  ) : 'Aucune préférence'}
-                </p>
-              </div>
-              {intention.brother_name && (
-                <div>
-                  <p className="text-sm text-gray-500">Célébrant souhaité</p>
-                  <p className="font-medium">{intention.brother_name}</p>
-                </div>
-              )}
-              <div>
-                <p className="text-sm text-gray-500">Récurrence</p>
-                <p className="font-medium">
-                  {intention.is_recurrent ? (
+                  <p className="text-sm text-gray-500">Créée le</p>
+                  <p className="font-medium">
                     <span className="flex items-center">
-                      <Repeat className="w-3.5 h-3.5 mr-1 text-blue-500" />
-                      {intention.recurrence_type}, {intention.occurrences} occurrences
+                      <Clock className="w-3.5 h-3.5 mr-1 text-gray-400" />
+                      {intention.created_at
+                        ? format(new Date(intention.created_at), 'dd/MM/yyyy à HH:mm', { locale: fr })
+                        : "Non spécifié"}
                     </span>
-                  ) : "Non récurrente"}
-                </p>
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-gray-500">Créée le</p>
-                <p className="font-medium">
-                  <span className="flex items-center">
-                    <Clock className="w-3.5 h-3.5 mr-1 text-gray-400" />
-                    {intention.created_at ? format(new Date(intention.created_at), 'dd/MM/yyyy à HH:mm', { locale: fr }) : "Non spécifié"}
-                  </span>
-                </p>
+
+              {/* Colonne droite */}
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm text-gray-500">Donateur</p>
+                  <p className="font-medium">
+                    {`${intention.donor_firstname || ''} ${intention.donor_lastname || ''}`}
+                  </p>
+                </div>
+                {intention.donor_email && (
+                  <div>
+                    <p className="text-sm text-gray-500">Email</p>
+                    <p className="font-medium">{intention.donor_email}</p>
+                  </div>
+                )}
+                <div>
+                  <p className="text-sm text-gray-500">Montant</p>
+                  <p className="font-medium">
+                    {intention.amount ? `${intention.amount}€` : "Non spécifié"}
+                  </p>
+                </div>
+                {intention.payment_method && (
+                  <div>
+                    <p className="text-sm text-gray-500">Méthode de paiement</p>
+                    <p className="font-medium">
+                      {intention.payment_method === 'cash' && 'Espèces'}
+                      {intention.payment_method === 'cheque' && 'Chèque'}
+                      {intention.payment_method === 'card' && 'Carte bancaire'}
+                      {intention.payment_method === 'transfer' && 'Virement'}
+                      {(intention.payment_method === 'cash' || intention.payment_method === 'cheque') && intention.brother_name && (
+                        (` (Transmis par le frère ${intention.brother_name})`)
+                      )}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -138,8 +133,8 @@ export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ inte
                             <span>{mass.celebrant_title} {mass.celebrant_name || "Non assigné"}</span>
                           </div>
                         </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-sm">
-                          {mass.type === 'defunts' ? (
+                        {/* <td className="px-3 py-2 whitespace-nowrap text-sm">
+                          {mass.type === 'defunt' ? (
                             <span className="px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-700">
                               Défunts
                             </span>
@@ -148,7 +143,7 @@ export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ inte
                               Vivants
                             </span>
                           )}
-                        </td>
+                        </td> */}
                         <td className="px-3 py-2 whitespace-nowrap text-sm">
                           {mass.status === 'scheduled' && (
                             <span className="px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700">

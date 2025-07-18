@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Intention } from '../../../api/intentionService';
+import { AlertTriangle } from 'lucide-react';
+import { AlertDescription } from '../../../components/ui/alert';
 
 interface OfferingFormProps {
   formData: Partial<Intention>;
@@ -13,6 +15,26 @@ interface OfferingFormProps {
 }
 
 const OfferingForm: React.FC<OfferingFormProps> = ({ prevStep, nextStep, formData, updateFormData }) => {
+
+  const [error, setError] = useState<string>();
+  const handleNextStep = () => {
+    if (!formData.amount || formData.amount.trim() === "") {
+      setError("Le montant est requis");
+      return;
+    }
+    setError("");
+    nextStep();
+  };
+
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError("");
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+  
   return (
     <div className="flex flex-col flex-1 h-[550px]">
       <div className="flex-grow space-y-6 overflow-y-auto">
@@ -25,6 +47,12 @@ const OfferingForm: React.FC<OfferingFormProps> = ({ prevStep, nextStep, formDat
             value={formData.amount}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ amount: e.target.value })}
           />
+          {error && (
+            <div className="flex items-center gap-2 text-red-500">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </div>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -63,7 +91,7 @@ const OfferingForm: React.FC<OfferingFormProps> = ({ prevStep, nextStep, formDat
         <Button variant="outline" type="button" onClick={prevStep}>
           Précédent
         </Button>
-        <Button type="button" onClick={nextStep}>
+        <Button type="button" onClick={handleNextStep}>
           Suivant
         </Button>
       </div>

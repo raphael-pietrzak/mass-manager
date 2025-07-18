@@ -28,10 +28,19 @@ const Intention = {
 
 	getPonctualIntentions: () =>
 		db("Intentions")
-			.whereNull("recurrence_id")
-			.select("Intentions.*", "Donors.firstname as donor_firstname", "Donors.lastname as donor_lastname", "Donors.email as donor_email")
-			.orderBy("created_at", "asc")
-			.leftJoin("Donors", "Intentions.donor_id", "Donors.id"),
+			.whereNull("Intentions.recurrence_id")
+			.andWhere("Intentions.status", "pending")
+			.leftJoin("Masses", "Masses.intention_id", "Intentions.id")
+			.whereNull("Masses.date")
+			.leftJoin("Donors", "Intentions.donor_id", "Donors.id")
+			.select(
+				"Intentions.*",
+				"Donors.firstname as donor_firstname",
+				"Donors.lastname as donor_lastname",
+				"Donors.email as donor_email"
+			)
+			.orderBy("Intentions.created_at", "asc")
+			.groupBy("Intentions.id"),
 
 	deleteBeforeDate: () =>
 		db("Intentions")

@@ -3,7 +3,7 @@ import { API_BASE_URL } from "."
 
 import { MassStatus } from "./massService"
 
-export type IntentionStatus = "received" | "scheduled" | "cancelled" | "in_progress" | "completed"
+export type IntentionStatus = "pending" | "scheduled" | "cancelled" | "in_progress" | "completed"
 
 export interface Intention {
 	id: string
@@ -16,6 +16,7 @@ export interface Intention {
 	deceased?: boolean
 	intention_type: "unit" | "thirty" | "novena"
 	number_of_masses?: number
+	created_at: Date
 
 	// Données du donateur
 	donor_firstname?: string
@@ -46,6 +47,7 @@ export interface Masses {
 	celebrant_name: string
 	celebrant_title: string
 	status: MassStatus
+	intention_id: number
 }
 
 export interface IntentionSubmission {
@@ -64,7 +66,7 @@ export interface IntentionSubmission {
 	intention_type: "unit" | "thirty" | "novena"
 	number_of_masses: number
 	date_type: "indifferent" | "desired" | "imperative"
-	deceased: boolean
+	deceased?: boolean
 	payment: {
 		amount: string
 		payment_method: "cheque" | "cash" | "card" | "transfer"
@@ -82,6 +84,10 @@ export const intentionService = {
 	async previewMasses(data: Partial<Intention>) {
 		const response = await axios.post(`${API_URL}/preview`, data)
 		return response.data // Retourne les données de prévisualisation
+	},
+
+	async assignIntentions(intentionId: number) {
+		return await axios.post(`${API_URL}/${intentionId}/assignMasses`)
 	},
 
 	async createMass(data: IntentionSubmission) {

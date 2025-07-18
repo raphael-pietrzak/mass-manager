@@ -530,7 +530,7 @@ exports.seed = function (knex) {
 					wants_celebration_date: false,
 					date_type: "indifferent",
 					intention_type: "unit",
-					number_of_masses: 5,
+					number_of_masses: 1,
 				},
 				{
 					donor_id: 5,

@@ -1,8 +1,14 @@
 const db = require("../../config/database")
 
 const SpecialDay = {
-	getAll: async () => {
-		return db.select().from("SpecialDays")
+	getAll: async (filters = {}) => {
+		let query = db.select().from("SpecialDays")
+		// Parcours les clés du filtre
+		Object.entries(filters).forEach(([key, value]) => {
+			// Pour une recherche simple avec égalité
+			query = query.where(key, value)
+		})
+		return query
 	},
 
 	create: async (specialDay) => {

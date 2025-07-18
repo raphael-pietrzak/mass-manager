@@ -8,6 +8,7 @@ import DonorForm from '../forms/DonorForm';
 import OfferingForm from '../forms/OfferingForm';
 import SummaryForm from '../forms/SummaryForm';
 import IntentionForm from '../forms/IntentionForm';
+import { specialDayService } from '../../../api/specialDaysService';
 
 interface IntentionModalProps {
   intention: Intention | null;
@@ -82,15 +83,27 @@ export const PonctualIntentionModal: React.FC<IntentionModalProps> = ({
     }
   }, [isOpen, intention]);
 
-  // Nouvelle fonction pour récupérer les dates indisponibles d'un célébrant
-  const fetchUnavailableDates = async (celebrantId: string) => {
-    if (!celebrantId) {
-      setUnavailableDates([]);
-      return;
+  useEffect(() => {
+    if (isOpen) {
+      fetchUnavailableDates(formData.celebrant_id || undefined);
     }
+  }, [isOpen]);
 
+  // Nouvelle fonction pour récupérer les dates indisponibles d'un célébrant ou dates indisponibles globales
+  const fetchUnavailableDates = async (celebrantId?: string) => {
     try {
-      const dates = await celebrantService.getUnavailableDates(celebrantId);
+      let dates: string[] = [];
+
+      // Toujours récupérer les specialDays globales (number_of_masses = 0)
+      const specialDays = await specialDayService.getSpecialDays({ number_of_mases: '0' });
+      const specialDates = specialDays.map(specialDay => specialDay.date);
+
+      if (celebrantId) {
+        const unavailableDates = await celebrantService.getUnavailableDates(celebrantId);
+        dates = [...new Set([...unavailableDates, ...specialDates])]; // fusion sans doublons
+      } else {
+        dates = specialDates;
+      }
       setUnavailableDates(dates);
     } catch (error) {
       console.error('Erreur lors de la récupération des dates indisponibles:', error);
@@ -102,7 +115,7 @@ export const PonctualIntentionModal: React.FC<IntentionModalProps> = ({
   const handleFormUpdate = (data: Partial<typeof formData>) => {
     // Si l'ID du célébrant a changé, récupérer ses dates indisponibles
     if (data.celebrant_id !== undefined && data.celebrant_id !== formData.celebrant_id) {
-      fetchUnavailableDates(data.celebrant_id);
+      fetchUnavailableDates(data.celebrant_id || undefined);
     }
 
     setFormData((prev: any) => ({ ...prev, ...data }));
@@ -167,7 +180,7 @@ export const PonctualIntentionModal: React.FC<IntentionModalProps> = ({
           wants_celebration_date: formData.wants_celebration_date || false,
         },
         intention_type: formData.intention_type ?? 'unit',
-        deceased: formData.deceased || true,
+        deceased: formData.deceased,
         date_type: formData.date_type ?? 'indifferent',
         number_of_masses: formData.mass_count ?? 1,
         payment: {

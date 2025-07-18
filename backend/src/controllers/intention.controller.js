@@ -119,7 +119,7 @@ exports.createIntention = async (req, res) => {
 					date: mass.date,
 					intention_id: intentionId,
 					celebrant_id: mass.celebrant_id || null,
-					status: "scheduled",
+					status: mass.status,
 				}
 
 				await MassModel.create(massData)
@@ -130,7 +130,9 @@ exports.createIntention = async (req, res) => {
 		console.log('Récupération données finales...');
 		const result = await Intention.findById(intentionId)
 		console.log('Opération terminée avec succès');
-
+		if (result.date_type === "imperative" || result.date_type === "desired") {
+			await Intention.update(result.id, { status: "in_progress" }) 
+		}
 		res.status(201).json(result)
 	} catch (error) {
 		console.error("Erreur détaillée lors de la création de l'intention:", error);
@@ -217,6 +219,7 @@ exports.getIntentionMasses = async (req, res) => {
 			celebrant_name: mass.celebrant_name || "",
 			celebrant_title: mass.celebrant_title || "",
 			status: mass.status,
+			intention_id: mass.intention_id
 		}))
 
 		res.json(formattedMasses)
@@ -248,4 +251,23 @@ exports.deleteBeforeDate = async (req, res) => {
 		console.error("Erreur lors de la suppression : ", error)
 		res.status(500).send("Erreur lors de la suppression des intentions")
 	}
+}
+
+exports.assignToExistingMasses = async (req, res) => {
+  try {
+    const intentionId = req.params.id
+
+    // Récupérer l'intention (à adapter selon ton modèle)
+    const intention = await Intention.findById(intentionId)
+    if (!intention) {
+      return res.status(404).json({ error: 'Intention non trouvée' })
+    }
+
+    const updatedMasses = await MassService.assignToExistingMasses([intention])
+		if(!updatedMasses) return res.status(422).json("Répartition impossible, mois suivant complet")
+    res.json(updatedMasses)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: 'Erreur lors de l\'assignation des messes' })
+  }
 }

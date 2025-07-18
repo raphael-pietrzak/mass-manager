@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -36,16 +36,31 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
   unavailableDates = [] // Valeur par défaut comme tableau vide
 }) => {
 
-  const [error, setError] = useState<string>();
+  const [errorIntentionText, setErrorIntentionText] = useState<string>();
 
   const handleNextStep = () => {
     if (!formData.intention_text || formData.intention_text.trim() === "") {
-      setError("L'intention est requise")
+      setErrorIntentionText("L'intention est requise")
       return
     }
-    setError("")
+    if (selectedDate) {
+      const selectedDateString = selectedDate.toISOString().split('T')[0];
+      if (unavailableDates.includes(selectedDateString)) {
+        return;
+      }
+    } 
+    setErrorIntentionText("")
     nextStep();
   };
+
+  useEffect(() => {
+    if (errorIntentionText) {
+      const timer = setTimeout(() => {
+        setErrorIntentionText("");
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [errorIntentionText]);
 
   return (
     <div className="flex flex-col flex-1 h-[550px]">
@@ -65,10 +80,10 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
             placeholder="Votre intention..."
           />
 
-          {error && (
+          {errorIntentionText && (
             <div className="flex items-center gap-2 text-red-500">
               <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription>{errorIntentionText}</AlertDescription>
             </div>
           )}
         </div>
@@ -187,7 +202,7 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
         </div>
       </div>
 
-      <div className="pt-6 flex justify-end">
+      <div className="flex justify-end">
         <Button
           type="button"
           onClick={handleNextStep}

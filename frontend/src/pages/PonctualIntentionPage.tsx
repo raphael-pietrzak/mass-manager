@@ -6,9 +6,10 @@ import { exportService } from "../api/exportService";
 import PonctualIntentionFilterBar from "../features/intentions/ponctual/PonctualIntentionFilterBar";
 import { PonctualIntentionModal } from "../features/intentions/ponctual/PonctualIntentionModal";
 
-const IntentionPage: React.FC = () => {
+const PonctualIntentionPage: React.FC = () => {
 	const [isIntentionModalOpen, setIsIntentionModalOpen] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [success, setSuccess] = useState<string | null>(null)
 	const [loading, setLoading] = useState(true);
 	const [intentions, setIntentions] = useState<Intention[]>([]);
 	useEffect(() => {
@@ -19,7 +20,13 @@ const IntentionPage: React.FC = () => {
 
 			return () => clearTimeout(timer);
 		}
-	}, [error]);
+		if (success) {
+			const timer = setTimeout(() => {
+				setSuccess(null);
+			}, 3000);
+			return () => clearTimeout(timer);
+		}
+	}, [error, success]);
 	const [selectedIntentionIds, setSelectedIntentionIds] = useState<string[]>([]);
 	const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false);
 
@@ -47,8 +54,10 @@ const IntentionPage: React.FC = () => {
 		try {
 			if (newIntention.id) {
 				await intentionService.updateMass(newIntention.id, newIntention);
+				setSuccess("Intention mise à jour avec succès.");
 			} else {
 				await intentionService.createMass(newIntention);
+				setSuccess("Intention créée avec succès.");
 			}
 			await fetchIntentions();
 			setIsIntentionModalOpen(false);
@@ -99,19 +108,41 @@ const IntentionPage: React.FC = () => {
 		}
 	};
 
+	const handleDistributeIntentions = async () => {
+		// Répartition des messes pour chaque intention séléectionnée
+		try {
+			for (const id of selectedIntentionIds) {
+				await intentionService.assignIntentions(Number(id));
+			}
+			await fetchIntentions();
+			setSelectedIntentionIds([]);
+		} catch (error: any) {
+			if(error.status===422) setError("Répartition impossible, mois suivant complet")
+			else setError("Erreur lors de la répartition.");
+		}
+	}
+
 	return (
 		<div className="min-h-screen bg-gray-100">
 			<main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
 				<h1 className="text-2xl font-bold mb-6">Liste des intentions de messe ponctuelles</h1>
-				<PonctualIntentionFilterBar 
+				<PonctualIntentionFilterBar
 					onExport={handleExport}
 					selectedCount={selectedIntentionIds.length}
+					onDistribute={handleDistributeIntentions}
 				/>
-				
+
 				<div className="mt-6 mb-6">
 					{error && (
 						<div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded z-50">
 							{error}
+						</div>
+					)}
+				</div>
+				<div className="mt-6 mb-6">
+					{success && (
+						<div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded z-50">
+							{success}
 						</div>
 					)}
 				</div>
@@ -180,4 +211,4 @@ const IntentionPage: React.FC = () => {
 
 }
 
-export default IntentionPage;
+export default PonctualIntentionPage;
