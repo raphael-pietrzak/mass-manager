@@ -23,7 +23,7 @@ const PonctualIntentionPage: React.FC = () => {
 		if (success) {
 			const timer = setTimeout(() => {
 				setSuccess(null);
-			}, 5000);
+			}, 3000);
 			return () => clearTimeout(timer);
 		}
 	}, [error, success]);
@@ -112,7 +112,7 @@ const PonctualIntentionPage: React.FC = () => {
 		// Répartition des messes pour chaque intention séléectionnée
 		try {
 			for (const id of selectedIntentionIds) {
-				const res = await intentionService.assignIntentions(Number(id));
+				await intentionService.assignIntentions(Number(id));
 			}
 			await fetchIntentions();
 			setSelectedIntentionIds([]);

@@ -66,7 +66,7 @@ export interface IntentionSubmission {
 	intention_type: "unit" | "thirty" | "novena"
 	number_of_masses: number
 	date_type: "indifferent" | "desired" | "imperative"
-	deceased: boolean
+	deceased?: boolean
 	payment: {
 		amount: string
 		payment_method: "cheque" | "cash" | "card" | "transfer"
@@ -86,10 +86,6 @@ export const intentionService = {
 		return response.data // Retourne les données de prévisualisation
 	},
 
-	// async previewMassesForPonctualIntentions(data: Partial<Intention>) {
-	// 	const response = await axios.post(`${API_URL}/preview`, data)
-	// 	return response.data // Retourne les données de prévisualisation
-	// },
 	async assignIntentions(intentionId: number) {
 		return await axios.post(`${API_URL}/${intentionId}/assignMasses`)
 	},

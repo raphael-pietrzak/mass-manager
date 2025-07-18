@@ -167,7 +167,7 @@ export const PonctualIntentionModal: React.FC<IntentionModalProps> = ({
           wants_celebration_date: formData.wants_celebration_date || false,
         },
         intention_type: formData.intention_type ?? 'unit',
-        deceased: formData.deceased || true,
+        deceased: formData.deceased,
         date_type: formData.date_type ?? 'indifferent',
         number_of_masses: formData.mass_count ?? 1,
         payment: {
@@ -177,6 +177,7 @@ export const PonctualIntentionModal: React.FC<IntentionModalProps> = ({
         },
         masses: previewData
       });
+      console.log("📦 formData.deceased :", formData.deceased)
       onClose();
     } catch (error) {
       console.error("Erreur lors de la sauvegarde des messes:", error);
