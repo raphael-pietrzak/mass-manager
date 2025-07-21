@@ -441,7 +441,7 @@ const MassService = {
 				await Mass.update({
 					id: mass.id,
 					date: assignedData.date,
-					celebrant_id: assignedData.celebrant_id,
+					celebrant_id: celebrant_id,
 					intention_id: intention_id,
 					status: "scheduled",
 				})
@@ -449,7 +449,7 @@ const MassService = {
 				allUpdatedMasses.push({
 					...mass,
 					date: assignedData.date,
-					celebrant_id: assignedData.celebrant_id,
+					celebrant_id: mass.celebrant_id,
 					status: "scheduled",
 				})
 
