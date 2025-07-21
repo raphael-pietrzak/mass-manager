@@ -32,7 +32,7 @@ export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ inte
               <div className="space-y-4">
                 <div>
                   <p className="text-sm text-gray-500">Intention</p>
-                  <p className="font-medium">{intention.intention_text || "Non spécifiée"}</p>
+                  <p className="font-medium">{intention.intention_text} {intention.deceased ? "(Défunt)" : ""}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Préférence de date</p>
@@ -111,9 +111,6 @@ export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ inte
                         Célébrant
                       </th>
                       <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Type
-                      </th>
-                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Statut
                       </th>
                     </tr>
@@ -133,17 +130,6 @@ export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ inte
                             <span>{mass.celebrant_title} {mass.celebrant_name || "Non assigné"}</span>
                           </div>
                         </td>
-                        {/* <td className="px-3 py-2 whitespace-nowrap text-sm">
-                          {mass.type === 'defunt' ? (
-                            <span className="px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-700">
-                              Défunts
-                            </span>
-                          ) : (
-                            <span className="px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-700">
-                              Vivants
-                            </span>
-                          )}
-                        </td> */}
                         <td className="px-3 py-2 whitespace-nowrap text-sm">
                           {mass.status === 'scheduled' && (
                             <span className="px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700">
@@ -155,12 +141,12 @@ export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ inte
                               Annulée
                             </span>
                           )}
-                          {mass.status === 'confirmed' && (
+                          {mass.status === 'pending' && (
                             <span className="px-2 py-0.5 rounded-full text-xs bg-yellow-100 text-yellow-700">
                               En attente
                             </span>
                           )}
-                          {mass.status === 'celebrated' && (
+                          {mass.status === 'completed' && (
                             <span className="px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-700">
                               Célébrée
                             </span>
