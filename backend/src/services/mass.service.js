@@ -105,7 +105,7 @@ const MassService = {
 	/**
 	 * Gère le cas d'une date impérative
 	 */
-	handleImperativeDate: async (date, celebrant_id, intention_text, usedCelebrantsByDate) => {
+	handleImperativeDate: async (date, celebrant_id, intention_text, deceased, usedCelebrantsByDate) => {
 		// Si un célébrant spécifique est sélectionné
 		if (celebrant_id) {
 			// Vérifier si le célébrant est disponible à cette date précise
@@ -118,6 +118,7 @@ const MassService = {
 				return {
 					date,
 					intention: intention_text,
+					deceased: deceased,
 					celebrant_id: celebrant.id,
 					celebrant_title: celebrant.celebrant_title,
 					celebrant_name: celebrant.religious_name,
@@ -139,6 +140,7 @@ const MassService = {
 				return {
 					date,
 					intention: intention_text,
+					deceased: deceased,
 					celebrant_id: availableCelebrant.id,
 					celebrant_title: availableCelebrant.celebrant_title,
 					celebrant_name: availableCelebrant.religious_name,
@@ -154,7 +156,7 @@ const MassService = {
 	/**
 	 * Gère le cas d'une date souhaitée
 	 */
-	handlePreferredDate: async (date, celebrant_id, intention_text, usedCelebrantsByDate) => {
+	handlePreferredDate: async (date, celebrant_id, intention_text, deceased, usedCelebrantsByDate) => {
 		// Si un célébrant spécifique est sélectionné
 		if (celebrant_id) {
 			// Vérifier si le célébrant est disponible à cette date
@@ -167,6 +169,7 @@ const MassService = {
 				return {
 					date,
 					intention: intention_text,
+					deceased: deceased,
 					celebrant_id: celebrant.id,
 					celebrant_title: celebrant.celebrant_title,
 					celebrant_name: celebrant.religious_name,
@@ -181,6 +184,7 @@ const MassService = {
 						original_date: date, // Conserver la date souhaitée initialement
 						date: slot.date.toISOString().split("T")[0],
 						intention: intention_text,
+						deceased: deceased,
 						celebrant_id: slot.celebrant.id,
 						celebrant_title: slot.celebrant.celebrant_title,
 						celebrant_name: slot.celebrant.religious_name,
@@ -192,6 +196,7 @@ const MassService = {
 					return {
 						date: null,
 						intention: intention_text,
+						deceased: deceased,
 						celebrant_id: celebrant_id,
 						celebrant_name: "Aucune disponibilité",
 						status: "error",
@@ -354,7 +359,7 @@ const MassService = {
 	 * ------------------------------------------------
 	 */
 
-	handleIndifferentDateWithCelebrantForPonctualIntentions: async (celebrant_id, intention_text, usedCelebrantsByDate) => {
+	handleIndifferentDateWithCelebrantForPonctualIntentions: async (celebrant_id, intention_text, deceased, usedCelebrantsByDate) => {
 		// Chercher la prochaine date disponible pour ce célébrant
 		const slot = await Mass.findNextAvailableSlotForCelebrant(celebrant_id, usedCelebrantsByDate)
 
@@ -362,6 +367,7 @@ const MassService = {
 			return {
 				date: slot.date.toISOString().split("T")[0],
 				intention: intention_text,
+				deceased,
 				celebrant_id: slot.celebrant.id,
 				celebrant_name: slot.celebrant.religious_name,
 				status: "scheduled",
@@ -371,6 +377,7 @@ const MassService = {
 			return {
 				date: null,
 				intention: intention_text,
+				deceased,
 				celebrant_id: celebrant_id,
 				celebrant_name: "Aucune disponibilité",
 				status: "error",
@@ -379,7 +386,7 @@ const MassService = {
 		}
 	},
 
-	handleIndifferentDateWithoutCelebrantForPonctualIntention: async (intention_text, usedCelebrantsByDate) => {
+	handleIndifferentDateWithoutCelebrantForPonctualIntention: async (intention_text, deceased, usedCelebrantsByDate) => {
 		// Chercher la prochaine date avec un célébrant dispo
 		const slot = await Mass.findNextAvailableSlot(usedCelebrantsByDate)
 
@@ -387,6 +394,7 @@ const MassService = {
 			return {
 				date: slot.date.toISOString().split("T")[0],
 				intention: intention_text,
+				deceased: deceased,
 				celebrant_id: slot.celebrant.id,
 				celebrant_name: slot.celebrant.religious_name,
 				status: "scheduled",
@@ -395,6 +403,7 @@ const MassService = {
 			return {
 				date: null,
 				intention: intention_text,
+				deceased: deceased,
 				celebrant_id: null,
 				celebrant_name: "Aucune disponibilité",
 				status: "error",
