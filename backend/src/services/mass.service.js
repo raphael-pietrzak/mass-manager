@@ -45,7 +45,7 @@ const MassService = {
 							masses.push({
 								date,
 								intention: intention_text,
-                                deceased: deceased,
+                deceased: deceased,
 								celebrant_id: null,
 								celebrant_title: null,
 								celebrant_name: "Aucun célébrant disponible",
@@ -354,7 +354,7 @@ const MassService = {
 	 * ------------------------------------------------
 	 */
 
-	handleIndifferentDateWithCelebrantForPonctualIntentions: async (celebrant_id, intention_text, deceased, usedCelebrantsByDate) => {
+	handleIndifferentDateWithCelebrantForPonctualIntentions: async (celebrant_id, intention_text, usedCelebrantsByDate) => {
 		// Chercher la prochaine date disponible pour ce célébrant
 		const slot = await Mass.findNextAvailableSlotForCelebrant(celebrant_id, usedCelebrantsByDate)
 
@@ -379,7 +379,7 @@ const MassService = {
 		}
 	},
 
-	handleIndifferentDateWithoutCelebrantForPonctualIntention: async (intention_text, deceased, usedCelebrantsByDate) => {
+	handleIndifferentDateWithoutCelebrantForPonctualIntention: async (intention_text, usedCelebrantsByDate) => {
 		// Chercher la prochaine date avec un célébrant dispo
 		const slot = await Mass.findNextAvailableSlot(usedCelebrantsByDate)
 
