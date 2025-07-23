@@ -368,7 +368,7 @@ const MassService = {
 				date: slot.date.toISOString().split("T")[0],
 				intention: intention_text,
 				deceased,
-				celebrant_id: slot.celebrant.id,
+				celebrant_id: celebrant_id,
 				celebrant_name: slot.celebrant.religious_name,
 				status: "scheduled",
 			}
@@ -417,16 +417,15 @@ const MassService = {
 		const usedCelebrantsByDate = {}
 
 		for (const intention of intentions) {
-			const { id: intention_id, intention_text, deceased, celebrant_id } = intention
+			const { id: intention_id, intention_text, deceased } = intention
 
 			const masses = await Mass.findUnscheduledMassesByIntention(intention_id)
 
 			for (const mass of masses) {
 				let assignedData
-
-				if (celebrant_id) {
+				if (mass.celebrant_id) {
 					assignedData = await MassService.handleIndifferentDateWithCelebrantForPonctualIntentions(
-						celebrant_id,
+						mass.celebrant_id,
 						intention_text,
 						deceased,
 						usedCelebrantsByDate
@@ -441,7 +440,7 @@ const MassService = {
 				await Mass.update({
 					id: mass.id,
 					date: assignedData.date,
-					celebrant_id: mass.celebrant_id,
+					celebrant_id: assignedData.celebrant_id,
 					intention_id: intention_id,
 					status: "scheduled",
 				})
@@ -449,10 +448,9 @@ const MassService = {
 				allUpdatedMasses.push({
 					...mass,
 					date: assignedData.date,
-					celebrant_id: mass.celebrant_id,
+					celebrant_id: assignedData.celebrant_id,
 					status: "scheduled",
 				})
-
 				await MassService.updateUsedCelebrants(assignedData, usedCelebrantsByDate)
 			}
 			await Intention.update(intention.id, { status: "in_progress" })
