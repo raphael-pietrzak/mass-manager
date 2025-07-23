@@ -2,7 +2,7 @@ import axios from "axios"
 import { API_BASE_URL } from "."
 
 // mass status
-export type MassStatus = "scheduled" | "confirmed" | "celebrated" | "cancelled"
+export type MassStatus = 'pending' | 'scheduled' | 'cancelled' | 'completed'
 
 export interface Mass {
 	id?: string

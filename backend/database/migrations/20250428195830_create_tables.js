@@ -58,7 +58,7 @@ exports.up = function(knex) {
       table.date('date').nullable();
       table.integer('celebrant_id').unsigned().nullable().references('id').inTable('Celebrants').onDelete('SET NULL');
       table.integer('intention_id').unsigned().references('id').inTable('Intentions').onDelete('CASCADE');
-      table.enum('status', ['pending', 'scheduled']).defaultTo('pending');
+      table.enum('status', ['pending', 'scheduled', 'cancelled', 'completed']).defaultTo('pending');
       table.timestamps(true, true);
     })
     .createTable('SpecialDays', function(table) {

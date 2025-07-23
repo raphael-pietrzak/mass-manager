@@ -301,7 +301,7 @@ class Mass {
 		return db("Masses")
 			.where("intention_id", intentionId)
 			.andWhere(function () {
-				this.whereNull("date").orWhereNull("celebrant_id")
+				this.whereNull("date")
 			})
 	}
 }
