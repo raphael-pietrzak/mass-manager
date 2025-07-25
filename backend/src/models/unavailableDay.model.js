@@ -6,7 +6,27 @@ const UnavailableDay = {
 	},
 
 	create: async (unavailableDay) => {
-		return db("UnavailableDays").insert(unavailableDay)
+		if (unavailableDay.is_recurrent) {
+			const [yearStr, monthStr, dayStr] = unavailableDay.date.split("-")
+			const day = parseInt(dayStr)
+			const month = parseInt(monthStr) - 1
+			const year = parseInt(yearStr)
+			const pad = (n) => n.toString().padStart(2, "0")
+
+			const rows = []
+
+			for (let i = 0; i < 50; i++) {
+				const newYear = year + i
+				rows.push({
+					celebrant_id: unavailableDay.celebrant_id,
+					date: `${newYear}-${pad(month + 1)}-${pad(day)}`,
+					is_recurrent: true,
+				})
+			}
+			return db("UnavailableDays").insert(rows)
+		} else {
+			return db("UnavailableDays").insert(unavailableDay)
+		}
 	},
 
 	getById: async (id) => {
@@ -18,11 +38,41 @@ const UnavailableDay = {
 	},
 
 	update: async (unavailableDay) => {
-		return db("UnavailableDays").where("id", unavailableDay.id).update(unavailableDay)
+		if (unavailableDay.is_recurrent) {
+			const baseDate = new Date(unavailableDay.date)
+			const month = baseDate.getMonth() + 1
+			const day = baseDate.getDate()
+			const mmdd = `${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`
+
+			// Mettre à jour tous les jours indisponibles ayant la même date (MM-DD)
+			return db("SpecialDays").whereRaw("strftime('%m-%d', date) = ?", [mmdd]).andWhere("is_recurrent", true).update({
+				date: unavailableDay.baseDate,
+			})
+		} else {
+			// Mise à jour normale
+			return db("UnavailableDays").where("id", unavailableDay.id).update(unavailableDay)
+		}
 	},
 
 	delete: async (id) => {
-		return db("UnavailableDays").where("id", id).del()
+		const row = await db("UnavailableDays").where("id", id).first()
+		if (!row) return 0
+
+		if (row.is_recurrent) {
+			const baseDate = new Date(row.date)
+			const month = baseDate.getMonth() + 1
+			const day = baseDate.getDate()
+
+			// Supprimer toutes les occurrences avec même MM-DD
+			return db("UnavailableDays")
+				.whereRaw("strftime('%m-%d', date) = ?", [`${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`])
+				.andWhere("is_recurrent", true)
+				.andWhere("celebrant_id", row.celebrant_id)
+				.del()
+		} else {
+			// Suppression normale
+			return db("UnavailableDays").where("id", id).del()
+		}
 	},
 
 	deleteBeforeDate: async (date) => {

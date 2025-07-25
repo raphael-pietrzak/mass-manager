@@ -80,6 +80,7 @@ exports.up = function(knex) {
       table.integer('celebrant_id').unsigned().nullable().references('id').inTable('Celebrants').onDelete('SET NULL');
       table.date('date').notNullable();
       table.boolean('is_recurrent').defaultTo(false);
+      table.unique(['celebrant_id', 'date']);
     });
 };
 

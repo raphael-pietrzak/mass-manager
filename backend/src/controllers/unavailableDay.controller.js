@@ -46,9 +46,7 @@ exports.updateUnavailableDay = async (req, res) => {
 	try {
 		const unavailableDay = {
 			id: req.params.id,
-			celebrant_id: req.body.celebrant_id,
 			date: req.body.date,
-			is_recurrent: req.body.is_recurrent,
 		}
 		await UnavailableDay.update(unavailableDay)
 		res.status(201).send("Jour indisponible mis à jour !")
