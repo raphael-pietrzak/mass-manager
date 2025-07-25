@@ -1,7 +1,6 @@
 const db = require("../../config/database")
 const Mass = require("../models/mass.model")
 const Intention = require("../models/intention.model")
-const Celebrant = require("../models/celebrant.model")
 
 const MassService = {
 	/**
@@ -13,8 +12,8 @@ const MassService = {
 	 * @param {string} params.start_date - Date de début souhaitée pour les messes (facultatif)
 	 * @param {number} params.mass_count - Nombre de messes à prévoir
 	 * @param {number} params.celebrant_id - ID du célébrant sélectionné (facultatif)
-	 * @param {string} params.date_type - Type de date: 'imperative', 'desired', 'indifferent'
-	 * @param {string} params.intention_type - Type d'intention: 'unit', 'novena', 'thirty'
+	 * @param {string} params.date_type - Type de date: 'imperative', 'preferred', 'indifferent'
+	 * @param {string} params.intention_type
 	 * @returns {Array} Prévisualisation des messes
 	 */
 	generateMassPreview: async (params) => {
@@ -26,7 +25,7 @@ const MassService = {
 				mass_count = 1,
 				celebrant_id = null,
 				date_type = "indifferent",
-				intention_type,
+				intention_type = "unit",
 			} = params
 
 			const masses = []
@@ -53,7 +52,7 @@ const MassService = {
 						celebrant_id: null,
 						celebrant_title: null,
 						celebrant_name: null,
-						status: "pending",
+						status: "pending", // ou "unassigned" selon ton système
 					})
 				}
 
@@ -93,33 +92,28 @@ const MassService = {
 				return masses
 			}
 
-			// CAS STANDARDS : Messes à l'unité
-
-			// Si une date de début est fournie (impérative ou souhaitée)
+			// CAS STANDARD : avec date impérative ou souhaitée
 			if (start_date && (date_type === "imperative" || date_type === "desired")) {
-				// Générer un tableau de dates à partir de start_date
 				const dates = []
 				for (let i = 0; i < mass_count; i++) {
 					const date = new Date(start_date)
 					date.setDate(date.getDate() + i)
 					dates.push(date.toISOString().split("T")[0])
 				}
-				for (let i = 0; i < dates.length; i++) {
-					const date = dates[i]
 
+				for (const date of dates) {
 					if (!usedCelebrantsByDate[date]) {
 						usedCelebrantsByDate[date] = new Set()
 					}
 
-					// CAS 1 & 2: Date impérative
 					if (date_type === "imperative") {
 						const massData = await MassService.handleImperativeDate(date, celebrant_id, intention_text, deceased, usedCelebrantsByDate)
-						// Si massData est null, c'est un échec (pas de célébrant disponible)
+
 						if (!massData) {
 							masses.push({
 								date,
 								intention: intention_text,
-								deceased: deceased,
+								deceased,
 								celebrant_id: null,
 								celebrant_title: null,
 								celebrant_name: "Aucun célébrant disponible",
@@ -128,18 +122,15 @@ const MassService = {
 							})
 						} else {
 							masses.push(massData)
-							// Mettre à jour les célébrants utilisés
 							if (massData.celebrant_id) {
 								usedCelebrantsByDate[date].add(parseInt(massData.celebrant_id))
 							}
 						}
-					}
-					// CAS 3 & 4: Date souhaitée
-					else if (date_type === "desired") {
+					} else if (date_type === "desired") {
 						const massData = await MassService.handlePreferredDate(date, celebrant_id, intention_text, deceased, usedCelebrantsByDate)
 
 						masses.push(massData)
-						// Mettre à jour les célébrants utilisés
+
 						if (massData.celebrant_id) {
 							const dateToUse = massData.date || date
 							if (!usedCelebrantsByDate[dateToUse]) {
@@ -150,9 +141,10 @@ const MassService = {
 					}
 				}
 			}
-			// CAS 5 & 6: Date indifférente
+			// CAS FINAL : Intention unitaire avec date indifférente
 			else {
 				console.log(`Traitement de ${mass_count} messes avec date indifférente`)
+
 				const indifferentDatesResult = await MassService.handleIndifferentDates(
 					mass_count,
 					celebrant_id,
@@ -160,8 +152,8 @@ const MassService = {
 					deceased,
 					usedCelebrantsByDate
 				)
+
 				for (const mass of indifferentDatesResult) {
-					// Si on a pas de célebrant spécifique (pas de celebrant_id passé), on affiche "Non attribuée"
 					if (!mass.celebrant_id && mass.status === "pending") {
 						mass.celebrant_name = "Non attribuée"
 					}
@@ -174,6 +166,79 @@ const MassService = {
 			console.error("Erreur lors de la génération de prévisualisation de messes:", error)
 			throw error
 		}
+	},
+
+	/**
+	 * Gère le cas des neuvaines et trentains
+	 */
+	generateConsecutiveMasses: async (start_date, count, celebrant_id, intention_text, deceased, usedCelebrantsByDate) => {
+		const masses = []
+		if (!celebrant_id) {
+			// Nécessite un célébrant spécifique pour novena / thirty
+			return [
+				{
+					date: null,
+					intention: intention_text,
+					deceased,
+					celebrant_id: null,
+					celebrant_name: "Célébrant requis pour cette intention",
+					status: "error",
+					error: "celebrant_required",
+				},
+			]
+		}
+
+		for (let i = 0; i < count; i++) {
+			const date = new Date(start_date)
+			date.setDate(date.getDate() + i)
+			const dateStr = date.toISOString().split("T")[0]
+
+			// Vérifier disponibilité du célébrant ce jour-là (et pas déjà utilisé)
+			if (usedCelebrantsByDate[dateStr] && usedCelebrantsByDate[dateStr].has(celebrant_id)) {
+				// Célébrant déjà utilisé ce jour
+				masses.push({
+					date: dateStr,
+					intention: intention_text,
+					deceased,
+					celebrant_id,
+					celebrant_name: "Célébrant déjà réservé ce jour",
+					status: "error",
+					error: "celebrant_unavailable",
+				})
+				continue
+			}
+
+			const isAvailable = await Mass.isCelebrantAvailable(celebrant_id, dateStr)
+			if (!isAvailable) {
+				masses.push({
+					date: dateStr,
+					intention: intention_text,
+					deceased,
+					celebrant_id,
+					celebrant_name: "Célébrant indisponible ce jour",
+					status: "error",
+					error: "celebrant_unavailable",
+				})
+				continue
+			}
+
+			const celebrant = await MassService.getCelebrantById(celebrant_id)
+
+			masses.push({
+				date: dateStr,
+				intention: intention_text,
+				deceased,
+				celebrant_id,
+				celebrant_title: celebrant.celebrant_title,
+				celebrant_name: celebrant.religious_name,
+				status: "scheduled",
+			})
+
+			if (!usedCelebrantsByDate[dateStr]) usedCelebrantsByDate[dateStr] = new Set()
+			usedCelebrantsByDate[dateStr].add(celebrant_id)
+		}
+
+		return masses
 	},
 
 	/**
@@ -396,90 +461,6 @@ const MassService = {
 	},
 
 	/**
-	 * Gère le cas d'une neuvaine ou d'un trentain
-	 */
-	handleNeuvaineOrTrentain: async (startDate, celebrant_id, intention_text, deceased, usedCelebrantsByDate, mass_count = 9) => {
-		const dates = []
-		const start = new Date(startDate)
-		const year = start.getFullYear()
-		const month = start.getMonth() + 1
-
-		for (let i = 0; i < mass_count; i++) {
-			const date = new Date(startDate)
-			date.setDate(date.getDate() + i)
-			dates.push(date.toISOString().split("T")[0]) // Format 'YYYY-MM-DD'
-		}
-
-		// Cas 1 : célébrant spécifique
-		if (celebrant_id) {
-			// Vérifie disponibilité sur tous les jours
-			for (const date of dates) {
-				const isAvailable =
-					(await Mass.isCelebrantAvailable(celebrant_id, date)) &&
-					(!usedCelebrantsByDate[date] || !usedCelebrantsByDate[date].has(parseInt(celebrant_id)))
-				if (!isAvailable) return null
-			}
-
-			const celebrant = await MassService.getCelebrantById(celebrant_id)
-			return dates.map((date) => ({
-				date,
-				intention: intention_text,
-				deceased,
-				celebrant_id: celebrant.id,
-				celebrant_title: celebrant.celebrant_title,
-				celebrant_name: celebrant.religious_name,
-				status: "scheduled",
-			}))
-		}
-
-		// Cas 2 : pas de célébrant spécifique — cherche un célébrant dispo sur toute la période
-		const allCelebrants = await Celebrant.getAll()
-		// Filtrer ceux dispo tous les jours
-		const availableAllDays = []
-
-		for (const celebrant of allCelebrants) {
-			let available = true
-
-			for (const date of dates) {
-				const notUsed = !usedCelebrantsByDate[date] || !usedCelebrantsByDate[date].has(celebrant.id)
-				const free = await Mass.isCelebrantAvailable(celebrant.id, date)
-
-				if (!free || !notUsed) {
-					available = false
-					break
-				}
-			}
-
-			if (available) {
-				const massCount = await Celebrant.getMassCountForMonth(celebrant.id, year, month)
-				availableAllDays.push({
-					...celebrant,
-					mass_count: massCount || 0,
-				})
-			}
-		}
-
-		// Choisir celui qui a le moins de messes
-		if (availableAllDays.length > 0) {
-			availableAllDays.sort((a, b) => a.mass_count - b.mass_count)
-			const selected = availableAllDays[0]
-
-			return dates.map((date) => ({
-				date,
-				intention: intention_text,
-				deceased,
-				celebrant_id: selected.id,
-				celebrant_title: selected.title,
-				celebrant_name: selected.religious_name,
-				status: "scheduled",
-			}))
-		}
-
-		// Aucun célébrant dispo pour toutes les dates
-		return null
-	},
-
-	/**
 	 * Récupère le célébrant ayant le moins de messes assignées
 	 */
 	getLeastBusyCelebrant: async () => {
@@ -502,41 +483,6 @@ const MassService = {
         `)
 
 		return celebrantsWithCount.rows && celebrantsWithCount.rows.length > 0 ? celebrantsWithCount.rows[0] : null
-	},
-
-	/**
-	 * Récupère le célébrant ayant le moins de messes assignées
-	 * pour le mois de la date sélectionnée
-	 */
-	getLeastBusyCelebrantForMonth: async (startDate) => {
-		const date = new Date(startDate)
-		const year = date.getFullYear()
-		const month = date.getMonth() + 1 // JS: janvier = 0
-
-		// Formater "YYYY-MM"
-		const monthPrefix = `${year}-${month.toString().padStart(2, "0")}`
-
-		const celebrantsWithCount = await db.raw(
-			`
-		SELECT 
-			c.id, 
-			c.religious_name,
-			c.title AS celebrant_title,
-			COUNT(m.id) AS mass_count
-		FROM 
-			Celebrants c
-		LEFT JOIN 
-			Masses m ON c.id = m.celebrant_id AND TO_CHAR(m.date, 'YYYY-MM') = ?
-		GROUP BY 
-			c.id, c.religious_name, c.title
-		ORDER BY 
-			mass_count ASC
-		LIMIT 1
-	`,
-			[monthPrefix]
-		)
-
-		return celebrantsWithCount.rows?.[0] || null
 	},
 
 	/**
@@ -649,6 +595,78 @@ const MassService = {
 			await Intention.update(intention.id, { status: "in_progress" })
 		}
 		return allUpdatedMasses
+	},
+
+	handleSeries: async (startDate, duration, celebrant_id, intention_text, deceased, usedCelebrantsByDate) => {
+		const seriesDates = []
+		let chosenCelebrant = null
+
+		// Fonction pour vérifier si un célébrant est dispo sur toutes les dates de la série
+		const isCelebrantAvailableForSeries = async (celebrantId, startDate, duration) => {
+			for (let i = 0; i < duration; i++) {
+				const date = new Date(startDate)
+				date.setDate(date.getDate() + i)
+				const isoDate = date.toISOString().split("T")[0]
+
+				// Si déjà utilisé ce célébrant ce jour-là
+				if (usedCelebrantsByDate[isoDate] && usedCelebrantsByDate[isoDate].has(celebrantId)) {
+					return false
+				}
+
+				// Vérifier la dispo réelle en base
+				const available = await Mass.isCelebrantAvailable(celebrantId, isoDate)
+				if (!available) {
+					return false
+				}
+			}
+			return true
+		}
+
+		// Si un célébrant est donné, on vérifie sa disponibilité
+		if (celebrant_id) {
+			const available = await isCelebrantAvailableForSeries(celebrant_id, startDate, duration)
+			if (!available) {
+				return { status: "error", error: "celebrant_not_available_for_series" }
+			}
+			chosenCelebrant = await MassService.getCelebrantById(celebrant_id)
+		} else {
+			// Sinon chercher un célébrant dispo sur toute la série
+			const allCelebrants = await Mass.getAllCelebrants() // à implémenter: récupérer tous les célébrants
+
+			for (const celebrant of allCelebrants) {
+				const available = await isCelebrantAvailableForSeries(celebrant.id, startDate, duration)
+				if (available) {
+					chosenCelebrant = celebrant
+					break
+				}
+			}
+			if (!chosenCelebrant) {
+				return { status: "error", error: "no_celebrant_available_for_series" }
+			}
+		}
+
+		// Construire la série de messes
+		for (let i = 0; i < duration; i++) {
+			const date = new Date(startDate)
+			date.setDate(date.getDate() + i)
+			const isoDate = date.toISOString().split("T")[0]
+
+			// Ajouter à usedCelebrantsByDate pour éviter conflits
+			if (!usedCelebrantsByDate[isoDate]) usedCelebrantsByDate[isoDate] = new Set()
+			usedCelebrantsByDate[isoDate].add(chosenCelebrant.id)
+
+			seriesDates.push({
+				date: isoDate,
+				intention: intention_text,
+				deceased,
+				celebrant_id: chosenCelebrant.id,
+				celebrant_title: chosenCelebrant.celebrant_title,
+				celebrant_name: chosenCelebrant.religious_name,
+				status: "scheduled",
+			})
+		}
+
+		return seriesDates
 	},
 }
 

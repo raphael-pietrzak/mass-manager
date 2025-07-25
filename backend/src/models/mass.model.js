@@ -91,22 +91,33 @@ class Mass {
 		// Convertir la date au format YYYY-MM-DD
 		const formattedDate = new Date(date).toISOString().split("T")[0]
 
+		// Vérifier si la date est un jour spécial (bloqué pour toutes messes)
+		const specialDay = await db("SpecialDays")
+			.where(db.raw("DATE(date) = DATE(?)", [formattedDate]))
+			.andWhere("number_of_masses", "=", 0)
+			.first()
+		if (specialDay) {
+			// Si jour spécial, aucun célébrant disponible
+			return null
+		}
+
 		// Trouver les célébrants déjà assignés ce jour-là
 		const assignedCelebrants = await db("Masses").select("celebrant_id").whereRaw("DATE(date) = ?", [formattedDate])
-
-		// Extraire les IDs des célébrants déjà assignés
 		const assignedCelebrantIds = assignedCelebrants.map((c) => c.celebrant_id)
 
-		// Combiner avec les IDs exclus passés en paramètre
-		const allExcludedIds = [...new Set([...assignedCelebrantIds, ...excludedCelebrantIds])]
+		// Trouver les célébrants indisponibles ce jour-là
+		const unavailableCelebrants = await db("UnavailableDays")
+			.where(db.raw("DATE(date) = DATE(?)", [formattedDate]))
+			.select("celebrant_id")
+		const unavailableIds = unavailableCelebrants.map((row) => row.celebrant_id)
 
-		// Trouver un célébrant disponible qui n'est pas déjà assigné ce jour-là
+		// Combiner les exclusions : assignés, passés en paramètre, indisponibles
+		const allExcludedIds = [...new Set([...assignedCelebrantIds, ...excludedCelebrantIds, ...unavailableIds])].filter((id) => id != null)
+
+		// Trouver un célébrant disponible qui n'est pas dans les exclusions
 		const availableCelebrant = await db("Celebrants")
 			.select("id", "religious_name", "title as celebrant_title")
-			.whereNotIn(
-				"id",
-				allExcludedIds.filter((id) => id != null)
-			)
+			.whereNotIn("id", allExcludedIds)
 			.orderByRaw("RANDOM()")
 			.first()
 
@@ -129,13 +140,13 @@ class Mass {
 		endDate.setHours(12, 0, 0, 0)
 
 		for (let dateToCheck = new Date(startDate); dateToCheck <= endDate; dateToCheck.setDate(dateToCheck.getDate() + 1)) {
-
 			// Formater la date pour les comparaisons
 			const formattedDate = dateToCheck.toISOString().split("T")[0]
 
 			// Vérifier s'il s'agit d'un jour spécial à exclure
 			const specialDay = await db("SpecialDays")
 				.where(db.raw("DATE(date) = DATE(?)", [dateToCheck]))
+				.andWhere("number_of_masses", "=", 0)
 				.first()
 
 			if (specialDay) continue
@@ -188,9 +199,7 @@ class Mass {
 			if (specialDay) continue
 
 			// Récupérer les célébrants déjà utilisés pour cette date
-			const usedCelebrantsForDate = usedCelebrantsByDate[formattedDate]
-				? Array.from(usedCelebrantsByDate[formattedDate])
-				: []
+			const usedCelebrantsForDate = usedCelebrantsByDate[formattedDate] ? Array.from(usedCelebrantsByDate[formattedDate]) : []
 
 			// Récupérer les célébrants indisponibles pour cette date
 			const unavailableCelebrants = await db("UnavailableDays")

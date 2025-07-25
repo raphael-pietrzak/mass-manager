@@ -189,6 +189,7 @@ exports.previewIntention = async (req, res) => {
 			intention_text: req.body.intention_text,
 			deceased: req.body.deceased,
 			mass_count: req.body.mass_count,
+			intention_type: req.body.intention_type,
 			date_type: req.body.date_type,
 			is_recurrent: req.body.is_recurrent,
 			recurrence_type: req.body.recurrence_type,

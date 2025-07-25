@@ -43,6 +43,20 @@ const Celebrant = {
 				return rows.map((row) => row.date)
 			})
 	},
+
+	getMassCountForMonth: async (celebrantId, year, month) => {
+		const start = `${year}-${String(month).padStart(2, "0")}-01`
+		const endDate = new Date(year, month, 0).toISOString().split("T")[0] // dernier jour du mois
+
+		const result = await db("Masses")
+			.where("celebrant_id", celebrantId)
+			.andWhere("date", ">=", start)
+			.andWhere("date", "<=", endDate)
+			.count("id as count")
+			.first()
+
+		return parseInt(result.count || 0)
+	},
 }
 
 module.exports = Celebrant

@@ -95,7 +95,7 @@ export const PonctualIntentionModal: React.FC<IntentionModalProps> = ({
       let dates: string[] = [];
 
       // Toujours récupérer les specialDays globales (number_of_masses = 0)
-      const specialDays = await specialDayService.getSpecialDays({ number_of_mases: '0' });
+      const specialDays = await specialDayService.getSpecialDays({ number_of_masses: 0 });
       const specialDates = specialDays.map(specialDay => specialDay.date);
 
       if (celebrantId) {
