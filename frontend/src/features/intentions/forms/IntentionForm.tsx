@@ -64,7 +64,7 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
 
   return (
     <div className="flex flex-col flex-1 h-[550px]">
-      <div className="flex-grow space-y-6 overflow-y-auto">
+      <div className="flex-grow space-y-2 overflow-y-auto">
 
         {/* Intention */}
         <div className="space-y-2">

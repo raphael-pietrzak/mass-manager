@@ -417,7 +417,7 @@ const MassService = {
 				const isAvailable =
 					(await Mass.isCelebrantAvailable(celebrant_id, date)) &&
 					(!usedCelebrantsByDate[date] || !usedCelebrantsByDate[date].has(parseInt(celebrant_id)))
-				if (!isAvailable) return null
+				if (!isAvailable) throw new Error()
 			}
 
 			const celebrant = await MassService.getCelebrantById(celebrant_id)
