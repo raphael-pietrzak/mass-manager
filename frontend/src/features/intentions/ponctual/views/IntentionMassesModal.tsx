@@ -35,11 +35,13 @@ export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ inte
                   <p className="font-medium">{intention.intention_text} {intention.deceased ? "(Défunt)" : ""}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Préférence de date</p>
+                  <p className="text-sm text-gray-500">Type d'intention</p>
                   <p className="font-medium">
-                    {intention.wants_celebration_date ? (
-                      intention.date_type === 'indifferent' ? 'Date indifférente' : intention.date_type
-                    ) : 'Aucune préférence'}
+                    {intention.intention_type === 'novena'
+                      ? 'Neuvaine'
+                      : intention.intention_type === 'thirty'
+                        ? 'Trentain'
+                        : 'Unité'}
                   </p>
                 </div>
                 <div>
@@ -48,7 +50,7 @@ export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ inte
                     <span className="flex items-center">
                       <Clock className="w-3.5 h-3.5 mr-1 text-gray-400" />
                       {intention.created_at
-                        ? format(new Date(intention.created_at), 'dd/MM/yyyy à HH:mm', { locale: fr })
+                        ? format(new Date(intention.created_at), 'dd/MM/yyyy', { locale: fr })
                         : "Non spécifié"}
                     </span>
                   </p>
