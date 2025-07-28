@@ -141,12 +141,14 @@ export const PonctualIntentionList: React.FC<IntentionListProps> = ({ intentions
                       className="hover:bg-gray-50"
                     >
                       <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-90 truncate max-w-xs">
-                        <span className='italic'>{intention.intention_text}</span>
-                        {intention.deceased ? (
-                          <span className="ml-2 px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-700">
-                            Défunts
-                          </span>
-                        ) : null}
+                        <div className="flex ">
+                          <span className='italic truncate'>{intention.intention_text}</span>
+                          {intention.deceased ? (
+                            <span className="ml-2 px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-700">
+                              Défunt
+                            </span>
+                          ) : null}
+                        </div>
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap text-sm">
                         {intention.intention_type === "unit" ? (
