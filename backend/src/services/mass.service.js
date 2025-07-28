@@ -52,8 +52,7 @@ const MassService = {
 							status: "pending",
 						})
 					}
-				}
-				else {
+				} else {
 					const celebrant = await Celebrant.getById(celebrant_id)
 					for (let i = 0; i < count; i++) {
 						masses.push({
@@ -553,9 +552,9 @@ const MassService = {
 	},
 
 	/**
-	 * ------------------------------------------------
-	 * Répartition des messes des intentions ponctuelles
-	 * ------------------------------------------------
+	 * --------------------------------------------------------
+	 * Répartition des messes des intentions ponctuelles (unité)
+	 * --------------------------------------------------------
 	 */
 
 	handleIndifferentDateWithCelebrantForPonctualIntentions: async (celebrant_id, intention_text, deceased, usedCelebrantsByDate) => {
@@ -654,6 +653,173 @@ const MassService = {
 			}
 			await Intention.update(intention.id, { status: "in_progress" })
 		}
+		return allUpdatedMasses
+	},
+
+	/**
+	 * ------------------------------------------------
+	 * Répartition des messes des Neuvaine et trentains
+	 * ------------------------------------------------
+	 */
+
+	/**
+	 * Trouve la première date où un célébrant spécifique peut assurer une série de jours consécutifs
+	 */
+	findConsecutiveDatesForCelebrant: async (celebrant_id, daysNeeded, usedCelebrantsByDate) => {
+		const today = new Date()
+		const maxSearchDays = 100 // Limite de recherche : 3 mois environ
+
+		for (let startOffset = 0; startOffset < maxSearchDays; startOffset++) {
+			const startDate = new Date(today)
+			startDate.setDate(today.getDate() + startOffset)
+
+			let allDaysAvailable = true
+
+			// Vérifier si le célébrant est disponible pour tous les jours consécutifs
+			for (let dayOffset = 0; dayOffset < daysNeeded; dayOffset++) {
+				const checkDate = new Date(startDate)
+				checkDate.setDate(startDate.getDate() + dayOffset)
+				const dateStr = checkDate.toISOString().split("T")[0]
+
+				// Vérifier disponibilité du célébrant
+				const isAvailable = await Mass.isCelebrantAvailable(celebrant_id, dateStr)
+				const notAlreadyUsed = !usedCelebrantsByDate[dateStr] || !usedCelebrantsByDate[dateStr].has(parseInt(celebrant_id))
+
+				if (!isAvailable || !notAlreadyUsed) {
+					allDaysAvailable = false
+					break
+				}
+			}
+
+			if (allDaysAvailable) {
+				return startDate
+			}
+		}
+		return null // Aucune période trouvée
+	},
+
+	/**
+	 * Assigne des dates consécutives pour une neuvaine/trentain avec célébrant spécifique
+	 */
+	assignNeuvaineWithSpecificCelebrant: async (masses, celebrant_id, intention_text, deceased, usedCelebrantsByDate, massCount) => {
+		// Trouver la première date disponible où le célébrant peut commencer la série
+		const startDate = await MassService.findConsecutiveDatesForCelebrant(celebrant_id, massCount, usedCelebrantsByDate)
+
+		if (!startDate) {
+			console.error(`Aucune période de ${massCount} jours consécutifs disponible pour le célébrant ${celebrant_id}`)
+			return null
+		}
+
+		const celebrant = await Celebrant.getById(celebrant_id)
+		const assignedMasses = []
+
+		// Créer les données d'assignation pour chaque jour consécutif
+		for (let i = 0; i < massCount; i++) {
+			const date = new Date(startDate)
+			date.setDate(date.getDate() + i)
+			const dateStr = date.toISOString().split("T")[0]
+
+			assignedMasses.push({
+				date: dateStr,
+				intention: intention_text,
+				deceased,
+				celebrant_id: celebrant.id,
+				celebrant_title: celebrant.celebrant_title,
+				celebrant_name: celebrant.religious_name,
+				status: "scheduled",
+			})
+
+			// Marquer cette date comme utilisée par ce célébrant
+			if (!usedCelebrantsByDate[dateStr]) {
+				usedCelebrantsByDate[dateStr] = new Set()
+			}
+			usedCelebrantsByDate[dateStr].add(parseInt(celebrant_id))
+		}
+
+		return assignedMasses
+	},
+
+	/**
+	 * Assigne des dates consécutives aux messes de neuvaine/trentain déjà créées
+	 * avec des dates indifférentes
+	 */
+	assignNeuvaineOrTrentain: async (intentions) => {
+		const allUpdatedMasses = []
+		const usedCelebrantsByDate = {}
+
+		for (const intention of intentions) {
+			const { id: intention_id, intention_text, deceased, intention_type } = intention
+
+			// Récupérer toutes les messes non programmées pour cette intention
+			const masses = await Mass.findUnscheduledMassesByIntention(intention_id)
+
+			if (masses.length === 0) {
+				console.log(`Aucune messe non programmée trouvée pour l'intention ${intention_id}`)
+				continue
+			}
+
+			const massCount = masses.length
+			const isNovena = intention_type === "novena"
+			const isTrentain = intention_type === "thirty"
+
+			console.log(`Traitement de ${massCount} messes pour ${isNovena ? "neuvaine" : "trentain"} - intention ${intention_id}`)
+
+			// Déterminer si toutes les messes ont le même célébrant ou non
+			const celebrantIds = [...new Set(masses.map((m) => m.celebrant_id).filter((id) => id !== null))]
+			const hasSpecificCelebrant = celebrantIds.length === 1 && masses.every((m) => m.celebrant_id === celebrantIds[0])
+
+			let assignmentResult
+
+			if (hasSpecificCelebrant) {
+				// Cas : toutes les messes ont le même célébrant spécifique
+				assignmentResult = await MassService.assignNeuvaineWithSpecificCelebrant(
+					masses,
+					celebrantIds[0],
+					intention_text,
+					deceased,
+					usedCelebrantsByDate,
+					massCount
+				)
+			} else {
+				// Cas : messes avec célébrants indifférents
+				assignmentResult = await MassService.assignNeuvaineWithoutSpecificCelebrant(masses, intention_text, deceased, usedCelebrantsByDate, massCount)
+			}
+
+			if (!assignmentResult) {
+				console.error(`Impossible d'assigner les dates pour l'intention ${intention_id}`)
+				return null // Échec de l'assignation
+			}
+
+			// Mettre à jour toutes les messes en base
+			for (let i = 0; i < masses.length; i++) {
+				const mass = masses[i]
+				const assignedData = assignmentResult[i]
+
+				await Mass.update({
+					id: mass.id,
+					date: assignedData.date,
+					celebrant_id: assignedData.celebrant_id,
+					intention_id: intention_id,
+					status: "scheduled",
+				})
+
+				allUpdatedMasses.push({
+					...mass,
+					date: assignedData.date,
+					celebrant_id: assignedData.celebrant_id,
+					status: "scheduled",
+				})
+
+				// Mettre à jour le suivi des célébrants utilisés
+				await MassService.updateUsedCelebrants(assignedData, usedCelebrantsByDate)
+			}
+
+			// Mettre à jour le statut de l'intention
+			await Intention.update(intention.id, { status: "in_progress" })
+			// Mettre à jour date_type à impérative car jours d'affilés
+			await Intention.update(intention.id, { date_type: "imperative" })
+		}
+
 		return allUpdatedMasses
 	},
 }

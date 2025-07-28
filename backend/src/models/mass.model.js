@@ -274,6 +274,7 @@ class Mass {
 				"Intentions.deceased as deceased",
 				"Intentions.amount",
 				"Intentions.date_type as dateType",
+				"Intentions.intention_type as intention_type",
 				"Intentions.wants_celebration_date as wants_notification",
 				"Donors.firstname as donor_firstname",
 				"Donors.lastname as donor_lastname",

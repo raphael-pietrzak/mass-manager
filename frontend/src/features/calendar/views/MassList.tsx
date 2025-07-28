@@ -172,10 +172,20 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
                         ? mass.dateType
                         : 'indifferent';
                       const config = dateTypeConfig[dateType];
+                      // Déterminer le suffixe à ajouter
+                      let suffix = '';
+                      if (mass.intention_type === "novena") {
+                        suffix = ' (neuvaine)';
+                      } else if (mass.intention_type === "thirty") {
+                        suffix = ' (trentain)';
+                      }
                       return (
-                        <span className={`px-2 py-0.5 rounded-full text-xs ${config.color}`}>
-                          {config.label}
-                        </span>
+                        <div>
+                          <span className={`px-2 py-0.5 rounded-full text-xs ${config.color}`}>
+                            {config.label}
+                          </span>
+                          <span>{suffix}</span>
+                        </div>
                       );
                     })()}
                   </td>
