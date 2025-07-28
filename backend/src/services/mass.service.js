@@ -691,8 +691,8 @@ const MassService = {
 
 		// Pour chaque jour possible dans le mois
 		for (let day = 1; day <= daysInMonth - daysNeeded + 1; day++) {
-			const startDate = new Date(year, month, day)
-
+			const startDate = new Date(searchStart)
+			startDate.setDate(day)
 			// Vérifier que la série ne dépasse pas le mois
 			if (startDate.getDate() + daysNeeded - 1 > daysInMonth) {
 				break
