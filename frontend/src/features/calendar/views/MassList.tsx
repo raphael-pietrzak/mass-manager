@@ -146,8 +146,8 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
                     {(() => {
                       const statusConfig = {
                         scheduled: { label: 'Planifiée', color: 'bg-green-100 text-green-800' },
-                        confirmed: { label: 'Confirmée', color: 'bg-green-100 text-green-800' },
-                        celebrated: { label: 'Célébrée', color: 'bg-purple-100 text-purple-800' },
+                        pending: { label: 'Confirmée', color: 'bg-green-100 text-green-800' },
+                        completed: { label: 'Célébrée', color: 'bg-purple-100 text-purple-800' },
                         cancelled: { label: 'Annulée', color: 'bg-red-100 text-red-800' }
                       };
                       const status = mass.status || 'scheduled';
@@ -188,7 +188,7 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
                   <td className="px-3 py-2 whitespace-nowrap text-sm">
                     {mass.deceased === 1 && (
                       <span className="px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-700">
-                        Défunts
+                        Défunt
                       </span>
                     )}
                   </td>
@@ -265,9 +265,9 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
                 <p className="mt-1">
                   {selectedDetailMass.deceased === 1 ? (
                     <span className="px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-700">
-                      Défunts
+                      Défunt
                     </span>
-                  ) : 'Standard'}
+                  ) : 'Unité'}
                 </p>
               </div>
 
