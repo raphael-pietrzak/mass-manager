@@ -202,7 +202,8 @@ exports.previewIntention = async (req, res) => {
 		res.status(200).json(preview)
 	} catch (error) {
 		console.error("Erreur détaillée lors de la prévisualisation:", error);
-		res.status(500).json({ message: "Erreur lors de la prévisualisation de l'intention" })
+		//res.status(500).json({ message: "Erreur lors de la prévisualisation de l'intention" })
+		res.status(400).json({message: error.message})
 	}
 }
 

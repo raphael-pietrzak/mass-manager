@@ -83,8 +83,19 @@ class Mass {
 		// Vérifier si le célébrant a déjà une messe ce jour-là
 		const existingMass = await db("Masses").where("celebrant_id", celebrantId).whereRaw("DATE(date) = ?", [formattedDate]).first()
 
-		// Le célébrant est disponible s'il n'a pas déjà de messe ce jour-là
-		return !existingMass
+		if (existingMass) return false
+
+		// Vérifier si le jour est marqué comme indisponible pour ce célébrant
+		const unavailable = await db("UnavailableDays").where("celebrant_id", celebrantId).whereRaw("DATE(date) = ?", [formattedDate]).first()
+
+		if (unavailable) return false
+
+		// Vérifier si le jour est spécial avec number_of_masses = 0
+		const specialDay = await db("SpecialDays").whereRaw("DATE(date) = ?", [formattedDate]).where("number_of_masses", 0).first()
+
+		if (specialDay) return false
+
+		return true
 	}
 
 	static async getRandomAvailableCelebrant(date, excludedCelebrantIds = []) {

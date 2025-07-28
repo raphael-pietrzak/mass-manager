@@ -160,9 +160,14 @@ export const PonctualIntentionModal: React.FC<IntentionModalProps> = ({
       });
       setPreviewData(preview);
       setStep(2); // Passer à l'étape de récapitulatif
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erreur lors de la prévisualisation des messes:", error);
-      setIsError("Impossible de créer l'intention pour cette date et/ou ce célébrant")
+      if (error.message) {
+        setIsError(error.message);
+      } else {
+        setIsError("Erreur inconnue");
+      }
+
     } finally {
       setIsLoading(false);
     }

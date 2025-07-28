@@ -40,14 +40,9 @@ const MassService = {
 			if ((isNovena || isTrentain) && date_type === "indifferent") {
 				console.log(`Création d'une intention ${intention_type} sans dates imposées (pas de célébrant affecté)`)
 
-				const today = new Date()
 				for (let i = 0; i < count; i++) {
-					const date = new Date(today)
-					date.setDate(date.getDate() + i)
-					const dateStr = date.toISOString().split("T")[0]
-
 					masses.push({
-						date: dateStr,
+						date: null,
 						intention: intention_text,
 						deceased,
 						celebrant_id: null,
@@ -404,6 +399,7 @@ const MassService = {
 		const year = start.getFullYear()
 		const month = start.getMonth() + 1
 
+		// Générer toutes les dates consécutives
 		for (let i = 0; i < mass_count; i++) {
 			const date = new Date(startDate)
 			date.setDate(date.getDate() + i)
@@ -417,7 +413,12 @@ const MassService = {
 				const isAvailable =
 					(await Mass.isCelebrantAvailable(celebrant_id, date)) &&
 					(!usedCelebrantsByDate[date] || !usedCelebrantsByDate[date].has(parseInt(celebrant_id)))
-				if (!isAvailable) throw new Error()
+				if (!isAvailable)
+					throw new Error(
+						`Ce célébrant n'est disponible pour toute la période de ${mass_count === 9 ? "la neuvaine" : "du trentain"} du ${dates[0]} au ${
+							dates[dates.length - 1]
+						}`
+					)
 			}
 
 			const celebrant = await MassService.getCelebrantById(celebrant_id)
@@ -459,24 +460,29 @@ const MassService = {
 			}
 		}
 
-		// Choisir celui qui a le moins de messes
-		if (availableAllDays.length > 0) {
-			availableAllDays.sort((a, b) => a.mass_count - b.mass_count)
-			const selected = availableAllDays[0]
-
-			return dates.map((date) => ({
-				date,
-				intention: intention_text,
-				deceased,
-				celebrant_id: selected.id,
-				celebrant_title: selected.title,
-				celebrant_name: selected.religious_name,
-				status: "scheduled",
-			}))
+		// Si aucun célébrant n'est disponible pour toute la période, throw une erreur
+		if (availableAllDays.length === 0) {
+			throw new Error(
+				`Aucun célébrant n'est disponible pour toute la période de ${mass_count === 9 ? "la neuvaine" : "du trentain"} du ${dates[0]} au ${
+					dates[dates.length - 1]
+				}`
+			)
 		}
 
-		// Aucun célébrant dispo pour toutes les dates
-		return null
+		// Choisir celui qui a le moins de messes
+		// Choisir le célébrant qui a le moins de messes dans le mois
+		availableAllDays.sort((a, b) => a.mass_count - b.mass_count)
+		const selected = availableAllDays[0]
+
+		return dates.map((date) => ({
+			date,
+			intention: intention_text,
+			deceased,
+			celebrant_id: selected.id,
+			celebrant_title: selected.title,
+			celebrant_name: selected.religious_name,
+			status: "scheduled",
+		}))
 	},
 
 	/**
