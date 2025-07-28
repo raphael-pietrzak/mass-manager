@@ -114,7 +114,7 @@ const SummaryForm: React.FC<SummaryFormProps> = ({
         )}
       </div>
 
-      <div className="pt-6 flex justify-between space-x-4">
+      <div className="flex justify-between space-x-4">
         <Button variant="outline" type="button" onClick={prevStep}>
           Précédent
         </Button>
