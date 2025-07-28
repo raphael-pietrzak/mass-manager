@@ -182,7 +182,7 @@ const MassService = {
 				(!usedCelebrantsByDate[date] || !usedCelebrantsByDate[date].has(parseInt(celebrant_id)))
 
 			if (isAvailable) {
-				const celebrant = await MassService.getCelebrantById(celebrant_id)
+				const celebrant = await Celebrant.getById(celebrant_id)
 				return {
 					date,
 					intention: intention_text,
@@ -233,7 +233,7 @@ const MassService = {
 				(!usedCelebrantsByDate[date] || !usedCelebrantsByDate[date].has(parseInt(celebrant_id)))
 
 			if (isAvailable) {
-				const celebrant = await MassService.getCelebrantById(celebrant_id)
+				const celebrant = await Celebrant.getById(celebrant_id)
 				return {
 					date,
 					intention: intention_text,
@@ -365,7 +365,7 @@ const MassService = {
 	 */
 	handleIndifferentDateWithCelebrant: async (celebrant_id, intention_text) => {
 		// On garde le célébrant, mais on n'affecte aucune date
-		const celebrant = await MassService.getCelebrantById(celebrant_id)
+		const celebrant = await Celebrant.getById(celebrant_id)
 
 		return {
 			date: null, // Pas de date attribuée
@@ -420,7 +420,7 @@ const MassService = {
 					)
 			}
 
-			const celebrant = await MassService.getCelebrantById(celebrant_id)
+			const celebrant = await Celebrant.getById(celebrant_id)
 			return dates.map((date) => ({
 				date,
 				intention: intention_text,
@@ -482,73 +482,6 @@ const MassService = {
 			celebrant_name: selected.religious_name,
 			status: "scheduled",
 		}))
-	},
-
-	/**
-	 * Récupère le célébrant ayant le moins de messes assignées
-	 */
-	getLeastBusyCelebrant: async () => {
-		// Sélectionner tous les célébrants avec le nombre de messes assignées
-		const celebrantsWithCount = await db.raw(`
-            SELECT 
-                c.id, 
-                c.religious_name,
-                c.title as celebrant_title,
-                COUNT(m.id) as mass_count
-            FROM 
-                Celebrants c
-            LEFT JOIN 
-                Masses m ON c.id = m.celebrant_id
-            GROUP BY 
-                c.id, c.religious_name
-            ORDER BY 
-                mass_count ASC
-            LIMIT 1
-        `)
-
-		return celebrantsWithCount.rows && celebrantsWithCount.rows.length > 0 ? celebrantsWithCount.rows[0] : null
-	},
-
-	/**
-	 * Récupère le célébrant ayant le moins de messes assignées
-	 * pour le mois de la date sélectionnée
-	 */
-	getLeastBusyCelebrantForMonth: async (startDate) => {
-		const date = new Date(startDate)
-		const year = date.getFullYear()
-		const month = date.getMonth() + 1 // JS: janvier = 0
-
-		// Formater "YYYY-MM"
-		const monthPrefix = `${year}-${month.toString().padStart(2, "0")}`
-
-		const celebrantsWithCount = await db.raw(
-			`
-		SELECT 
-			c.id, 
-			c.religious_name,
-			c.title AS celebrant_title,
-			COUNT(m.id) AS mass_count
-		FROM 
-			Celebrants c
-		LEFT JOIN 
-			Masses m ON c.id = m.celebrant_id AND TO_CHAR(m.date, 'YYYY-MM') = ?
-		GROUP BY 
-			c.id, c.religious_name, c.title
-		ORDER BY 
-			mass_count ASC
-		LIMIT 1
-	`,
-			[monthPrefix]
-		)
-
-		return celebrantsWithCount.rows?.[0] || null
-	},
-
-	/**
-	 * Récupère les détails d'un célébrant par son ID
-	 */
-	getCelebrantById: async (id) => {
-		return db("Celebrants").select("id", "religious_name", "title as celebrant_title").where("id", id).first()
 	},
 
 	/**
@@ -667,12 +600,14 @@ const MassService = {
 	 */
 	findConsecutiveDatesForCelebrant: async (celebrant_id, daysNeeded, usedCelebrantsByDate) => {
 		const today = new Date()
+		const searchStart = new Date(today.getFullYear(), today.getMonth() + 1, 1)
+		searchStart.setHours(12, 0, 0, 0)
+
 		const maxSearchDays = 100 // Limite de recherche : 3 mois environ
 
 		for (let startOffset = 0; startOffset < maxSearchDays; startOffset++) {
-			const startDate = new Date(today)
-			startDate.setDate(today.getDate() + startOffset)
-
+			const startDate = new Date(searchStart)
+			startDate.setDate(startDate.getDate() + startOffset)
 			let allDaysAvailable = true
 
 			// Vérifier si le célébrant est disponible pour tous les jours consécutifs
@@ -734,6 +669,106 @@ const MassService = {
 				usedCelebrantsByDate[dateStr] = new Set()
 			}
 			usedCelebrantsByDate[dateStr].add(parseInt(celebrant_id))
+		}
+
+		return assignedMasses
+	},
+
+	/**
+	 * Trouve un célébrant qui peut assurer une série de jours consécutifs
+	 */
+	findCelebrantForConsecutiveDates: async (daysNeeded, usedCelebrantsByDate) => {
+		const today = new Date()
+		const searchStart = new Date(today.getFullYear(), today.getMonth() + 1, 1)
+		searchStart.setHours(12, 0, 0, 0)
+
+		const year = searchStart.getFullYear()
+		const month = searchStart.getMonth() // 0-index
+		const daysInMonth = new Date(year, month + 1, 0).getDate()
+
+		// On récupère tous les célébrants triés par nombre de messes pour CE mois
+		const celebrantsSorted = await Celebrant.getCelebrantsSortedByBusyForMonth(searchStart)
+
+		// Pour chaque jour possible dans le mois
+		for (let day = 1; day <= daysInMonth - daysNeeded + 1; day++) {
+			const startDate = new Date(year, month, day)
+
+			// Vérifier que la série ne dépasse pas le mois
+			if (startDate.getDate() + daysNeeded - 1 > daysInMonth) {
+				break
+			}
+
+			// Tester chaque célébrant dans l'ordre du moins au plus occupé
+			for (const celebrant of celebrantsSorted) {
+				let canDoAllDays = true
+
+				for (let offset = 0; offset < daysNeeded; offset++) {
+					const checkDate = new Date(startDate)
+					checkDate.setDate(startDate.getDate() + offset)
+					const dateStr = checkDate.toISOString().split("T")[0]
+
+					const isAvailable = await Mass.isCelebrantAvailable(celebrant.id, dateStr)
+					const notAlreadyUsed = !usedCelebrantsByDate[dateStr] || !usedCelebrantsByDate[dateStr].has(celebrant.id)
+
+					if (!isAvailable || !notAlreadyUsed) {
+						canDoAllDays = false
+						break
+					}
+				}
+
+				if (canDoAllDays) {
+					return {
+						celebrant: {
+							id: celebrant.id,
+							celebrant_title: celebrant.celebrant_title,
+							religious_name: celebrant.religious_name,
+						},
+						startDate,
+					}
+				}
+			}
+		}
+
+		// Aucun célébrant dispo dans CE mois
+		return null
+	},
+
+	/**
+	 * Assigne des dates consécutives pour une neuvaine/trentain sans célébrant spécifique
+	 */
+	assignNeuvaineWithoutSpecificCelebrant: async (masses, intention_text, deceased, usedCelebrantsByDate, massCount) => {
+		// Trouver un célébrant qui peut assurer toute la période
+		const assignment = await MassService.findCelebrantForConsecutiveDates(massCount, usedCelebrantsByDate)
+
+		if (!assignment) {
+			console.error(`Aucun célébrant disponible pour ${massCount} jours consécutifs`)
+			return null
+		}
+
+		const { celebrant, startDate } = assignment
+		const assignedMasses = []
+
+		// Créer les données d'assignation pour chaque jour consécutif
+		for (let i = 0; i < massCount; i++) {
+			const date = new Date(startDate)
+			date.setDate(date.getDate() + i)
+			const dateStr = date.toISOString().split("T")[0]
+
+			assignedMasses.push({
+				date: dateStr,
+				intention: intention_text,
+				deceased,
+				celebrant_id: celebrant.id,
+				celebrant_title: celebrant.celebrant_title,
+				celebrant_name: celebrant.religious_name,
+				status: "scheduled",
+			})
+
+			// Marquer cette date comme utilisée par ce célébrant
+			if (!usedCelebrantsByDate[dateStr]) {
+				usedCelebrantsByDate[dateStr] = new Set()
+			}
+			usedCelebrantsByDate[dateStr].add(parseInt(celebrant.id))
 		}
 
 		return assignedMasses
