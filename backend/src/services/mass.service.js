@@ -39,17 +39,33 @@ const MassService = {
 			// CAS SPÉCIAL : Novena ou Trentain avec date indifférente (création sans célébrant)
 			if ((isNovena || isTrentain) && date_type === "indifferent") {
 				console.log(`Création d'une intention ${intention_type} sans dates imposées (pas de célébrant affecté)`)
-
-				for (let i = 0; i < count; i++) {
-					masses.push({
-						date: null,
-						intention: intention_text,
-						deceased,
-						celebrant_id: null,
-						celebrant_title: null,
-						celebrant_name: null,
-						status: "pending",
-					})
+				console.log(celebrant_id)
+				if (!celebrant_id) {
+					for (let i = 0; i < count; i++) {
+						masses.push({
+							date: null,
+							intention: intention_text,
+							deceased,
+							celebrant_id: null,
+							celebrant_title: null,
+							celebrant_name: null,
+							status: "pending",
+						})
+					}
+				}
+				else {
+					const celebrant = await Celebrant.getById(celebrant_id)
+					for (let i = 0; i < count; i++) {
+						masses.push({
+							date: null,
+							intention: intention_text,
+							deceased,
+							celebrant_id: celebrant_id,
+							celebrant_title: celebrant.title,
+							celebrant_name: celebrant.religious_name,
+							status: "pending",
+						})
+					}
 				}
 
 				return masses
@@ -67,24 +83,8 @@ const MassService = {
 						usedCelebrantsByDate[mass.date].add(parseInt(mass.celebrant_id))
 						masses.push(mass)
 					})
-				} else {
-					// Échec de réservation sur dates consécutives
-					for (let i = 0; i < count; i++) {
-						const date = new Date(start_date)
-						date.setDate(date.getDate() + i)
-						const dateStr = date.toISOString().split("T")[0]
-						masses.push({
-							date: dateStr,
-							intention: intention_text,
-							deceased,
-							celebrant_id: null,
-							celebrant_title: null,
-							celebrant_name: "Aucun célébrant disponible",
-							status: "error",
-							error: "no_celebrant_available",
-						})
-					}
 				}
+
 				return masses
 			}
 
