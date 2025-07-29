@@ -94,3 +94,13 @@ exports.getUnavailableDates = async (req, res) => {
 		res.status(500).json({ message: "Erreur lors de la récupération des dates d'indisponibilité" })
 	}
 }
+
+exports.getFullDates = async (req, res) => {
+	try {
+		const dates = await Celebrant.getFullDates()
+		res.json(dates)
+	} catch (error) {
+		console.error(error)
+		res.status(500).json({ message: "Erreur lors de la récupération des dates d'indisponibilité" })
+	}
+}

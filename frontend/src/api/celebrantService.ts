@@ -86,6 +86,16 @@ class CelebrantService {
       return [];
     }
   }
+
+  async getFullDates(): Promise<string[]> {
+    try {
+      const response = await axios.get(`${API_URL}/celebrants/full-dates`);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des dates complètes:', error);
+      return [];
+    }
+  }
 }
 
 export const celebrantService = new CelebrantService();
