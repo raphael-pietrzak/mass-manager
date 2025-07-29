@@ -48,7 +48,7 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
       if (unavailableDates.includes(selectedDateString)) {
         return;
       }
-    } 
+    }
     setErrorIntentionText("")
     nextStep();
   };
@@ -64,7 +64,7 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
 
   return (
     <div className="flex flex-col flex-1 h-[550px]">
-      <div className="flex-grow space-y-6 overflow-y-auto">
+      <div className="flex-grow space-y-2 overflow-y-auto">
 
         {/* Intention */}
         <div className="space-y-2">
@@ -109,8 +109,18 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
               type="number"
               min="1"
               className="w-24"
-              value={formData.mass_count}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ mass_count: parseInt(e.target.value) })}
+              value={formData.mass_count ?? 1}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                const newCount = parseInt(e.target.value) || 1;
+                let newData: Partial<Intention> = { mass_count: newCount };
+
+                // Si mass_count > 1 et intention_type === 'unit' → on force date_type à "indifferent"
+                if (newCount > 1 && formData.intention_type === "unit") {
+                  newData.date_type = "indifferent";
+                }
+
+                updateFormData(newData);
+              }}
               disabled={formData.intention_type === "novena" || formData.intention_type === "thirty"}
             />
             <Select
@@ -169,7 +179,13 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
           <Label>Type de date</Label>
           <RadioGroup
             value={formData.date_type}
-            onValueChange={(value: 'imperative' | 'desired' | 'indifferent') => updateFormData({ date_type: value })}
+            onValueChange={(value: 'imperative' | 'desired' | 'indifferent') => {
+              // si on est dans le cas où on doit désactiver, on force 'indifferent'
+              if ((formData.mass_count ?? 0) > 1 && formData.intention_type === 'unit' && value !== 'indifferent') {
+                return;
+              }
+              updateFormData({ date_type: value });
+            }}
             className="flex flex-col space-y-2"
           >
             <div className="flex items-center space-x-2">
@@ -177,14 +193,27 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
               <Label htmlFor="indifferent">Indifférente</Label>
             </div>
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="desired" id="desired" />
-              <Label htmlFor="desired">Souhaitée</Label>
+              <RadioGroupItem
+                value="desired"
+                id="desired"
+                disabled={(formData.mass_count ?? 0) > 1 && formData.intention_type === 'unit'}
+              />
+              <Label htmlFor="desired" className={(formData.mass_count ?? 0) > 1 && formData.intention_type === 'unit' ? "opacity-50" : ""}>
+                Souhaitée
+              </Label>
             </div>
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="imperative" id="imperative" />
-              <Label htmlFor="imperative">Impérative</Label>
+              <RadioGroupItem
+                value="imperative"
+                id="imperative"
+                disabled={(formData.mass_count ?? 0) > 1 && formData.intention_type === 'unit'}
+              />
+              <Label htmlFor="imperative" className={(formData.mass_count ?? 0) > 1 && formData.intention_type === 'unit' ? "opacity-50" : ""}>
+                Impérative
+              </Label>
             </div>
           </RadioGroup>
+
 
           {/* Date avec conditionnelle pour l'affichage */}
           {formData.date_type !== "indifferent" && (

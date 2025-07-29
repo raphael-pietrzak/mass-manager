@@ -6,6 +6,7 @@ interface DropdownSearchProps {
   onChange: (value: string) => void;
   placeholder?: string;
   inlineSearch?: boolean;
+  disabled?: boolean;
 }
 
 export const DropdownSearch: React.FC<DropdownSearchProps> = ({
@@ -14,6 +15,7 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
   onChange,
   placeholder = 'Sélectionner...',
   inlineSearch = false,
+  disabled = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -54,14 +56,23 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
             setSearchTerm(e.target.value);
             setIsOpen(true);
           }}
-          onClick={() => setIsOpen(true)}
-          className="w-full px-4 py-2 bg-white border rounded-md shadow-sm focus:outline-none"
+          onClick={() => {
+            if (disabled) return;
+            setIsOpen(true);
+          }}
+          className={`w-full px-4 py-2 bg-white border rounded-md shadow-sm focus:outline-none ${
+            disabled ? 'bg-gray-100 cursor-not-allowed' : ''
+          }`}
+          disabled={disabled}
         />
       ) : (
         // Mode classique avec champ de recherche en dropdown
-        <div
-          className="w-full px-4 py-2 text-left bg-white border rounded-md shadow-sm cursor-pointer flex justify-between items-center"
+         <div
+          className={`w-full px-4 py-2 text-left bg-white border rounded-md shadow-sm cursor-pointer flex justify-between items-center ${
+            disabled ? 'bg-gray-100 cursor-not-allowed text-gray-500' : ''
+          }`}
           onClick={() => {
+            if (disabled) return;
             setIsOpen((prev) => {
               const newState = !prev;
               if (newState && !inlineSearch) {
@@ -84,14 +95,13 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
         </div>
       )}
 
-      {isOpen && (
+      {isOpen && !disabled && (
         <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-auto">
           {!inlineSearch && (
             <input
               type="text"
               className="w-full p-2 border-b"
               placeholder="Rechercher..."
-              //value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
               }}

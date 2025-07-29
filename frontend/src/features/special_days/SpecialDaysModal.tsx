@@ -55,16 +55,22 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
   const loadSpecialDays = async () => {
     try {
       const data = await specialDayService.getSpecialDays();
-      const sanitizedData = data.map((day) => ({
-        ...day,
-        date: day.date || '',
-        description: day.description || '', // Assurez-vous d'utiliser description et non note
-        number_of_masses: day.number_of_masses || 0,
-        is_recurrent: day.is_recurrent ?? false,
-      }));
-      setSpecialDays(sanitizedData);
-    } catch (error) {
-      console.error("Erreur lors du chargement des jours spéciaux", error);
+
+      const uniqueRecurrentMap: Record<string, SpecialDays> = {};
+      const result: SpecialDays[] = [];
+
+      data.forEach((day) => {
+        if (day.is_recurrent) {
+          const key = new Date(day.date).toISOString().slice(5, 10); // MM-DD
+          if (!uniqueRecurrentMap[key]) uniqueRecurrentMap[key] = day;
+        } else {
+          result.push(day);
+        }
+      });
+
+      setSpecialDays([...result, ...Object.values(uniqueRecurrentMap)]);
+    } catch (err) {
+      console.error("Erreur de chargement :", err);
       setSpecialDays([]);
     }
   };
@@ -188,6 +194,7 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
                     onDateChange={(date: Date | undefined) =>
                       handleChange('date', date ? date.toISOString().split('T')[0] : '')
                     }
+                    disabled={!!editingDay}
                   />
                 </div>
 
@@ -207,7 +214,7 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
                 <div className="space-y-2">
                   <Label htmlFor="massCount">
-                    Nombre de messes par prêtre
+                    Nombre de messes par célébrant
                   </Label>
                   <Input
                     id="massCount"
@@ -215,7 +222,8 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
                     required
                     min={0}
                     value={newDay.number_of_masses ?? ''}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('number_of_masses', e.target.value)}
+                    //onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('number_of_masses', e.target.value)}
+                    className={"bg-gray-100 cursor-not-allowed text-gray-500"}
                   />
                 </div>
 
@@ -224,6 +232,7 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
                     id="recurrent"
                     checked={newDay.is_recurrent ?? false}
                     onCheckedChange={(checked: boolean) => handleChange('is_recurrent', checked)}
+                    disabled={!!editingDay}
                   />
                   <Label htmlFor="recurrent">Récurrent chaque année</Label>
                 </div>

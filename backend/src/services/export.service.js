@@ -445,7 +445,7 @@ class ExportService {
 									width: { size: smallColWidth, type: "dxa" },
 								}),
 								new TableCell({
-									children: [new Paragraph({ text: "Colonne vide" })],
+									children: [new Paragraph({ text: "" })],
 									width: { size: largeColWidth, type: "dxa" },
 								}),
 							]
@@ -545,7 +545,7 @@ class ExportService {
 			// Remplir les lignes avec les données des intentions
 			intentions.forEach((intention) => {
 				const deceasedText = intention.deceased ? "(défunt)" : ""
-				const dateTypeText = intention.date_type === "imperative" | "desired" ? "(fixe)" : intention.date_type === "indifferent" ? "(mobile)" : ""
+				const dateTypeText = (intention.date_type === "imperative") | "desired" ? "(fixe)" : intention.date_type === "indifferent" ? "(mobile)" : ""
 				const intentionTypeText =
 					intention.intention_type === "novena"
 						? "Neuvaine"
@@ -594,7 +594,7 @@ class ExportService {
 
 				intentions.forEach((intention) => {
 					const deceasedText = intention.deceased ? "(défunt)" : ""
-					const dateTypeText = intention.date_type === "imperative" | "desired" ? "(fixe)" : intention.date_type === "indifferent" ? "(mobile)" : ""
+					const dateTypeText = (intention.date_type === "imperative") | "desired" ? "(fixe)" : intention.date_type === "indifferent" ? "(mobile)" : ""
 					const intentionTypeText =
 						intention.intention_type === "novena"
 							? "Neuvaine"
@@ -686,15 +686,22 @@ class ExportService {
 
 			intentions.forEach((intention) => {
 				const deceasedText = intention.deceased ? "(défunt)" : ""
-				const dateTypeText = intention.date_type === "imperative" | "desired" ? "(fixe)" : intention.date_type === "indifferent" ? "(mobile)" : ""
-				const intentionTypeChildren =
-					intention.intention_type === "novena"
-						? "Neuvaine"
-						: intention.intention_type === "thirty"
-						? "Trentain"
-						: intention.intention_type === "unit"
-						? [new Paragraph("Unité"), ...(intention.number_of_masses !== 1 ? [new Paragraph(`(${intention.number_of_masses} messes)`)] : [])]
-						: [new Paragraph("")]
+				const dateTypeText =
+					intention.date_type === "imperative" || intention.date_type === "desired"
+						? "(fixe)"
+						: intention.date_type === "indifferent"
+						? "(mobile)"
+						: ""
+
+				// Correction : créer le texte du type d'intention comme une chaîne
+				let intentionTypeText = ""
+				if (intention.intention_type === "novena") {
+					intentionTypeText = "Neuvaine"
+				} else if (intention.intention_type === "thirty") {
+					intentionTypeText = "Trentain"
+				} else if (intention.intention_type === "unit") {
+					intentionTypeText = intention.number_of_masses !== 1 ? `Unité\n(${intention.number_of_masses} messes)` : "Unité"
+				}
 				const donorText = `${intention.firstname || ""} ${intention.lastname || ""}`.trim() || "Non renseigné"
 
 				rows.push(
@@ -704,7 +711,7 @@ class ExportService {
 								children: [new Paragraph(`${intention.intention_text || ""} ${deceasedText} ${dateTypeText}`.trim())],
 							}),
 							new TableCell({
-								children: intentionTypeChildren,
+								children: [new Paragraph(intentionTypeText)],
 							}),
 							new TableCell({
 								children: [new Paragraph(donorText)],

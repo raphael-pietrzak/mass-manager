@@ -96,14 +96,21 @@ export const UnavailableDayModal: React.FC<Props> = ({ isOpen, onClose }) => {
         setUnavailableDay([]);
         return;
       }
-
       const data = await unavailableDayService.getUnavailableDays(selectedCelebrantId);
-      const sanitizedData = data.map((day) => ({
-        ...day,
-        date: day.date || '',
-        is_recurrent: day.is_recurrent ?? false,
-      }));
-      setUnavailableDay(sanitizedData);
+
+      const uniqueRecurrentMap: Record<string, UnavailableDays> = {};
+      const result: UnavailableDays[] = [];
+
+      data.forEach((day) => {
+        if (day.is_recurrent) {
+          const key = new Date(day.date).toISOString().slice(5, 10); // MM-DD
+          if (!uniqueRecurrentMap[key]) uniqueRecurrentMap[key] = day;
+        } else {
+          result.push(day);
+        }
+      });
+
+      setUnavailableDay([...result, ...Object.values(uniqueRecurrentMap)]);
     } catch (error) {
       console.error("Erreur lors du chargement des jours spéciaux", error);
       setUnavailableDay([]);
@@ -124,6 +131,10 @@ export const UnavailableDayModal: React.FC<Props> = ({ isOpen, onClose }) => {
       setValidationError("La date est obligatoire");
       return;
     }
+    if (!newDay.celebrant_id) {
+      setValidationError("Veuillez sélectionner un célébrant");
+      return;
+    }
     // Réinitialiser l'erreur si validation OK
     setValidationError(null);
     try {
@@ -137,6 +148,7 @@ export const UnavailableDayModal: React.FC<Props> = ({ isOpen, onClose }) => {
       await loadUnavailableDays();
     } catch (error) {
       console.error("Erreur lors de l'enregistrement du jour spécial", error);
+      setValidationError("Un jour indisponible existe déjà à cette date pour ce célébrant");
     }
   };
 
@@ -225,6 +237,7 @@ export const UnavailableDayModal: React.FC<Props> = ({ isOpen, onClose }) => {
                     value={newDay.celebrant_id ? newDay.celebrant_id.toString() : undefined}
                     onChange={handleSelectCelebrant}
                     placeholder="Sélectionner un célébrant"
+                    disabled={!!editingDay}
                   />
                 </div>
                 <div className="space-y-2">
@@ -244,6 +257,7 @@ export const UnavailableDayModal: React.FC<Props> = ({ isOpen, onClose }) => {
                     id="recurrent"
                     checked={newDay.is_recurrent ?? false}
                     onCheckedChange={(checked: boolean) => handleChange('is_recurrent', checked)}
+                    disabled={!!editingDay}
                   />
                   <Label htmlFor="recurrent">Récurrent chaque année</Label>
                 </div>

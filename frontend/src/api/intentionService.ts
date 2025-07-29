@@ -82,8 +82,17 @@ const API_URL = `${API_BASE_URL}/api/data/intentions`
 
 export const intentionService = {
 	async previewMasses(data: Partial<Intention>) {
-		const response = await axios.post(`${API_URL}/preview`, data)
-		return response.data // Retourne les données de prévisualisation
+		try {
+			const response = await axios.post(`${API_URL}/preview`, data)
+			return response.data
+		} catch (error: any) {
+			if (axios.isAxiosError(error) && error.response) {
+				// ✅ Ici tu récupères ce que tu as envoyé avec res.status(...).json(...)
+				console.error("Erreur backend:", error.response.data)
+				throw error.response.data
+			}
+			throw error
+		}
 	},
 
 	async assignIntentions(intentionId: number) {

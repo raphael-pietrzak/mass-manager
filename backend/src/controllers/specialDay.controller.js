@@ -57,7 +57,6 @@ exports.updateSpecialDay = async (req, res) => {
 			number_of_masses: req.body.number_of_masses,
 			is_recurrent: req.body.is_recurrent,
 		}
-
 		await SpecialDay.update(specialDay)
 		res.status(201).send("Jour particulier mis à jour !")
 	} catch (error) {

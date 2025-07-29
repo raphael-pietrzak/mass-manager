@@ -25,12 +25,12 @@ exports.getIntention = async (req, res) => {
 }
 
 exports.createIntention = async (req, res) => {
-	console.log('Début création intention:', JSON.stringify(req.body, null, 2));
+	console.log("Début création intention:", JSON.stringify(req.body, null, 2))
 	try {
 		const intentionData = req.body
 		let donorId
 
-		console.log('Traitement des données du donateur...');
+		console.log("Traitement des données du donateur...")
 		const donorData = {
 			firstname: intentionData.donor.firstname,
 			lastname: intentionData.donor.lastname,
@@ -41,19 +41,19 @@ exports.createIntention = async (req, res) => {
 			city: intentionData.donor.city || null,
 		}
 
-		console.log('Vérification existence donateur...');
+		console.log("Vérification existence donateur...")
 		const existingDonor = await Donor.findByEmail(intentionData.donor.email)
 		if (existingDonor) {
-			console.log('Donateur existant trouvé:', existingDonor.id);
+			console.log("Donateur existant trouvé:", existingDonor.id)
 			donorId = existingDonor.id
 		} else {
-			console.log('Création nouveau donateur...');
+			console.log("Création nouveau donateur...")
 			donorId = await Donor.create(donorData)
-			console.log('Nouveau donateur créé:', donorId);
+			console.log("Nouveau donateur créé:", donorId)
 		}
 
 		// Logique pour initialiser number_of_masses selon le type
-		const intentionType = (intentionData.intention_type).toLowerCase()
+		const intentionType = intentionData.intention_type.toLowerCase()
 		let number = 0
 		switch (intentionType) {
 			case "novena":
@@ -84,33 +84,33 @@ exports.createIntention = async (req, res) => {
 		}
 
 		const intentionId = await Intention.create(intention)
-		console.log('Intention créée:', intentionId);
+		console.log("Intention créée:", intentionId)
 
-		console.log('Traitement des messes associées...');
+		console.log("Traitement des messes associées...")
 		if (intentionData.masses && intentionData.masses.length > 0) {
-			console.log(`${intentionData.masses.length} messes à créer`);
+			console.log(`${intentionData.masses.length} messes à créer`)
 			const assignedCelebrantsByDate = new Map()
 
 			for (const mass of intentionData.masses) {
-				console.log('Traitement messe:', JSON.stringify(mass, null, 2));
+				console.log("Traitement messe:", JSON.stringify(mass, null, 2))
 				const massDate = mass.date
 				const celebrantId = mass.celebrant_id
 
 				if (celebrantId && massDate) {
 					const dateKey = new Date(massDate).toISOString().split("T")[0]
-					console.log(`Vérification disponibilité célébrant ${celebrantId} pour ${dateKey}`);
+					console.log(`Vérification disponibilité célébrant ${celebrantId} pour ${dateKey}`)
 
 					if (assignedCelebrantsByDate.has(dateKey) && assignedCelebrantsByDate.get(dateKey) === celebrantId) {
-						console.log('Célébrant déjà assigné pour cette date, messe ignorée');
+						console.log("Célébrant déjà assigné pour cette date, messe ignorée")
 						continue
 					}
 
 					const isCelebrantAvailable = await MassModel.isCelebrantAvailable(celebrantId, dateKey)
 					if (!isCelebrantAvailable) {
-						console.log('Célébrant non disponible, assignation annulée');
+						console.log("Célébrant non disponible, assignation annulée")
 						mass.celebrant_id = null
 					} else {
-						console.log('Célébrant disponible et assigné');
+						console.log("Célébrant disponible et assigné")
 						assignedCelebrantsByDate.set(dateKey, celebrantId)
 					}
 				}
@@ -123,19 +123,19 @@ exports.createIntention = async (req, res) => {
 				}
 
 				await MassModel.create(massData)
-				console.log('Messe créée avec succès');
+				console.log("Messe créée avec succès")
 			}
 		}
 
-		console.log('Récupération données finales...');
+		console.log("Récupération données finales...")
 		const result = await Intention.findById(intentionId)
-		console.log('Opération terminée avec succès');
+		console.log("Opération terminée avec succès")
 		if (result.date_type === "imperative" || result.date_type === "desired") {
-			await Intention.update(result.id, { status: "in_progress" }) 
+			await Intention.update(result.id, { status: "in_progress" })
 		}
 		res.status(201).json(result)
 	} catch (error) {
-		console.error("Erreur détaillée lors de la création de l'intention:", error);
+		console.error("Erreur détaillée lors de la création de l'intention:", error)
 		res.status(500).json({ message: "Erreur lors de la création de l'intention" })
 	}
 }
@@ -182,13 +182,14 @@ exports.deleteIntention = async (req, res) => {
 }
 
 exports.previewIntention = async (req, res) => {
-	console.log('Début prévisualisation intention:', JSON.stringify(req.body, null, 2));
+	console.log("Début prévisualisation intention:", JSON.stringify(req.body, null, 2))
 	try {
 		const preview = await MassService.generateMassPreview({
 			celebrant_id: req.body.celebrant_id,
 			intention_text: req.body.intention_text,
 			deceased: req.body.deceased,
 			mass_count: req.body.mass_count,
+			intention_type: req.body.intention_type,
 			date_type: req.body.date_type,
 			is_recurrent: req.body.is_recurrent,
 			recurrence_type: req.body.recurrence_type,
@@ -197,11 +198,12 @@ exports.previewIntention = async (req, res) => {
 			end_date: req.body.end_date,
 			end_type: req.body.end_type,
 		})
-		console.log('Prévisualisation générée:', JSON.stringify(preview, null, 2));
+		console.log("Prévisualisation générée:", JSON.stringify(preview, null, 2))
 		res.status(200).json(preview)
 	} catch (error) {
-		console.error("Erreur détaillée lors de la prévisualisation:", error);
-		res.status(500).json({ message: "Erreur lors de la prévisualisation de l'intention" })
+		console.error("Erreur détaillée lors de la prévisualisation:", error)
+		//res.status(500).json({ message: "Erreur lors de la prévisualisation de l'intention" })
+		res.status(400).json({ message: error.message })
 	}
 }
 
@@ -219,7 +221,7 @@ exports.getIntentionMasses = async (req, res) => {
 			celebrant_name: mass.celebrant_name || "",
 			celebrant_title: mass.celebrant_title || "",
 			status: mass.status,
-			intention_id: mass.intention_id
+			intention_id: mass.intention_id,
 		}))
 
 		res.json(formattedMasses)
@@ -254,20 +256,24 @@ exports.deleteBeforeDate = async (req, res) => {
 }
 
 exports.assignToExistingMasses = async (req, res) => {
-  try {
-    const intentionId = req.params.id
+	try {
+		const intentionId = req.params.id
 
-    // Récupérer l'intention (à adapter selon ton modèle)
-    const intention = await Intention.findById(intentionId)
-    if (!intention) {
-      return res.status(404).json({ error: 'Intention non trouvée' })
-    }
-
-    const updatedMasses = await MassService.assignToExistingMasses([intention])
-		if(!updatedMasses) return res.status(422).json("Répartition impossible, mois suivant complet")
-    res.json(updatedMasses)
-  } catch (error) {
-    console.error(error)
-    res.status(500).json({ error: 'Erreur lors de l\'assignation des messes' })
-  }
+		// Récupérer l'intention (à adapter selon ton modèle)
+		const intention = await Intention.findById(intentionId)
+		if (!intention) {
+			return res.status(404).json({ error: "Intention non trouvée" })
+		}
+		let updatedMasses = []
+		if (intention.intentionType === "unit") {
+			updatedMasses = await MassService.assignToExistingMasses([intention])
+			if (!updatedMasses) return res.status(422).json("Répartition impossible, mois suivant complet")
+		} else {
+			updatedMasses = await MassService.assignNeuvaineOrTrentain([intention])
+		}
+		res.json(updatedMasses)
+	} catch (error) {
+		console.error(error)
+		res.status(500).json({ error: "Erreur lors de l'assignation des messes" })
+	}
 }

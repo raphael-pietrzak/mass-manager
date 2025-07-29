@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { AlertTriangle, X } from 'lucide-react';
 import { Intention, intentionService, IntentionSubmission, Masses } from '../../../api/intentionService';
 import { celebrantService, Celebrant } from '../../../api/celebrantService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +9,7 @@ import OfferingForm from '../forms/OfferingForm';
 import SummaryForm from '../forms/SummaryForm';
 import IntentionForm from '../forms/IntentionForm';
 import { specialDayService } from '../../../api/specialDaysService';
+import { Alert, AlertDescription } from '../../../components/ui/alert';
 
 interface IntentionModalProps {
   intention: Intention | null;
@@ -95,7 +96,7 @@ export const PonctualIntentionModal: React.FC<IntentionModalProps> = ({
       let dates: string[] = [];
 
       // Toujours récupérer les specialDays globales (number_of_masses = 0)
-      const specialDays = await specialDayService.getSpecialDays({ number_of_mases: '0' });
+      const specialDays = await specialDayService.getSpecialDays({ number_of_masses: 0 });
       const specialDates = specialDays.map(specialDay => specialDay.date);
 
       if (celebrantId) {
@@ -113,6 +114,7 @@ export const PonctualIntentionModal: React.FC<IntentionModalProps> = ({
 
   // Fonction mise à jour pour gérer le changement de célébrant
   const handleFormUpdate = (data: Partial<typeof formData>) => {
+    setIsError(null);
     // Si l'ID du célébrant a changé, récupérer ses dates indisponibles
     if (data.celebrant_id !== undefined && data.celebrant_id !== formData.celebrant_id) {
       fetchUnavailableDates(data.celebrant_id || undefined);
@@ -142,6 +144,8 @@ export const PonctualIntentionModal: React.FC<IntentionModalProps> = ({
     }
   };
 
+  const [isError, setIsError] = useState<string | null>(null);
+
   const previewMasses = async () => {
     try {
       setIsLoading(true);
@@ -156,8 +160,14 @@ export const PonctualIntentionModal: React.FC<IntentionModalProps> = ({
       });
       setPreviewData(preview);
       setStep(2); // Passer à l'étape de récapitulatif
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erreur lors de la prévisualisation des messes:", error);
+      if (error.message) {
+        setIsError(error.message);
+      } else {
+        setIsError("Erreur inconnue");
+      }
+
     } finally {
       setIsLoading(false);
     }
@@ -201,7 +211,7 @@ export const PonctualIntentionModal: React.FC<IntentionModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex w-full items-center justify-center z-50">
       <Card className="max-w-lg w-full mx-4">
         <CardHeader>
           <div className="flex justify-between items-center">
@@ -234,6 +244,12 @@ export const PonctualIntentionModal: React.FC<IntentionModalProps> = ({
                 nextStep={previewMasses}
                 unavailableDates={unavailableDates}
               />
+              {isError && (
+                <Alert variant="destructive" className="mt-2">
+                  <AlertTriangle className="h-4 w-4 mr-2" />
+                  <AlertDescription>{isError}</AlertDescription>
+                </Alert>
+              )}
             </div>
           )}
 

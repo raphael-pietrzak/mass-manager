@@ -57,7 +57,8 @@ const PonctualIntentionPage: React.FC = () => {
 				setSuccess("Intention mise à jour avec succès.");
 			} else {
 				await intentionService.createMass(newIntention);
-				setSuccess("Intention créée avec succès.");
+				if (newIntention.date_type === "imperative" || newIntention.date_type === "desired") setSuccess("Intention créée avec succès et messe(s) attribuée(s)");
+				else setSuccess("Intention créée avec succès.");
 			}
 			await fetchIntentions();
 			setIsIntentionModalOpen(false);
@@ -117,7 +118,7 @@ const PonctualIntentionPage: React.FC = () => {
 			await fetchIntentions();
 			setSelectedIntentionIds([]);
 		} catch (error: any) {
-			if(error.status===422) setError("Répartition impossible, mois suivant complet")
+			if (error.status === 422) setError("Répartition impossible, mois suivant complet")
 			else setError("Erreur lors de la répartition.");
 		}
 	}
