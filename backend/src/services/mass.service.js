@@ -39,7 +39,6 @@ const MassService = {
 			// CAS SPÉCIAL : Novena ou Trentain avec date indifférente (création sans célébrant)
 			if ((isNovena || isTrentain) && date_type === "indifferent") {
 				console.log(`Création d'une intention ${intention_type} sans dates imposées (pas de célébrant affecté)`)
-				console.log(celebrant_id)
 				if (!celebrant_id) {
 					for (let i = 0; i < count; i++) {
 						masses.push({

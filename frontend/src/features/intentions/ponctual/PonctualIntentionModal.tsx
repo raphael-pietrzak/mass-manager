@@ -75,20 +75,17 @@ export const PonctualIntentionModal: React.FC<IntentionModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
+      const defaultForm = intention || testFormData;
       // Réinitialiser aux valeurs par défaut ou aux valeurs de l'intention si fournie
-      setFormData(intention || testFormData);
-      setSelectedDate(intention?.date ? parseApiDate(intention.date) : new Date());
+      setFormData(defaultForm);
+      setSelectedDate(defaultForm?.date ? parseApiDate(defaultForm.date) : new Date());
       setStep(1);
       setPreviewData([]);
       setUnavailableDates([]); // Réinitialiser les dates indisponibles
+      fetchUnavailableDates(defaultForm.celebrant_id || undefined);
+
     }
   }, [isOpen, intention]);
-
-  useEffect(() => {
-    if (isOpen) {
-      fetchUnavailableDates(formData.celebrant_id || undefined);
-    }
-  }, [isOpen]);
 
   // Nouvelle fonction pour récupérer les dates indisponibles d'un célébrant ou dates indisponibles globales
   const fetchUnavailableDates = async (celebrantId?: string) => {

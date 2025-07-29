@@ -10,7 +10,7 @@ const Celebrant = {
 	},
 
 	getById: async (id) => {
-		return db.select("*", "title as celebrant_title").from("Celebrants").where("id", id)
+		return db.select("*", "title as celebrant_title").from("Celebrants").where("id", id).first()
 	},
 
 	update: async (celebrant) => {
