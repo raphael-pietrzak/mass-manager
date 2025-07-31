@@ -8,9 +8,10 @@ interface IntentionListProps {
   intentions: Intention[];
   onRefresh: () => void;
   loading: boolean;
+  status: string;
 };
 
-export const PonctualIntentionList: React.FC<IntentionListProps> = ({ intentions, onSelectionChange, onRefresh, loading }) => {
+export const PonctualIntentionList: React.FC<IntentionListProps> = ({ intentions, onSelectionChange, onRefresh, loading, status }) => {
   const [selectedIntention, setSelectedIntention] = useState<Intention | null>(null);
   const [associatedMasses, setAssociatedMasses] = useState<Masses[]>([]);
   const [showMassesModal, setShowMassesModal] = useState(false);
@@ -121,17 +122,19 @@ export const PonctualIntentionList: React.FC<IntentionListProps> = ({ intentions
                     <th className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-1/5">
                       Actions
                     </th>
-                    <th className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-1/5">
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={isAllSelected}
-                          onChange={(e) => handleSelectAll(e.target.checked)}
-                          className="form-checkbox h-4 w-4 rounded border-gray-300 text-blue-600 transition-colors duration-150 ease-in-out focus:ring-0 focus:ring-offset-0"
-                        />
-                        <span>Sélectionner tout</span>
-                      </div>
-                    </th>
+                    {status === 'pending' && (
+                      <th className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider text-left w-1/5">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={isAllSelected}
+                            onChange={(e) => handleSelectAll(e.target.checked)}
+                            className="form-checkbox h-4 w-4 rounded border-gray-300 text-blue-600 transition-colors duration-150 ease-in-out focus:ring-0 focus:ring-offset-0"
+                          />
+                          <span>Sélectionner tout</span>
+                        </div>
+                      </th>
+                    )}
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -200,15 +203,17 @@ export const PonctualIntentionList: React.FC<IntentionListProps> = ({ intentions
 
                         </div>
                       </td>
-                      <td className="px-3 py-2 text-center">
-                        <input
-                          type="checkbox"
-                          className="form-checkbox h-4 w-4 rounded border-gray-300 text-blue-600 transition-colors duration-150 ease-in-out focus:ring-0 focus:ring-offset-0"
-                          checked={selectedIntentionId.includes(intention.id)}
-                          onClick={(e) => e.stopPropagation()}
-                          onChange={(e) => handleSelectIntention(intention.id, e.target.checked)}
-                        />
-                      </td>
+                      {status === 'pending' && (
+                        <td className="px-3 py-2 text-center">
+                          <input
+                            type="checkbox"
+                            className="form-checkbox h-4 w-4 rounded border-gray-300 text-blue-600 transition-colors duration-150 ease-in-out focus:ring-0 focus:ring-offset-0"
+                            checked={selectedIntentionId.includes(intention.id)}
+                            onClick={(e) => e.stopPropagation()}
+                            onChange={(e) => handleSelectIntention(intention.id, e.target.checked)}
+                          />
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>

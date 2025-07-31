@@ -130,8 +130,8 @@ export const intentionService = {
 		return response.data
 	},
 
-	async getPonctualIntentions(): Promise<Intention[]> {
-		const response = await axios.get(`${API_URL}/ponctual`)
+	async getPonctualIntentions(status: string): Promise<Intention[]> {
+		const response = await axios.get(`${API_URL}/ponctual?status=${status}`)
 		return response.data
 	},
 

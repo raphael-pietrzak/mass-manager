@@ -139,6 +139,57 @@ class Mass {
 		return await Mass.getRandomAvailableCelebrant(targetDate)
 	}
 
+	static async findAvailableSlotsForMultipleMasses(numberOfMasses, usedCelebrantsByDate = {}) {
+		const now = new Date()
+		const offset = parseInt(process.env.START_SEARCH_MONTH_OFFSET, 10)
+		const startDate = new Date(now.getFullYear(), now.getMonth() + offset, 1)
+		const endDate = new Date(now.getFullYear(), now.getMonth() + offset + 1, 0)
+		startDate.setHours(12, 0, 0, 0)
+		endDate.setHours(12, 0, 0, 0)
+
+		const assignedSlots = []
+		const usedDates = new Set() // pour pas réutiliser le même jour plusieurs fois
+
+		for (let d = new Date(startDate); d <= endDate && assignedSlots.length < numberOfMasses; d.setDate(d.getDate() + 1)) {
+			const dateToCheck = new Date(d)
+			const formattedDate = dateToCheck.toISOString().split("T")[0]
+
+			if (usedDates.has(formattedDate)) continue // pas 2 messes le même jour dans cette intention
+
+			// Vérifier jour spécial bloqué
+			const specialDay = await db("SpecialDays")
+				.where(db.raw("DATE(date) = DATE(?)", [formattedDate]))
+				.andWhere("number_of_masses", "=", 0)
+				.first()
+			if (specialDay) continue
+
+			// Récupérer les célébrants déjà utilisés pour cette date
+			const usedCelebrantsForDate = usedCelebrantsByDate[formattedDate] ? Array.from(usedCelebrantsByDate[formattedDate]) : []
+
+			// Récupérer les célébrants indisponibles
+			const unavailableCelebrants = await db("UnavailableDays")
+				.where(db.raw("DATE(date) = DATE(?)", [formattedDate]))
+				.select("celebrant_id")
+			const unavailableIds = unavailableCelebrants.map((row) => row.celebrant_id)
+
+			const excludedIds = [...new Set([...usedCelebrantsForDate, ...unavailableIds])]
+
+			// Trouver un célébrant dispo ce jour
+			const availableCelebrant = await Mass.getRandomAvailableCelebrant(dateToCheck, excludedIds)
+			if (availableCelebrant) {
+				assignedSlots.push({
+					date: new Date(dateToCheck),
+					celebrant: availableCelebrant,
+				})
+				usedDates.add(formattedDate)
+			}
+		}
+
+		// Si on a pas assez de slots pour toutes les messes
+		if (assignedSlots.length < numberOfMasses) return null
+		return assignedSlots
+	}
+
 	static async findNextAvailableSlotForCelebrant(celebrantId, usedCelebrantsByDate = {}) {
 		const now = new Date()
 		const offset = parseInt(process.env.START_SEARCH_MONTH_OFFSET, 10)

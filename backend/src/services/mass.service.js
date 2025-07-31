@@ -516,7 +516,35 @@ const MassService = {
 		}
 	},
 
-	handleIndifferentDateWithoutCelebrantForPonctualIntention: async (intention_text, deceased, usedCelebrantsByDate) => {
+	handleIndifferentDateWithoutCelebrantForPonctualIntention: async (intention_id, intention_text, deceased, usedCelebrantsByDate) => {
+		const intention = await Intention.findById(intention_id)
+		console.log(intention)
+		if (intention.intention_type === "unit" && intention.number_of_masses > 1) {
+			const slots = await Mass.findAvailableSlotsForMultipleMasses(intention.number_of_masses, usedCelebrantsByDate)
+			if (!slots) {
+				return {
+					date: null,
+					intention: intention_text,
+					deceased,
+					celebrant_id: null,
+					celebrant_name: "Aucune disponibilité",
+					status: "error",
+					error: "not_enough_slots",
+				}
+			}
+
+			return slots.map((slot) => ({
+				date: slot.date.toISOString().split("T")[0],
+				intention: intention_text,
+				deceased,
+				celebrant_id: slot.celebrant.id,
+				celebrant_name: slot.celebrant.religious_name,
+				status: "scheduled",
+			}))
+		}
+
+		// Cas simple 1 messe
+
 		// Chercher la prochaine date avec un célébrant dispo
 		const slot = await Mass.findNextAvailableSlot(usedCelebrantsByDate)
 
@@ -548,46 +576,61 @@ const MassService = {
 
 		for (const intention of intentions) {
 			const { id: intention_id, intention_text, deceased } = intention
-
 			const masses = await Mass.findUnscheduledMassesByIntention(intention_id)
 
-			for (const mass of masses) {
-				let assignedData
+			for (let i = 0; i < masses.length; i++) {
+				const mass = masses[i]
+
+				let assigned
 				if (mass.celebrant_id) {
-					assignedData = await MassService.handleIndifferentDateWithCelebrantForPonctualIntentions(
+					assigned = await MassService.handleIndifferentDateWithCelebrantForPonctualIntentions(
 						mass.celebrant_id,
 						intention_text,
 						deceased,
 						usedCelebrantsByDate
 					)
 				} else {
-					assignedData = await MassService.handleIndifferentDateWithoutCelebrantForPonctualIntention(intention_text, deceased, usedCelebrantsByDate)
-				}
-				if (assignedData.status === "error") {
-					if (assignedData.status === "error") {
+					const data = await MassService.handleIndifferentDateWithoutCelebrantForPonctualIntention(
+						intention_id,
+						intention_text,
+						deceased,
+						usedCelebrantsByDate
+					)
+
+					if (data.status === "error") {
 						return {
 							error: true,
-							type: mass.celebrant_id ? "noDateForCelebrant" : "noDate",
-							celebrantId: mass.celebrant_id || null,
+							type: "noDate",
+							celebrantId: null,
 						}
+					}
+
+					assigned = Array.isArray(data) ? data[i] : data
+				}
+
+				if (!assigned || assigned.status === "error") {
+					return {
+						error: true,
+						type: mass.celebrant_id ? "noDateForCelebrant" : "noDate",
+						celebrantId: mass.celebrant_id || null,
 					}
 				}
 
 				await Mass.update({
 					id: mass.id,
-					date: assignedData.date,
-					celebrant_id: assignedData.celebrant_id,
+					date: assigned.date,
+					celebrant_id: assigned.celebrant_id,
 					intention_id: intention_id,
 					status: "scheduled",
 				})
 
 				allUpdatedMasses.push({
 					...mass,
-					date: assignedData.date,
-					celebrant_id: assignedData.celebrant_id,
+					date: assigned.date,
+					celebrant_id: assigned.celebrant_id,
 					status: "scheduled",
 				})
-				await MassService.updateUsedCelebrants(assignedData, usedCelebrantsByDate)
+				await MassService.updateUsedCelebrants(assigned, usedCelebrantsByDate)
 			}
 			await Intention.update(intention.id, { status: "in_progress" })
 		}

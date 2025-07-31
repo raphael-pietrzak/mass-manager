@@ -12,6 +12,8 @@ const PonctualIntentionPage: React.FC = () => {
 	const [success, setSuccess] = useState<string | null>(null)
 	const [loading, setLoading] = useState(true);
 	const [intentions, setIntentions] = useState<Intention[]>([]);
+	const [status, setStatus] = useState<string>("pending");
+
 	useEffect(() => {
 		if (error) {
 			const timer = setTimeout(() => {
@@ -33,7 +35,7 @@ const PonctualIntentionPage: React.FC = () => {
 	const fetchIntentions = async () => {
 		try {
 			setLoading(true);
-			const data = await intentionService.getPonctualIntentions();
+			const data = await intentionService.getPonctualIntentions(status);
 			setIntentions(data);
 		} catch (error) {
 			console.error('Erreur lors de la récupération des intentions:', error);
@@ -122,15 +124,41 @@ const PonctualIntentionPage: React.FC = () => {
 		}
 	}
 
+	const handleStatusChange = async (status: string) => {
+		setStatus(status);
+		try {
+			setLoading(true);
+			const data = await intentionService.getPonctualIntentions(status);
+			setIntentions(data);
+		} catch (error) {
+			console.error("Erreur lors du changement de statut :", error);
+		} finally {
+			setLoading(false);
+		}
+	};
+
 	return (
 		<div className="min-h-screen bg-gray-100">
 			<main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-				<h1 className="text-2xl font-bold mb-6">Liste des intentions de messe ponctuelles</h1>
-				<PonctualIntentionFilterBar
-					onExport={handleExport}
-					selectedCount={selectedIntentionIds.length}
-					onDistribute={handleDistributeIntentions}
-				/>
+				<h1 className="text-2xl font-bold mb-6 flex items-center gap-4">
+					<span>Liste des intentions de messe ponctuelles</span>
+					<select
+						value={status}
+						className="px-3 py-2 text-sm font-medium rounded-md shadow-sm bg-card border border-border text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary/30"
+						defaultValue="pending"
+						onChange={(e) => handleStatusChange(e.target.value)}
+					>
+						<option value="pending">En attente</option>
+						<option value="in_progress">Programmées</option>
+					</select>
+				</h1>
+				{status === "pending" && (
+					<PonctualIntentionFilterBar
+						onExport={handleExport}
+						selectedCount={selectedIntentionIds.length}
+						onDistribute={handleDistributeIntentions}
+					/>
+				)}
 
 				<div className="mt-6 mb-6">
 					{error && (
@@ -176,6 +204,7 @@ const PonctualIntentionPage: React.FC = () => {
 					onSelectionChange={setSelectedIntentionIds}
 					onRefresh={fetchIntentions}
 					loading={loading}
+					status={status}
 				/>
 				<PonctualIntentionModal
 					intention={null}

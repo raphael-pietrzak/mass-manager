@@ -234,7 +234,8 @@ exports.getIntentionMasses = async (req, res) => {
 
 exports.getPonctualIntentions = async (req, res) => {
 	try {
-		const data = await Intention.getPonctualIntentions()
+		const {status} = req.query
+		const data = await Intention.getPonctualIntentions(status)
 		res.json(data)
 	} catch (error) {
 		console.error(error)

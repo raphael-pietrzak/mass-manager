@@ -26,19 +26,18 @@ const Intention = {
 
 	delete: (id) => db("Intentions").where({ id }).del(),
 
-	getPonctualIntentions: () =>
+	getPonctualIntentions: (status) =>
 		db("Intentions")
 			.whereNull("Intentions.recurrence_id")
-			.andWhere("Intentions.status", "pending")
+			.andWhere("Intentions.status", status)
 			.leftJoin("Masses", "Masses.intention_id", "Intentions.id")
-			.whereNull("Masses.date")
+			.modify((query) => {
+				if (status === "pending") {
+					query.whereNull("Masses.date")
+				}
+			})
 			.leftJoin("Donors", "Intentions.donor_id", "Donors.id")
-			.select(
-				"Intentions.*",
-				"Donors.firstname as donor_firstname",
-				"Donors.lastname as donor_lastname",
-				"Donors.email as donor_email"
-			)
+			.select("Intentions.*", "Donors.firstname as donor_firstname", "Donors.lastname as donor_lastname", "Donors.email as donor_email")
 			.orderBy("Intentions.created_at", "asc")
 			.groupBy("Intentions.id"),
 
@@ -48,7 +47,7 @@ const Intention = {
 			.whereNotIn("id", function () {
 				this.select("intention_id").from("Masses").whereNotNull("intention_id")
 			})
-			.del()
+			.del(),
 }
 
 module.exports = Intention
