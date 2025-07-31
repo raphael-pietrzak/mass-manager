@@ -37,11 +37,13 @@ export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ inte
                 <div>
                   <p className="text-sm text-gray-500">Type d'intention</p>
                   <p className="font-medium">
-                    {intention.intention_type === 'novena'
-                      ? 'Neuvaine'
-                      : intention.intention_type === 'thirty'
-                        ? 'Trentain'
-                        : 'Unité'}
+                    {intention.intention_type === "novena"
+                      ? "Neuvaine"
+                      : intention.intention_type === "thirty"
+                        ? "Trentain"
+                        : intention.intention_type === "unit" && intention.number_of_masses !== undefined
+                          ? `Unité (${intention.number_of_masses} messe${intention.number_of_masses > 1 ? "s" : ""})`
+                          : "Unité"}
                   </p>
                 </div>
                 <div>
@@ -96,7 +98,9 @@ export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ inte
           </div>
 
           <div>
-            <h4 className="font-medium text-lg mb-3">Messes associées</h4>
+            <h4 className="font-medium text-lg mb-3">
+              {masses.length === 1 ? "Messe associée" : "Messes associées"}
+            </h4>
             {masses.length === 0 ? (
               <div className="bg-yellow-50 p-4 rounded-lg text-center text-yellow-700">
                 Aucune messe associée à cette intention

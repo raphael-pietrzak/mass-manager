@@ -652,20 +652,19 @@ const MassService = {
 		const searchStart = new Date(today.getFullYear(), today.getMonth() + offset, 1)
 		searchStart.setHours(12, 0, 0, 0)
 
-		const maxSearchDays = 100 // Limite de recherche : 3 mois environ
+		const maxSearchDays = 100
 
-		for (let startOffset = 0; startOffset < maxSearchDays; startOffset++) {
+		for (let dayOffset = 0; dayOffset <= maxSearchDays; dayOffset++) {
 			const startDate = new Date(searchStart)
-			startDate.setDate(startDate.getDate() + startOffset)
+			startDate.setDate(startDate.getDate() + dayOffset)
+
 			let allDaysAvailable = true
 
-			// Vérifier si le célébrant est disponible pour tous les jours consécutifs
-			for (let dayOffset = 0; dayOffset < daysNeeded; dayOffset++) {
+			for (let offset = 0; offset < daysNeeded; offset++) {
 				const checkDate = new Date(startDate)
-				checkDate.setDate(startDate.getDate() + dayOffset)
+				checkDate.setDate(startDate.getDate() + offset)
 				const dateStr = checkDate.toISOString().split("T")[0]
 
-				// Vérifier disponibilité du célébrant
 				const isAvailable = await Mass.isCelebrantAvailable(celebrant_id, dateStr)
 				const notAlreadyUsed = !usedCelebrantsByDate[dateStr] || !usedCelebrantsByDate[dateStr].has(parseInt(celebrant_id))
 
@@ -679,7 +678,8 @@ const MassService = {
 				return startDate
 			}
 		}
-		return null // Aucune période trouvée
+
+		return null
 	},
 
 	/**
@@ -732,31 +732,22 @@ const MassService = {
 		const searchStart = new Date(today.getFullYear(), today.getMonth() + offset, 1)
 		searchStart.setHours(12, 0, 0, 0)
 
-		const year = searchStart.getFullYear()
-		const month = searchStart.getMonth() // 0-index
-		const daysInMonth = new Date(year, month + 1, 0).getDate()
+		const maxSearchDays = 100
 
-		// On récupère tous les célébrants triés par nombre de messes pour CE mois
 		const celebrantsSorted = await Celebrant.getCelebrantsSortedByBusyForMonth(searchStart)
 
-		// Pour chaque jour possible dans le mois
-		for (let day = 1; day <= daysInMonth - daysNeeded + 1; day++) {
+		for (let dayOffset = 0; dayOffset <= maxSearchDays; dayOffset++) {
 			const startDate = new Date(searchStart)
-			startDate.setDate(day)
-			// Vérifier que la série ne dépasse pas le mois
-			if (startDate.getDate() + daysNeeded - 1 > daysInMonth) {
-				break
-			}
+			startDate.setDate(searchStart.getDate() + dayOffset)
 
-			// Tester chaque célébrant dans l'ordre du moins au plus occupé
 			for (const celebrant of celebrantsSorted) {
 				let canDoAllDays = true
 
 				for (let offset = 0; offset < daysNeeded; offset++) {
 					const checkDate = new Date(startDate)
 					checkDate.setDate(startDate.getDate() + offset)
-					const dateStr = checkDate.toISOString().split("T")[0]
 
+					const dateStr = checkDate.toISOString().split("T")[0]
 					const isAvailable = await Mass.isCelebrantAvailable(celebrant.id, dateStr)
 					const notAlreadyUsed = !usedCelebrantsByDate[dateStr] || !usedCelebrantsByDate[dateStr].has(celebrant.id)
 
@@ -779,8 +770,7 @@ const MassService = {
 			}
 		}
 
-		// Aucun célébrant dispo dans CE mois
-		return null
+		return null // Aucun créneau trouvé
 	},
 
 	/**
@@ -904,11 +894,8 @@ const MassService = {
 				// Mettre à jour le suivi des célébrants utilisés
 				await MassService.updateUsedCelebrants(assignedData, usedCelebrantsByDate)
 			}
-
 			// Mettre à jour le statut de l'intention
 			await Intention.update(intention.id, { status: "in_progress" })
-			// Mettre à jour date_type à impérative car jours d'affilés
-			await Intention.update(intention.id, { date_type: "imperative" })
 		}
 
 		return allUpdatedMasses
