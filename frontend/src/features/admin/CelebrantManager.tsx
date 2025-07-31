@@ -192,6 +192,7 @@ export const CelebrantManager = ({ open, onOpenChange }: CelebrantManagerProps) 
             value={selectedCelebrant}
             onChange={handleSelectCelebrant}
             placeholder="Sélectionner un célébrant"
+            searchType='celebrant'
           />
         </div>
 
