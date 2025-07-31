@@ -265,7 +265,7 @@ exports.assignToExistingMasses = async (req, res) => {
 			return res.status(404).json({ error: "Intention non trouvée" })
 		}
 		let updatedMasses = []
-		if (intention.intentionType === "unit") {
+		if (intention.intention_type === "unit") {
 			updatedMasses = await MassService.assignToExistingMasses([intention])
 			if (!updatedMasses) return res.status(422).json("Répartition impossible, mois suivant complet")
 		} else {

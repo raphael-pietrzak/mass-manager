@@ -140,14 +140,12 @@ class Mass {
 	}
 
 	static async findNextAvailableSlotForCelebrant(celebrantId, usedCelebrantsByDate = {}) {
-		// Commencer à partir du 1er du mois suivant
 		const now = new Date()
-		// 1er jour du mois suivant
-		const startDate = new Date(now.getFullYear(), now.getMonth() + 1, 1)
+		const offset = parseInt(process.env.START_SEARCH_MONTH_OFFSET, 10)
+		const startDate = new Date(now.getFullYear(), now.getMonth() + offset, 1)
 		startDate.setHours(12, 0, 0, 0)
 
-		// Dernier jour du mois suivant
-		const endDate = new Date(now.getFullYear(), now.getMonth() + 2, 0)
+		const endDate = new Date(now.getFullYear(), now.getMonth() + offset + 1, 0)
 		endDate.setHours(12, 0, 0, 0)
 
 		for (let dateToCheck = new Date(startDate); dateToCheck <= endDate; dateToCheck.setDate(dateToCheck.getDate() + 1)) {
@@ -194,10 +192,11 @@ class Mass {
 
 	static async findNextAvailableSlot(usedCelebrantsByDate = {}) {
 		const now = new Date()
-		const startDate = new Date(now.getFullYear(), now.getMonth() + 1, 1)
+		const offset = parseInt(process.env.START_SEARCH_MONTH_OFFSET, 10)
+		const startDate = new Date(now.getFullYear(), now.getMonth() + offset, 1)
 		startDate.setHours(12, 0, 0, 0)
 
-		const endDate = new Date(now.getFullYear(), now.getMonth() + 2, 0)
+		const endDate = new Date(now.getFullYear(), now.getMonth() + offset + 1, 0)
 		endDate.setHours(12, 0, 0, 0)
 
 		for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {

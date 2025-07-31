@@ -599,7 +599,8 @@ const MassService = {
 	 */
 	findConsecutiveDatesForCelebrant: async (celebrant_id, daysNeeded, usedCelebrantsByDate) => {
 		const today = new Date()
-		const searchStart = new Date(today.getFullYear(), today.getMonth() + 1, 1)
+		const offset = parseInt(process.env.START_SEARCH_MONTH_OFFSET, 10)
+		const searchStart = new Date(today.getFullYear(), today.getMonth() + offset, 1)
 		searchStart.setHours(12, 0, 0, 0)
 
 		const maxSearchDays = 100 // Limite de recherche : 3 mois environ
@@ -635,7 +636,7 @@ const MassService = {
 	/**
 	 * Assigne des dates consécutives pour une neuvaine/trentain avec célébrant spécifique
 	 */
-	assignNeuvaineWithSpecificCelebrant: async (masses, celebrant_id, intention_text, deceased, usedCelebrantsByDate, massCount) => {
+	assignNeuvaineOrTrentainWithSpecificCelebrant: async (masses, celebrant_id, intention_text, deceased, usedCelebrantsByDate, massCount) => {
 		// Trouver la première date disponible où le célébrant peut commencer la série
 		const startDate = await MassService.findConsecutiveDatesForCelebrant(celebrant_id, massCount, usedCelebrantsByDate)
 
@@ -678,7 +679,8 @@ const MassService = {
 	 */
 	findCelebrantForConsecutiveDates: async (daysNeeded, usedCelebrantsByDate) => {
 		const today = new Date()
-		const searchStart = new Date(today.getFullYear(), today.getMonth() + 1, 1)
+		const offset = parseInt(process.env.START_SEARCH_MONTH_OFFSET, 10)
+		const searchStart = new Date(today.getFullYear(), today.getMonth() + offset, 1)
 		searchStart.setHours(12, 0, 0, 0)
 
 		const year = searchStart.getFullYear()
@@ -735,7 +737,7 @@ const MassService = {
 	/**
 	 * Assigne des dates consécutives pour une neuvaine/trentain sans célébrant spécifique
 	 */
-	assignNeuvaineWithoutSpecificCelebrant: async (masses, intention_text, deceased, usedCelebrantsByDate, massCount) => {
+	assignNeuvaineOrTrentainWithoutSpecificCelebrant: async (masses, intention_text, deceased, usedCelebrantsByDate, massCount) => {
 		// Trouver un célébrant qui peut assurer toute la période
 		const assignment = await MassService.findCelebrantForConsecutiveDates(massCount, usedCelebrantsByDate)
 
@@ -806,7 +808,7 @@ const MassService = {
 
 			if (hasSpecificCelebrant) {
 				// Cas : toutes les messes ont le même célébrant spécifique
-				assignmentResult = await MassService.assignNeuvaineWithSpecificCelebrant(
+				assignmentResult = await MassService.assignNeuvaineOrTrentainWithSpecificCelebrant(
 					masses,
 					celebrantIds[0],
 					intention_text,
@@ -816,7 +818,7 @@ const MassService = {
 				)
 			} else {
 				// Cas : messes avec célébrants indifférents
-				assignmentResult = await MassService.assignNeuvaineWithoutSpecificCelebrant(masses, intention_text, deceased, usedCelebrantsByDate, massCount)
+				assignmentResult = await MassService.assignNeuvaineOrTrentainWithoutSpecificCelebrant(masses, intention_text, deceased, usedCelebrantsByDate, massCount)
 			}
 
 			if (!assignmentResult) {
