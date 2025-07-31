@@ -146,9 +146,9 @@ export const UnavailableDayModal: React.FC<Props> = ({ isOpen, onClose }) => {
         setSuccessMessage(response);
       }
       await loadUnavailableDays();
-    } catch (error) {
+    } catch (error: any) {
+      setValidationError(error.message);
       console.error("Erreur lors de l'enregistrement du jour spécial", error);
-      setValidationError("Un jour indisponible existe déjà à cette date pour ce célébrant");
     }
   };
 
