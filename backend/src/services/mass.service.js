@@ -564,7 +564,13 @@ const MassService = {
 					assignedData = await MassService.handleIndifferentDateWithoutCelebrantForPonctualIntention(intention_text, deceased, usedCelebrantsByDate)
 				}
 				if (assignedData.status === "error") {
-					return null // Pas de disponibilité pour cette messe, on arrête ici
+					if (assignedData.status === "error") {
+						return {
+							error: true,
+							type: mass.celebrant_id ? "noDateForCelebrant" : "noDate",
+							celebrantId: mass.celebrant_id || null,
+						}
+					}
 				}
 
 				await Mass.update({
@@ -818,7 +824,13 @@ const MassService = {
 				)
 			} else {
 				// Cas : messes avec célébrants indifférents
-				assignmentResult = await MassService.assignNeuvaineOrTrentainWithoutSpecificCelebrant(masses, intention_text, deceased, usedCelebrantsByDate, massCount)
+				assignmentResult = await MassService.assignNeuvaineOrTrentainWithoutSpecificCelebrant(
+					masses,
+					intention_text,
+					deceased,
+					usedCelebrantsByDate,
+					massCount
+				)
 			}
 
 			if (!assignmentResult) {

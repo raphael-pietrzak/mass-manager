@@ -87,7 +87,6 @@ export const intentionService = {
 			return response.data
 		} catch (error: any) {
 			if (axios.isAxiosError(error) && error.response) {
-				// ✅ Ici tu récupères ce que tu as envoyé avec res.status(...).json(...)
 				console.error("Erreur backend:", error.response.data)
 				throw error.response.data
 			}
@@ -96,7 +95,14 @@ export const intentionService = {
 	},
 
 	async assignIntentions(intentionId: number) {
-		return await axios.post(`${API_URL}/${intentionId}/assignMasses`)
+		try {
+			const response = await axios.post(`${API_URL}/${intentionId}/assignMasses`)
+			return response.data
+		} catch (error: any) {
+			if (error.response && error.response.data && error.response.data.message) {
+				throw new Error(error.response.data.message)
+			}
+		}
 	},
 
 	async createMass(data: IntentionSubmission) {

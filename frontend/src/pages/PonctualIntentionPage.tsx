@@ -118,8 +118,7 @@ const PonctualIntentionPage: React.FC = () => {
 			await fetchIntentions();
 			setSelectedIntentionIds([]);
 		} catch (error: any) {
-			if (error.status === 422) setError("Répartition impossible, mois suivant complet")
-			else setError("Erreur lors de la répartition.");
+			setError(error.message)
 		}
 	}
 

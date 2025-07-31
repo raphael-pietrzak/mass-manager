@@ -2,6 +2,7 @@ const Intention = require("../models/intention.model")
 const Donor = require("../models/donor.model")
 const MassService = require("../services/mass.service")
 const MassModel = require("../models/mass.model")
+const Celebrant = require("../models/celebrant.model")
 
 exports.getIntentions = async (req, res) => {
 	try {
@@ -267,7 +268,27 @@ exports.assignToExistingMasses = async (req, res) => {
 		let updatedMasses = []
 		if (intention.intention_type === "unit") {
 			updatedMasses = await MassService.assignToExistingMasses([intention])
-			if (!updatedMasses) return res.status(422).json("Répartition impossible, mois suivant complet")
+			const now = new Date()
+			const offset = parseInt(process.env.START_SEARCH_MONTH_OFFSET, 10)
+			const startDate = new Date(now.getFullYear(), now.getMonth() + offset, 1)
+			startDate.setHours(12, 0, 0, 0)
+			const formattedMonth = startDate.toLocaleDateString("fr-FR", {
+				year: "numeric",
+				month: "long",
+			})
+			if (updatedMasses?.error) {
+				const baseMessage = `Répartition impossible, mois (${formattedMonth}) complet`
+				if (updatedMasses.type === "noDateForCelebrant") {
+					const celebrant = await Celebrant.getById(updatedMasses.celebrantId)
+					return res.status(422).json({
+						message: `${baseMessage} pour le célébrant (${celebrant.celebrant_title} ${celebrant.religious_name})`,
+					})
+				} else {
+					return res.status(422).json({
+						message: baseMessage,
+					})
+				}
+			}
 		} else {
 			updatedMasses = await MassService.assignNeuvaineOrTrentain([intention])
 		}
