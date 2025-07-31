@@ -28,6 +28,7 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
   const datePickerRef = useRef<HTMLDivElement>(null);
   const startCalendarRef = useRef<HTMLDivElement>(null);
   const endCalendarRef = useRef<HTMLDivElement>(null);
+  const [errorDatePicker, setErrorDatePicker] = useState<string | null>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -83,9 +84,16 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
   };
 
   const handleApplyClick = () => {
+    if (startDate && endDate && endDate < startDate) {
+      setErrorDatePicker("La date de fin ne peut pas être antérieure à la date de début.");
+      return;
+    }
+
+    setErrorDatePicker(null); // clear error
     onFilterChange(startDate, endDate);
     setShowDatePickers(false);
   };
+
 
   const getButtonClass = (isActive: boolean) => {
     return `transition-all duration-200 px-4 py-2 rounded-md text-sm font-medium ${isActive
@@ -243,6 +251,11 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
                     />
                   </div>
                 </div>
+                {errorDatePicker && (
+                  <div className="text-red-600 text-sm mt-2">
+                    {errorDatePicker}
+                  </div>
+                )}
                 <div className="flex justify-end mt-4">
                   <button
                     onClick={handleApplyClick}
