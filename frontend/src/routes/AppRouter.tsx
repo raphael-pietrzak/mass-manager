@@ -7,7 +7,7 @@ import DatabaseTabs from '../pages/DatabasePage';
 import ProtectedRoute from './ProtectedRoute';
 import LoginPage from '../pages/LoginPage';
 import Navbar from '../components/Navbar';
-import RecurrencePage from '../pages/RecurrencePage';
+import RecurrencePage from '../pages/RecurringIntentionPage';
 import PonctualIntentionPage from '../pages/PonctualIntentionPage';
 
 const AppRouter: React.FC = () => (

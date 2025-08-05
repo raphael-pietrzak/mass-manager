@@ -37,8 +37,6 @@ export interface Intention {
 	// Données de masse
 	mass_count?: number
 	date_type?: "indifferent" | "desired" | "imperative"
-
-	// Données de récurrence
 }
 
 export interface Masses {
