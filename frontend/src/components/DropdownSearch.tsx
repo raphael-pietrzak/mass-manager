@@ -7,6 +7,7 @@ interface DropdownSearchProps {
   placeholder?: string;
   inlineSearch?: boolean;
   disabled?: boolean;
+  searchType: string;
 }
 
 export const DropdownSearch: React.FC<DropdownSearchProps> = ({
@@ -16,6 +17,7 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
   placeholder = 'Sélectionner...',
   inlineSearch = false,
   disabled = false,
+  searchType = ""
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -60,17 +62,15 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
             if (disabled) return;
             setIsOpen(true);
           }}
-          className={`w-full px-4 py-2 bg-white border rounded-md shadow-sm focus:outline-none ${
-            disabled ? 'bg-gray-100 cursor-not-allowed' : ''
-          }`}
+          className={`w-full px-4 py-2 bg-white border rounded-md shadow-sm focus:outline-none ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''
+            }`}
           disabled={disabled}
         />
       ) : (
         // Mode classique avec champ de recherche en dropdown
-         <div
-          className={`w-full px-4 py-2 text-left bg-white border rounded-md shadow-sm cursor-pointer flex justify-between items-center ${
-            disabled ? 'bg-gray-100 cursor-not-allowed text-gray-500' : ''
-          }`}
+        <div
+          className={`w-full px-4 py-2 text-left bg-white border rounded-md shadow-sm cursor-pointer flex justify-between items-center ${disabled ? 'bg-gray-100 cursor-not-allowed text-gray-500' : ''
+            }`}
           onClick={() => {
             if (disabled) return;
             setIsOpen((prev) => {
@@ -123,12 +123,16 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
               </div>
             ))
           ) : searchTerm.trim() !== '' ? (
-            <div
-              className="px-4 py-2 cursor-pointer hover:bg-gray-100 text-blue-600"
-              onClick={() => handleSelect(searchTerm, searchTerm)}
-            >
-              Nouvel email : <strong>{searchTerm}</strong>
-            </div>
+            searchType === 'donor' ? (
+              <div
+                className="px-4 py-2 cursor-pointer hover:bg-gray-100 text-blue-600"
+                onClick={() => handleSelect(searchTerm, searchTerm)}
+              >
+                Nouvel email : <strong>{searchTerm}</strong>
+              </div>
+            ) : (
+              <div className="px-4 py-2 text-gray-500">Aucun résultat</div>
+            )
           ) : (
             <div className="px-4 py-2 text-gray-500">Aucun résultat</div>
           )}

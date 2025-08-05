@@ -10,7 +10,7 @@ const Celebrant = {
 	},
 
 	getById: async (id) => {
-		return db.select("*", "title as celebrant_title").from("Celebrants").where("id", id)
+		return db.select("*", "title as celebrant_title").from("Celebrants").where("id", id).first()
 	},
 
 	update: async (celebrant) => {
@@ -84,6 +84,24 @@ const Celebrant = {
 			[monthPrefix]
 		)
 		return result || []
+	},
+
+	getFullDates: async () => {
+		// Récupérer tous les célébrants pour connaître leur nombre
+		const celebrants = await db("Celebrants").select("id")
+		const totalCelebrants = celebrants.length
+
+		if (totalCelebrants === 0) return []
+
+		// Compter combien de célébrants ont une messe assignée pour chaque date
+		const result = await db("Masses")
+			.select(db.raw("DATE(date) as date"))
+			.whereNotNull("celebrant_id")
+			.groupByRaw("DATE(date)")
+			.havingRaw("COUNT(DISTINCT celebrant_id) >= ?", [totalCelebrants])
+
+		// Retourner les dates (en format ISO)
+		return result.map((row) => row.date)
 	},
 }
 

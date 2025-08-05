@@ -75,20 +75,17 @@ export const PonctualIntentionModal: React.FC<IntentionModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
+      const defaultForm = intention || testFormData;
       // Réinitialiser aux valeurs par défaut ou aux valeurs de l'intention si fournie
-      setFormData(intention || testFormData);
-      setSelectedDate(intention?.date ? parseApiDate(intention.date) : new Date());
+      setFormData(defaultForm);
+      setSelectedDate(defaultForm?.date ? parseApiDate(defaultForm.date) : new Date());
       setStep(1);
       setPreviewData([]);
       setUnavailableDates([]); // Réinitialiser les dates indisponibles
+      fetchUnavailableDates(defaultForm.celebrant_id || undefined);
+
     }
   }, [isOpen, intention]);
-
-  useEffect(() => {
-    if (isOpen) {
-      fetchUnavailableDates(formData.celebrant_id || undefined);
-    }
-  }, [isOpen]);
 
   // Nouvelle fonction pour récupérer les dates indisponibles d'un célébrant ou dates indisponibles globales
   const fetchUnavailableDates = async (celebrantId?: string) => {
@@ -99,11 +96,14 @@ export const PonctualIntentionModal: React.FC<IntentionModalProps> = ({
       const specialDays = await specialDayService.getSpecialDays({ number_of_masses: 0 });
       const specialDates = specialDays.map(specialDay => specialDay.date);
 
+      // Récupérér les jours où chaque célébrant a une messe assignée (jour complet)
+      const fullDates = await celebrantService.getFullDates()
+
       if (celebrantId) {
         const unavailableDates = await celebrantService.getUnavailableDates(celebrantId);
-        dates = [...new Set([...unavailableDates, ...specialDates])]; // fusion sans doublons
+        dates = [...new Set([...unavailableDates, ...specialDates, ...fullDates])]; // fusion sans doublons
       } else {
-        dates = specialDates;
+        dates = [...new Set([...specialDates, ...fullDates])];
       }
       setUnavailableDates(dates);
     } catch (error) {

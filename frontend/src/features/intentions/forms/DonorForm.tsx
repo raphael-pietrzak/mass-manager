@@ -30,7 +30,7 @@ const DonorForm: React.FC<DonorFormProps> = ({
   }));
   const UNASSIGNED_VALUE = "unassigned";
   const [selectedDonor, setSelectedDonor] = useState<string | undefined>(undefined);
-  const [errors, setErrors] = useState<{ firstname?: string; lastname?: string }>({});
+  const [errors, setErrors] = useState<{ firstname?: string; lastname?: string; email?: string }>({});
 
   const handleSelectDonor = (value: string) => {
     setSelectedDonor(value);
@@ -85,13 +85,21 @@ const DonorForm: React.FC<DonorFormProps> = ({
     fetchDonors(); // Appel de la fonction pour récupérer les données
   }, []);
 
+  const isValidEmail = (email: string) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  };
+
   const handleValidate = () => {
-    const newErrors: { firstname?: string; lastname?: string } = {};
+    const newErrors: { firstname?: string; lastname?: string; email?: string } = {};
     if (!formData.donor_firstname || formData.donor_firstname.trim() === "") {
       newErrors.firstname = "Le prénom est requis";
     }
     if (!formData.donor_lastname || formData.donor_lastname.trim() === "") {
       newErrors.lastname = "Le nom est requis";
+    }
+    if (!formData.donor_email || !isValidEmail(formData.donor_email)) {
+      newErrors.email = "Adresse email invalide";
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -113,7 +121,14 @@ const DonorForm: React.FC<DonorFormProps> = ({
             onChange={handleSelectDonor}
             placeholder="Sélectionner un donateur ou ajouter un nouveau"
             inlineSearch={true}
+            searchType='donor'
           />
+          {errors.email && (
+            <div className="flex items-center gap-2 text-red-500 mt-1">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>{errors.email}</AlertDescription>
+            </div>
+          )}
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">

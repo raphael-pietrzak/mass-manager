@@ -29,7 +29,10 @@ export const unavailableDayService = {
 		try {
 			const response = await axios.post(`${API_URL}/unavailable-days`, unavailableDay)
 			return response.data
-		} catch (error) {
+		} catch (error: any) {
+			if (error.response && error.response.data && error.response.data.message) {
+				throw new Error(error.response.data.message)
+			}
 			console.error("Erreur lors de la création du jour indisponible : ", error)
 			throw new Error("Erreur lors de la création du jour indisponible")
 		}

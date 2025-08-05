@@ -1,4 +1,5 @@
 const SpecialDay = require("../models/specialDay.model")
+const Mass = require("../models/mass.model")
 
 exports.getSpecialDays = async (req, res) => {
 	try {
@@ -36,17 +37,45 @@ exports.createSpecialDay = async (req, res) => {
 			is_recurrent: req.body.is_recurrent,
 		}
 
+		const specialDayDate = new Date(specialDay.date).toISOString().split("T")[0] // "YYYY-MM-DD"
+
+		// 1. Vérifie s'il y a déjà une messe à cette date
+		const masses = await Mass.getAll()
+		const hasMassOnSameDate = masses.some((mass) => {
+			const massDate = new Date(mass.date).toISOString().split("T")[0]
+			return massDate === specialDayDate
+		})
+
+		if (hasMassOnSameDate) {
+			return res.status(400).json({
+				message:
+					"Impossible de créer ce jour particulier : une ou plusieurs messes déjà programmée(s) à cette date.",
+			})
+		}
+
+		// 2. Vérifie si un jour particulier existe déjà (manuellement si besoin)
+		const specialDays = await SpecialDay.getAll() // ou mieux : SpecialDay.findByDate(specialDayDate)
+		const exists = specialDays.some((d) => {
+			const dDate = new Date(d.date).toISOString().split("T")[0]
+			return dDate === specialDayDate
+		})
+
+		if (exists) {
+			return res.status(409).json({
+				message: "Un jour particulier avec cette date existe déjà.",
+			})
+		}
+
+		// 3. Crée le jour particulier
 		await SpecialDay.create(specialDay)
-		res.status(201).send("Jour particulier enregistrée !")
+		res.status(201).send("Jour particulier enregistré !")
+
 	} catch (error) {
 		console.error(error)
-		// Vérifier si c'est une erreur de contrainte unique (SQLite error code 19)
-		if (error.code === "SQLITE_CONSTRAINT" && error.message.includes("UNIQUE constraint failed: SpecialDays.date")) {
-			return res.status(400).json({ message: "Un jour particulier avec cette date existe déjà." })
-		}
 		res.status(500).send("Erreur lors de l'enregistrement du jour particulier")
 	}
 }
+
 
 exports.updateSpecialDay = async (req, res) => {
 	try {

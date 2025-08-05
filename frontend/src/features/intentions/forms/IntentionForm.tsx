@@ -171,6 +171,7 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
             value={formData.celebrant_id}
             onChange={(value: string) => updateFormData({ celebrant_id: value })}
             placeholder="Sélectionner un célébrant"
+            searchType='celebrant'
           />
         </div>
 
