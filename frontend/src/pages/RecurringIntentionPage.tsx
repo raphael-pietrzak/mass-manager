@@ -80,16 +80,16 @@ const RecurrencePage: React.FC = () => {
     return endType;
   };
 
-  const getRecurrenceVariant = (type: string) => {
-    const variants = {
-      daily: 'default',
-      weekly: 'secondary',
-      monthly: 'outline',
-      relative_position: 'destructive',
-      yearly: 'default'
-    };
-    return variants[type as keyof typeof variants] || 'default';
-  };
+  // const getRecurrenceVariant = (type: string) => {
+  //   const variants = {
+  //     daily: 'default',
+  //     weekly: 'secondary',
+  //     monthly: 'outline',
+  //     relative_position: 'destructive',
+  //     yearly: 'default'
+  //   };
+  //   return variants[type as keyof typeof variants] || 'default';
+  // };
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -111,6 +111,9 @@ const RecurrencePage: React.FC = () => {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
+                      <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Intention
+                      </th>
                       <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Type
                       </th>
@@ -134,6 +137,11 @@ const RecurrencePage: React.FC = () => {
                         key={recurrence.id}
                         className="hover:bg-gray-50"
                       >
+                        <td className="px-3 py-2 whitespace-nowrap text-sm">
+                          <span className="px-2 py-0.5 rounded-full text-xs">
+                            TEXT
+                          </span>
+                        </td>
                         <td className="px-3 py-2 whitespace-nowrap text-sm">
                           <span className="px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-700">
                             {getRecurrenceTypeLabel(recurrence.type)}
