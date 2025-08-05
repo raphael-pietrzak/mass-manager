@@ -120,9 +120,9 @@ export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ inte
                       <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Statut
                       </th>
-                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {/* <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Action
-                      </th>
+                      </th> */}
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -162,8 +162,8 @@ export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ inte
                             </span>
                           )}
                         </td>
-                        {mass.date_type === "indifferent" && mass.intention_type === "unit" && (
-                          <td className="px-3 py-2 whitespace-nowrap text-sm">
+                        {/* {mass.date_type === "indifferent" && mass.intention_type === "unit" && ( */}
+                          {/* <td className="px-3 py-2 whitespace-nowrap text-sm">
                             <div className="flex items-center">
                               <Button
                                 type="button"
@@ -173,8 +173,8 @@ export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ inte
                                 Modifier
                               </Button>
                             </div>
-                          </td>
-                        )}
+                          </td> */}
+                        {/* )} */}
                       </tr>
                     ))}
                   </tbody>

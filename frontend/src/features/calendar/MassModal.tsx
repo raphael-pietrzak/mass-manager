@@ -21,32 +21,37 @@ export const MassModal: React.FC<MassModalProps> = ({ isOpen, onClose, onSave, m
   const [initialDate, setInitialDate] = useState<string | null>(null);
   const [initialCelebrantId, setInitialCelebrantId] = useState<string | null>(null);
 
-  // Récupérer la liste des célébrants
-  useEffect(() => {
-    const fetchCelebrants = async () => {
-      try {
-        setIsLoading(true);
-        const data = await celebrantService.getCelebrants();
-
-        // Vérifier que data est un tableau avant de le définir
-        if (Array.isArray(data)) {
-          setCelebrants(data);
-        } else {
-          console.error('Les données de célébrants ne sont pas un tableau:', data);
-          setCelebrants([]);
-        }
-      } catch (error) {
-        console.error('Erreur lors de la récupération des célébrants:', error);
-        setCelebrants([]);
-      } finally {
-        setIsLoading(false);
+  // Récupérer la liste des célébrants disponibles 
+  const fetchAvailableCelebrants = async (selectedDate: string) => {
+    try {
+      setIsLoading(true);
+      let data = await celebrantService.getAvailableCelebrants(selectedDate);
+      if (!Array.isArray(data)) {
+        data = [];
       }
-    };
-
-    if (isOpen) {
-      fetchCelebrants();
+      // Ajouter le célébrant initial seulement si la date sélectionnée est la date initiale
+      if (
+        selectedDate === initialDate &&
+        initialCelebrantId &&
+        !data.some(c => String(c.id) === String(initialCelebrantId))
+      ) {
+        try {
+          const initialCelebrant = await celebrantService.getCelebrantById(initialCelebrantId);
+          if (initialCelebrant) {
+            data = [initialCelebrant, ...data];
+          }
+        } catch (err) {
+          console.log("Impossible d'ajouter le célébrant initial à la liste :", err);
+        }
+      }
+      setCelebrants(data);
+    } catch (error) {
+      console.error('Erreur lors de la récupération des célébrants disponibles:', error);
+      setCelebrants([]);
+    } finally {
+      setIsLoading(false);
     }
-  }, [isOpen]);
+  };
 
   // Initialisation initialDate et initialCelebrantId dès que mass change
   useEffect(() => {
@@ -61,12 +66,15 @@ export const MassModal: React.FC<MassModalProps> = ({ isOpen, onClose, onSave, m
     }
   }, [mass]);
 
-  // Charger les indisponibilités uniquement quand initialCelebrantId est prêt
   useEffect(() => {
-    if (initialCelebrantId) {
-      fetchCelebrantAvailability(initialCelebrantId, initialDate ?? undefined);
-    } else {
-      setUnavailableDates([]);
+    if (initialDate && initialCelebrantId) {
+      fetchAvailableCelebrants(initialDate);
+    }
+  }, [initialDate, initialCelebrantId]);
+
+  useEffect(() => {
+    if (initialCelebrantId && initialDate) {
+      fetchCelebrantAvailability(initialCelebrantId, initialDate);
     }
   }, [initialCelebrantId, initialDate]);
 
@@ -114,25 +122,26 @@ export const MassModal: React.FC<MassModalProps> = ({ isOpen, onClose, onSave, m
       setEditedMass((prev) => ({
         ...prev,
         [name]: value,
-        // Ne pas toucher à la date
       }));
-
-      // Récupérer les indisponibilités du nouveau célébrant
-      if (value) {
-        fetchCelebrantAvailability(value, editedMass.date ?? '');
-      }
-      else {
-        setUnavailableDates([]);
-      }
+      // Toujours récupérer les indisponibilités, même si pas de célébrant
+      fetchCelebrantAvailability(value || '', editedMass.date ?? '');
     }
   };
 
   const handleDateChange = (date: Date | undefined) => {
     if (date) {
+      const formattedDate = format(date, 'yyyy-MM-dd')
       setEditedMass((prev) => ({
         ...prev,
-        date: format(date, 'yyyy-MM-dd'),
+        date: formattedDate,
       }));
+      // Recharger la liste filtrée des célébrants
+      fetchAvailableCelebrants(formattedDate);
+
+      // Recharger les indispos du célébrant sélectionné (s'il y en a un)
+      if (editedMass.celebrant_id) {
+        fetchCelebrantAvailability(editedMass.celebrant_id, formattedDate);
+      }
     } else {
       setEditedMass((prev) => ({
         ...prev,
@@ -183,15 +192,16 @@ export const MassModal: React.FC<MassModalProps> = ({ isOpen, onClose, onSave, m
                   required
                 >
                   <option value="">Sélectionner un célébrant</option>
-                  {Array.isArray(celebrants) ? (
+                  {Array.isArray(celebrants) && celebrants.length > 0 ? (
                     celebrants.map((celebrant) => (
                       <option key={celebrant.id} value={celebrant.id}>
                         {celebrant.title} {celebrant.religious_name || `${celebrant.civil_firstname} ${celebrant.civil_lastname}`}
                       </option>
                     ))
                   ) : (
-                    <option value="" disabled>Erreur de chargement des célébrants</option>
+                    <option value="" disabled>Aucun célébrant disponible à cette date</option>
                   )}
+
                 </select>
               )}
             </div>
@@ -203,15 +213,11 @@ export const MassModal: React.FC<MassModalProps> = ({ isOpen, onClose, onSave, m
               <CalendarSelector
                 selectedDate={editedMass.date ? new Date(editedMass.date) : undefined}
                 onDateChange={handleDateChange}
-                disabled={!editedMass.celebrant_id}
                 unavailableDates={unavailableDates}
+                disabled={!(editedMass.dateType === "indifferent")}
               />
-              {!editedMass.celebrant_id && (
-                <p className="text-sm text-gray-500 mt-1">Veuillez d'abord sélectionner un célébrant</p>
-              )}
             </div>
           </div>
-
           <div className="mt-5 flex justify-end space-x-3">
             <button
               type="button"

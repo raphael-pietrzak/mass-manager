@@ -207,14 +207,17 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap text-sm">
                     <div className="flex items-center space-x-1">
-                      
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleMassClick(mass);
                         }}
-                        className="p-1 text-gray-400 hover:text-blue-500 rounded-full hover:bg-gray-100 transition-colors"
+                        className={`p-1 text-gray-400 rounded-full transition-colors ${mass.intention_type === "unit"
+                          ? "hover:text-blue-500 hover:bg-gray-100"
+                          : "invisible" // bouton caché mais garde sa place
+                          }`}
                         title="Modifier cette messe"
+                        disabled={!(mass.intention_type === "unit")}
                       >
                         <Edit className="w-4 h-4" />
                       </button>
@@ -295,15 +298,17 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
               >
                 Fermer
               </button>
-              <button
-                onClick={() => {
-                  setIsDetailsModalOpen(false);
-                  handleMassClick(selectedDetailMass);
-                }}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
-              >
-                Modifier
-              </button>
+              {selectedDetailMass?.intention_type === "unit" && (
+                <button
+                  onClick={() => {
+                    setIsDetailsModalOpen(false);
+                    handleMassClick(selectedDetailMass);
+                  }}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
+                >
+                  Modifier
+                </button>
+              )}
             </div>
           </div>
         </div>
