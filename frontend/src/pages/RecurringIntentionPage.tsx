@@ -94,7 +94,7 @@ const RecurrencePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-100">
       <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-        <h1 className="text-2xl font-bold mb-6">Liste des récurrences</h1>
+        <h1 className="text-2xl font-bold mb-6">Liste des intentions récurrences</h1>
         
         {loading ? (
           <div className="flex justify-center items-center h-64">
@@ -105,7 +105,7 @@ const RecurrencePage: React.FC = () => {
             <div className="bg-white rounded-lg shadow overflow-hidden">
               {recurrences.length === 0 ? (
                 <div className="p-4 text-center text-gray-500">
-                  Aucune récurrence trouvée
+                  Aucune intention récurrente trouvée
                 </div>
               ) : (
                 <table className="min-w-full divide-y divide-gray-200">
@@ -139,7 +139,7 @@ const RecurrencePage: React.FC = () => {
                       >
                         <td className="px-3 py-2 whitespace-nowrap text-sm">
                           <span className="px-2 py-0.5 rounded-full text-xs">
-                            TEXT
+                            INTENTION TEXT
                           </span>
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap text-sm">
