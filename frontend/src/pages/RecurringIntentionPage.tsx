@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Trash2, Plus, Edit } from 'lucide-react';
 import { recurrenceService, Recurrence } from '../api/recurrenceService';
-import RecurrenceDialog from '../components/RecurrenceDialog';
 import { formatDateForDisplay, parseApiDate } from '../utils/dateUtils';
 import { toast } from 'sonner';
+import { IntentionWithRecurrence, RecurringIntentionModal } from '../features/intentions/recurring/RecurringIntentionModal';
 
 const RecurrencePage: React.FC = () => {
-  const [recurrences, setRecurrences] = useState<Recurrence[]>([]);
+  const [recurrences, setRecurrences] = useState<IntentionWithRecurrence[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingRecurrence, setEditingRecurrence] = useState<Recurrence | null>(null);
+  const [editingRecurrence, setEditingRecurrence] = useState<IntentionWithRecurrence | null>(null);
+
 
   useEffect(() => {
     loadRecurrences();
@@ -18,8 +19,8 @@ const RecurrencePage: React.FC = () => {
   const loadRecurrences = async () => {
     try {
       setLoading(true);
-      const data = await recurrenceService.getAll();
-      setRecurrences(data);
+      const recurringIntentions = await recurrenceService.getAll();
+      setRecurrences(recurringIntentions);
     } catch (error) {
       console.error('Erreur lors du chargement des récurrences:', error);
       toast.error('Erreur lors du chargement des récurrences');
@@ -33,7 +34,7 @@ const RecurrencePage: React.FC = () => {
     setDialogOpen(true);
   };
 
-  const handleEdit = (recurrence: Recurrence) => {
+  const handleEdit = (recurrence: IntentionWithRecurrence) => {
     setEditingRecurrence(recurrence);
     setDialogOpen(true);
   };
@@ -95,7 +96,7 @@ const RecurrencePage: React.FC = () => {
     <div className="min-h-screen bg-gray-100">
       <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
         <h1 className="text-2xl font-bold mb-6">Liste des intentions récurrences</h1>
-        
+
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <div className="text-lg">Chargement...</div>
@@ -186,11 +187,14 @@ const RecurrencePage: React.FC = () => {
             </div>
           </div>
         )}
-        
-        <RecurrenceDialog
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
-          recurrence={editingRecurrence}
+
+        <RecurringIntentionModal
+          intention={editingRecurrence}
+          isOpen={dialogOpen}
+          onClose={() => {
+            setDialogOpen(false);
+            setEditingRecurrence(null);
+          }}
           onSave={handleSave}
         />
 

@@ -1,3 +1,4 @@
+import { IntentionWithRecurrence } from '../features/intentions/recurring/RecurringIntentionModal';
 import apiClient from './apiClient';
 
 export interface Recurrence {
@@ -13,8 +14,10 @@ export interface Recurrence {
   updated_at?: string;
 }
 
+export interface RecurringIntention {}
+
 export const recurrenceService = {
-  getAll: (): Promise<Recurrence[]> => 
+  getAll: (): Promise<IntentionWithRecurrence[]> => 
     apiClient.get('/data/recurrences').then(response => response.data),
 
   getById: (id: number): Promise<Recurrence> => 
