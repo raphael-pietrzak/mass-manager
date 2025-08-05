@@ -207,6 +207,7 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap text-sm">
                     <div className="flex items-center space-x-1">
+                      
                       <button
                         onClick={(e) => {
                           e.stopPropagation();

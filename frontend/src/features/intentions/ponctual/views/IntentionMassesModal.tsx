@@ -1,12 +1,13 @@
 import React from 'react';
-import { Intention, Masses } from '../../../../api/intentionService';
+import { Intention, IntentionWithMasses, Masses } from '../../../../api/intentionService';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { X, Calendar, User, Clock } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 
 interface IntentionMassesModalProps {
   intention: Intention;
-  masses: Masses[];
+  masses: IntentionWithMasses[];
   onClose: () => void;
 }
 
@@ -119,6 +120,9 @@ export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ inte
                       <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Statut
                       </th>
+                      <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Action
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -158,6 +162,19 @@ export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ inte
                             </span>
                           )}
                         </td>
+                        {mass.date_type === "indifferent" && mass.intention_type === "unit" && (
+                          <td className="px-3 py-2 whitespace-nowrap text-sm">
+                            <div className="flex items-center">
+                              <Button
+                                type="button"
+                                onClick={() => console.log("click")}
+                                className="h-7 px-3 text-xs font-medium"
+                              >
+                                Modifier
+                              </Button>
+                            </div>
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>

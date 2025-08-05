@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { X } from 'lucide-react';
 import { celebrantService, Celebrant } from '../../api/celebrantService';
 import CalendarSelector from '../../components/CalendarSelector';
+import { specialDayService } from '../../api/specialDaysService';
 
 interface MassModalProps {
   isOpen: boolean;
@@ -17,6 +18,8 @@ export const MassModal: React.FC<MassModalProps> = ({ isOpen, onClose, onSave, m
   const [celebrants, setCelebrants] = useState<Celebrant[]>([]);
   const [unavailableDates, setUnavailableDates] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [initialDate, setInitialDate] = useState<string | null>(null);
+  const [initialCelebrantId, setInitialCelebrantId] = useState<string | null>(null);
 
   // Récupérer la liste des célébrants
   useEffect(() => {
@@ -45,31 +48,61 @@ export const MassModal: React.FC<MassModalProps> = ({ isOpen, onClose, onSave, m
     }
   }, [isOpen]);
 
-  // Initialiser le formulaire avec les données de la masse sélectionnée
+  // Initialisation initialDate et initialCelebrantId dès que mass change
   useEffect(() => {
     if (mass) {
       setEditedMass({ ...mass });
-
-      // Si un célébrant est déjà sélectionné, récupérer ses indisponibilités
-      if (mass.celebrant_id) {
-        fetchCelebrantAvailability(mass.celebrant_id);
-      }
+      setInitialDate(mass.date ?? null);
+      setInitialCelebrantId(String(mass.celebrant_id ?? ''));
     } else {
       setEditedMass({});
+      setInitialDate(null);
+      setInitialCelebrantId(null);
     }
   }, [mass]);
 
-  // Fonction pour récupérer les disponibilités d'un célébrant
-  const fetchCelebrantAvailability = async (celebrantId: string) => {
-    setIsLoading(true);
-    try {
-      const dates = await celebrantService.getUnavailableDates(celebrantId);
-      setUnavailableDates(dates);
-    } catch (error) {
-      console.error('Erreur lors de la récupération des indisponibilités:', error);
+  // Charger les indisponibilités uniquement quand initialCelebrantId est prêt
+  useEffect(() => {
+    if (initialCelebrantId) {
+      fetchCelebrantAvailability(initialCelebrantId, initialDate ?? undefined);
+    } else {
       setUnavailableDates([]);
-    } finally {
-      setIsLoading(false);
+    }
+  }, [initialCelebrantId, initialDate]);
+
+  // Fonction pour récupérer les disponibilités d'un célébrant
+  const fetchCelebrantAvailability = async (celebrantId: string, currentDate?: string) => {
+    try {
+      let dates: string[] = [];
+
+      // Toujours récupérer les specialDays globales (number_of_masses = 0)
+      const specialDays = await specialDayService.getSpecialDays({ number_of_masses: 0 });
+      const specialDates = specialDays.map(specialDay => specialDay.date);
+
+      // Récupérér les jours où chaque célébrant a une messe assignée (jour complet)
+      const fullDates = await celebrantService.getFullDates()
+
+      if (celebrantId) {
+        const unavailableDates = await celebrantService.getUnavailableDates(celebrantId);
+        dates = [...new Set([...unavailableDates, ...specialDates, ...fullDates])]; // fusion sans doublons
+      } else {
+        dates = [...new Set([...specialDates, ...fullDates])];
+      }
+      setUnavailableDates(dates);
+      // Vérifier si la date actuelle est disponible
+      setEditedMass((prev) => {
+        const isInitial =
+          String(celebrantId) === String(initialCelebrantId) &&
+          currentDate === initialDate;
+
+        if (currentDate && dates.includes(currentDate) && !isInitial) {
+          return { ...prev, date: '' };
+        }
+        return prev;
+      });
+    } catch (error) {
+      console.error('Erreur lors de la récupération des dates indisponibles:', error);
+      setUnavailableDates([]);
     }
   };
 
@@ -77,26 +110,20 @@ export const MassModal: React.FC<MassModalProps> = ({ isOpen, onClose, onSave, m
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-
-    // Si le célébrant change, réinitialiser la date et récupérer les nouvelles indisponibilités
     if (name === 'celebrant_id' && value !== editedMass.celebrant_id) {
       setEditedMass((prev) => ({
         ...prev,
         [name]: value,
-        date: '', // Réinitialiser la date
+        // Ne pas toucher à la date
       }));
 
       // Récupérer les indisponibilités du nouveau célébrant
       if (value) {
-        fetchCelebrantAvailability(value);
-      } else {
+        fetchCelebrantAvailability(value, editedMass.date ?? '');
+      }
+      else {
         setUnavailableDates([]);
       }
-    } else {
-      setEditedMass((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
     }
   };
 
