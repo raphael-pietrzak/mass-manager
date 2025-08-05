@@ -1,9 +1,8 @@
 import React from 'react';
-import { Intention, IntentionWithMasses, Masses } from '../../../../api/intentionService';
+import { Intention, IntentionWithMasses } from '../../../../api/intentionService';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { X, Calendar, User, Clock } from 'lucide-react';
-import { Button } from "@/components/ui/button";
 
 interface IntentionMassesModalProps {
   intention: Intention;
