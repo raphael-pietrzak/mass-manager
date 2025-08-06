@@ -31,7 +31,16 @@ const RecurrencePage: React.FC = () => {
     }
   };
 
-  const handleCreate = () => {
+  const handleSaveNewRecurringIntention = async (newIntention: IntentionWithRecurrence) => {
+    try {
+      await recurrenceService.create(newIntention);
+      console.log("Intention récurrente créée avec succès");
+    } catch (error) {
+      console.error("Erreur lors de la création de l'intention récurrente", error);
+    }
+  };
+
+  const handleCreateNew = () => {
     setEditingRecurrence(null);
     setDialogOpen(true);
   };
@@ -45,7 +54,6 @@ const RecurrencePage: React.FC = () => {
     if (!confirm('Êtes-vous sûr de vouloir supprimer cette récurrence ?')) {
       return;
     }
-
     try {
       await recurrenceService.delete(id);
       await loadRecurrences();
@@ -58,8 +66,8 @@ const RecurrencePage: React.FC = () => {
 
   const handleSave = async () => {
     await loadRecurrences();
-    setDialogOpen(false);
-    setEditingRecurrence(null);
+    setRecurrenceDialogOpen(false);
+    setRecurrenceToEdit(null);
   };
 
   const getRecurrenceTypeLabel = (type: string) => {
@@ -197,7 +205,7 @@ const RecurrencePage: React.FC = () => {
             setDialogOpen(false);
             setEditingRecurrence(null);
           }}
-          onSave={handleSave}
+          onSave={handleSaveNewRecurringIntention}
         />
 
         {recurrenceDialogOpen && (
@@ -205,17 +213,13 @@ const RecurrencePage: React.FC = () => {
             open={recurrenceDialogOpen}
             onOpenChange={setRecurrenceDialogOpen}
             recurrence={recurrenceToEdit}
-            onSave={() => {
-              loadRecurrences();
-              setRecurrenceDialogOpen(false);
-              setRecurrenceToEdit(null);
-            }}
+            onSave={() => { handleSave }}
           />
         )}
 
         {!dialogOpen && (
           <button
-            onClick={handleCreate}
+            onClick={handleCreateNew}
             className="fixed bottom-6 right-6 p-4 bg-gray-900 text-white rounded-full shadow-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 z-50"
           >
             <Plus className="h-6 w-6" />
