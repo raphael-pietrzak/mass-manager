@@ -2,7 +2,7 @@ import { IntentionWithRecurrence } from "../features/intentions/recurring/Recurr
 import apiClient from "./apiClient"
 
 export interface Recurrence {
-	id?: number
+	recurrence_id?: number
 	type: "daily" | "weekly" | "monthly" | "relative_position" | "yearly"
 	start_date: string
 	end_type: "occurrences" | "date"
@@ -27,7 +27,7 @@ export const recurrenceService = {
 	update: (id: number, recurrence: Partial<Recurrence>): Promise<void> =>
 		apiClient.put(`/data/recurrences/${id}`, recurrence).then((response) => response.data),
 
-	delete: (id: number): Promise<void> => apiClient.delete(`/data/recurrences/${id}`).then((response) => response.data),
+	delete: (id: number): Promise<void> => apiClient.delete(`/data/recurrences/${id}`),
 
 	getActive: (): Promise<Recurrence[]> => apiClient.get("/data/recurrences/active").then((response) => response.data),
 

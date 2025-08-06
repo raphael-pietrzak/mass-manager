@@ -87,7 +87,7 @@ const RecurrenceForm: React.FC<RecurrenceFormProps> = ({
           <CalendarSelector
             selectedDate={formData.start_date ? parseApiDate(formData.start_date) : undefined}
             onDateChange={(date) => handleChange('start_date', formatDateForApi(date))}
-            ignoreAvailability
+            ignoreAvailability={false}
           />
           {errors.start_date && (
             <div className="flex items-center gap-2 text-red-500">
@@ -177,7 +177,7 @@ const RecurrenceForm: React.FC<RecurrenceFormProps> = ({
             <CalendarSelector
               selectedDate={formData.end_date ? parseApiDate(formData.end_date) : undefined}
               onDateChange={(date) => handleChange('end_date', formatDateForApi(date))}
-              ignoreAvailability
+              ignoreAvailability={false}
             />
           )}
           {errors.end_date && (

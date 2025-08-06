@@ -7,7 +7,7 @@ import { IntentionWithRecurrence, RecurringIntentionModal } from '../features/in
 import RecurrenceDialog from '../components/RecurrenceDialog';
 
 const RecurrencePage: React.FC = () => {
-  const [recurrences, setRecurrences] = useState<IntentionWithRecurrence[]>([]);
+  const [recurringIntentions, setRecurringIntentions] = useState<IntentionWithRecurrence[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingRecurrence, setEditingRecurrence] = useState<IntentionWithRecurrence | null>(null);
@@ -21,8 +21,8 @@ const RecurrencePage: React.FC = () => {
   const loadRecurrences = async () => {
     try {
       setLoading(true);
-      const recurringIntentions = await recurrenceService.getAll();
-      setRecurrences(recurringIntentions);
+      const allRecurringIntentions = await recurrenceService.getAll();
+      setRecurringIntentions(allRecurringIntentions);
     } catch (error) {
       console.error('Erreur lors du chargement des récurrences:', error);
       toast.error('Erreur lors du chargement des récurrences');
@@ -34,7 +34,7 @@ const RecurrencePage: React.FC = () => {
   const handleSaveNewRecurringIntention = async (newIntention: IntentionWithRecurrence) => {
     try {
       await recurrenceService.create(newIntention);
-      console.log("Intention récurrente créée avec succès");
+      await loadRecurrences()
     } catch (error) {
       console.error("Erreur lors de la création de l'intention récurrente", error);
     }
@@ -114,7 +114,7 @@ const RecurrencePage: React.FC = () => {
         ) : (
           <div className="bg-white rounded-lg shadow p-4">
             <div className="bg-white rounded-lg shadow overflow-hidden">
-              {recurrences.length === 0 ? (
+              {recurringIntentions.length === 0 ? (
                 <div className="p-4 text-center text-gray-500">
                   Aucune intention récurrente trouvée
                 </div>
@@ -143,45 +143,45 @@ const RecurrencePage: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {recurrences.map((recurrence) => (
+                    {recurringIntentions.map((intention) => (
                       <tr
-                        key={recurrence.id}
+                        key={intention.recurrence_id}
                         className="hover:bg-gray-50"
                       >
                         <td className="px-3 py-2 whitespace-nowrap text-sm">
-                          <span className="px-2 py-0.5 rounded-full text-xs">
-                            INTENTION TEXT
+                          <span className="px-2 py-0.5 rounded-full text-s italic">
+                            {intention.intention_text}
                           </span>
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap text-sm">
                           <span className="px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-700">
-                            {getRecurrenceTypeLabel(recurrence.type)}
+                            {getRecurrenceTypeLabel(intention.type)}
                           </span>
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap text-sm">
-                          {formatDateForDisplay(parseApiDate(recurrence.start_date))}
+                          {formatDateForDisplay(parseApiDate(intention.start_date))}
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap text-sm">
-                          {getEndTypeLabel(recurrence.end_type, recurrence)}
+                          {getEndTypeLabel(intention.end_type, intention)}
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap text-sm">
-                          {recurrence.type === 'relative_position' && recurrence.position && recurrence.weekday && (
+                          {intention.type === 'relative_position' && intention.position && intention.weekday && (
                             <span className="text-gray-600">
-                              {recurrence.position} {recurrence.weekday}
+                              {intention.position} {intention.weekday}
                             </span>
                           )}
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap text-sm">
                           <div className="flex space-x-2">
                             <button
-                              onClick={() => handleEdit(recurrence)}
+                              onClick={() => handleEdit(intention)}
                               className="p-1 text-gray-400 hover:text-blue-500 rounded-full hover:bg-gray-100 transition-colors"
                               title="Modifier cette récurrence"
                             >
                               <Edit className="w-4 h-4" />
                             </button>
                             <button
-                              onClick={() => handleDelete(recurrence.id!)}
+                              onClick={() => handleDelete(intention.recurrence_id!)}
                               className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100 transition-colors"
                               title="Supprimer cette récurrence"
                             >

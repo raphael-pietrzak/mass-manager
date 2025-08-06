@@ -35,6 +35,7 @@ const formDataIntention: IntentionWithRecurrence = {
   donor_address: '',
   donor_postal_code: '',
   donor_city: '',
+  wants_celebration_date: true,
   type: 'monthly',
   start_date: '',
   end_type: 'occurrences',
@@ -117,26 +118,7 @@ export const RecurringIntentionModal: React.FC<IntentionModalProps> = ({
   const confirmAndSave = async () => {
     try {
       //setIsLoading(true);
-      onSave({
-        donor_firstname: formData.donor_firstname || '',
-        donor_lastname: formData.donor_lastname || '',
-        donor_email: formData.donor_email || '',
-        donor_phone: formData.donor_phone,
-        donor_address: formData.donor_address,
-        donor_postal_code: formData.donor_postal_code,
-        donor_city: formData.donor_city,
-        wants_celebration_date: formData.wants_celebration_date || false,
-        amount: formData.amount || '',
-        payment_method: formData.payment_method as 'cheque' | 'cash' | 'card' | 'transfer',
-        brother_name: formData.brother_name || undefined,
-        type: formData.type,
-        start_date: formData.start_date,
-        end_type: formData.end_type,
-        occurrences: formData.occurrences,
-        end_date: formData.end_date,
-        position: formData.position,
-        weekday: formData.weekday,
-      });
+      onSave(formData as IntentionWithRecurrence);
       onClose();
     } catch (error) {
       console.error("Erreur lors de la sauvegarde de l'intention:", error);

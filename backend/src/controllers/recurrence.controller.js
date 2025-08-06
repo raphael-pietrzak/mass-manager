@@ -2,6 +2,7 @@ const Recurrence = require("../models/recurrence.model")
 const Mass = require("../models/mass.model")
 const Intention = require("../models/intention.model")
 const { addDays, parseISO, format } = require("date-fns")
+const Donor = require("../models/donor.model")
 
 exports.getRecurrences = async (req, res) => {
 	console.log("Récupération de toutes les récurrences")
@@ -62,15 +63,40 @@ exports.createRecurrence = async (req, res) => {
 		const recurrenceId = await Recurrence.create(recurrence)
 		console.log("Récurrence créée avec ID:", recurrenceId[0].id)
 
+		// Données du donateur
+		const donorData = {
+			firstname: req.body.donor_firstname,
+			lastname: req.body.donor_lastname,
+			email: req.body.donor_email || null,
+			phone: req.body.donor_phone || null,
+			address: req.body.donor_address || null,
+			zip_code: req.body.donor_postal_code || null,
+			city: req.body.donor_city || null,
+		}
+
+		let donorId
+		console.log("Vérification existence donateur...")
+		const existingDonor = await Donor.findByEmail(req.body.donor_email)
+		if (existingDonor) {
+			console.log("Donateur existant trouvé:", existingDonor.id)
+			donorId = existingDonor.id
+		} else {
+			console.log("Création nouveau donateur...")
+			donorId = await Donor.create(donorData)
+			console.log("Nouveau donateur créé:", donorId)
+		}
+
 		// Créer l'intention associée - Correction de l'ID de récurrence
 		const intention = {
-			donor_id: req.body.donor_id || null,
-			intention_text: req.body.intention_text || "",
-			deceased: req.body.deceased || false,
-			amount: req.body.amount || 0,
-			payment_method: req.body.payment_method || "cash",
+			donor_id: donorId,
+			intention_text: req.body.intention_text,
+			deceased: req.body.deceased,
+			amount: req.body.amount,
+			payment_method: req.body.payment_method,
 			recurrence_id: recurrenceId[0].id,
 			status: "pending",
+			brother_name: req.body.brother_name || null,
+			wants_celebration_date: req.body.wants_celebration_date,
 		}
 
 		const intentionId = await Intention.create(intention)
@@ -99,9 +125,9 @@ exports.createRecurrence = async (req, res) => {
 			console.log("Création messe pour la date:", format(currentDate, "yyyy-MM-dd"))
 			const massData = {
 				date: format(currentDate, "yyyy-MM-dd"),
-				celebrant_id: req.body.celebrant_id,
+				celebrant_id: req.body.celebrant_id || null,
 				intention_id: intentionId,
-				status: "scheduled",
+				status: "pending",
 			}
 			await Mass.create(massData)
 			masses.push(massData)
@@ -146,6 +172,22 @@ exports.updateRecurrence = async (req, res) => {
 exports.deleteRecurrence = async (req, res) => {
 	try {
 		const id = req.params.id
+		// 1. Trouver l’intention associée à la récurrence
+		const intention = await Intention.findByRecurrenceId(id)
+		if (!intention) {
+			return res.status(404).json({ message: "Aucune intention liée à cette récurrence" })
+		}
+		// 2. Récupérer toutes les messes liées à cette intention
+		// et les supprimer toutes
+		const masses = await Mass.getMassesByIntentionId(intention.id)
+		for (const mass of masses) {
+			await Mass.delete(mass.id)
+		}
+
+		// 3. Supprimer l’intention
+		await Intention.delete(intention.id)
+
+		// 4. Supprimer la récurrence
 		await Recurrence.delete(id)
 		res.status(200).json({ message: "Récurrence supprimée avec succès" })
 	} catch (error) {
