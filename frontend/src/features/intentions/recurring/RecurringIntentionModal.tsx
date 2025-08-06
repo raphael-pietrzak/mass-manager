@@ -1,21 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
-import { Intention, IntentionSubmission } from '../../../api/intentionService';
+import { AlertTriangle, X } from 'lucide-react';
+import { Intention } from '../../../api/intentionService';
 import { celebrantService, Celebrant } from '../../../api/celebrantService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { parseApiDate } from '../../../utils/dateUtils';
 import DonorForm from '../forms/DonorForm';
 import OfferingForm from '../forms/OfferingForm';
 import { Recurrence } from '../../../api/recurrenceService';
 import RecurringIntentionForm from './RecurringIntentionForm';
 import RecurrenceForm from './RecurrenceForm';
 import RecurringIntentionSummury from './RecurringIntentionSmmury';
+import { Alert, AlertDescription } from '../../../components/ui/alert';
 
 interface IntentionModalProps {
   intention: IntentionWithRecurrence | null;
   isOpen: boolean;
   onClose: () => void;
-  onSave: (mass: IntentionSubmission) => void;
+  onSave: (intention: IntentionWithRecurrence) => void;
 }
 
 export type IntentionWithRecurrence = Partial<Intention> & Recurrence
@@ -52,13 +52,13 @@ export const RecurringIntentionModal: React.FC<IntentionModalProps> = ({
 }) => {
   const [celebrants, setCelebrants] = useState<Celebrant[]>([]);
   const [step, setStep] = useState(1); // État pour suivre l'étape actuelle
-  const [isLoading, setIsLoading] = useState(false);
+  //const [isLoading, setIsLoading] = useState(false);
 
   const [formData, setFormData] = useState(formDataIntention);
 
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    intention?.date ? parseApiDate(intention.date) : new Date()
-  );
+  // const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+  //   intention?.date ? parseApiDate(intention.date) : new Date()
+  // );
 
   useEffect(() => {
     const fetchCelebrants = async () => {
@@ -69,7 +69,6 @@ export const RecurringIntentionModal: React.FC<IntentionModalProps> = ({
         console.error('Erreur lors du chargement des célébrants:', error);
       }
     };
-
     if (isOpen) {
       fetchCelebrants();
     }
@@ -80,7 +79,7 @@ export const RecurringIntentionModal: React.FC<IntentionModalProps> = ({
       const defaultForm = intention || formDataIntention;
       // Réinitialiser aux valeurs par défaut ou aux valeurs de l'intention si fournie
       setFormData(defaultForm);
-      setSelectedDate(defaultForm?.date ? parseApiDate(defaultForm.date) : new Date());
+      //setSelectedDate(defaultForm?.date ? parseApiDate(defaultForm.date) : new Date());
       setStep(1);
     }
   }, [isOpen, intention]);
@@ -117,34 +116,32 @@ export const RecurringIntentionModal: React.FC<IntentionModalProps> = ({
 
   const confirmAndSave = async () => {
     try {
-      //   setIsLoading(true);
-      //   onSave({
-      //     donor: {
-      //       firstname: formData.donor_firstname || '',
-      //       lastname: formData.donor_lastname || '',
-      //       email: formData.donor_email || '',
-      //       phone: formData.donor_phone,
-      //       address: formData.donor_address,
-      //       postal_code: formData.donor_postal_code,
-      //       city: formData.donor_city,
-      //       wants_celebration_date: formData.wants_celebration_date || false,
-      //     },
-      //     intention_type: formData.intention_type ?? 'unit',
-      //     deceased: formData.deceased,
-      //     date_type: formData.date_type ?? 'indifferent',
-      //     number_of_masses: formData.mass_count ?? 1,
-      //     payment: {
-      //       amount: formData.amount || '',
-      //       payment_method: formData.payment_method as 'cheque' | 'cash' | 'card' | 'transfer',
-      //       brother_name: formData.brother_name || undefined,
-      //     },
-      //     masses: previewData
-      //   });
+      //setIsLoading(true);
+      onSave({
+        donor_firstname: formData.donor_firstname || '',
+        donor_lastname: formData.donor_lastname || '',
+        donor_email: formData.donor_email || '',
+        donor_phone: formData.donor_phone,
+        donor_address: formData.donor_address,
+        donor_postal_code: formData.donor_postal_code,
+        donor_city: formData.donor_city,
+        wants_celebration_date: formData.wants_celebration_date || false,
+        amount: formData.amount || '',
+        payment_method: formData.payment_method as 'cheque' | 'cash' | 'card' | 'transfer',
+        brother_name: formData.brother_name || undefined,
+        type: formData.type,
+        start_date: formData.start_date,
+        end_type: formData.end_type,
+        occurrences: formData.occurrences,
+        end_date: formData.end_date,
+        position: formData.position,
+        weekday: formData.weekday,
+      });
       onClose();
     } catch (error) {
-      console.error("Erreur lors de la sauvegarde des messes:", error);
+      console.error("Erreur lors de la sauvegarde de l'intention:", error);
     } finally {
-      setIsLoading(false);
+      //setIsLoading(false);
     }
   };
 
@@ -176,9 +173,17 @@ export const RecurringIntentionModal: React.FC<IntentionModalProps> = ({
           {step === 1 && (
             <div className="space-y-4 flex-1 flex flex-col">
               <RecurringIntentionForm
+                formData={formData}
+                updateFormData={handleFormUpdate}
                 nextStep={nextStep}
                 celebrantOptions={celebrantOptions}
               />
+              {isError && (
+                <Alert variant="destructive" className="mt-2">
+                  <AlertTriangle className="h-4 w-4 mr-2" />
+                  <AlertDescription>{isError}</AlertDescription>
+                </Alert>
+              )}
             </div>
           )}
 
@@ -197,6 +202,7 @@ export const RecurringIntentionModal: React.FC<IntentionModalProps> = ({
             <div className="space-y-4 flex-1 flex flex-col">
               <RecurringIntentionSummury
                 nextStep={nextStep}
+                prevStep={prevStep}
               />
             </div>
           )}

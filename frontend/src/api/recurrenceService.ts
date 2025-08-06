@@ -20,7 +20,7 @@ export const recurrenceService = {
   getAll: (): Promise<IntentionWithRecurrence[]> => 
     apiClient.get('/data/recurrences').then(response => response.data),
 
-  getById: (id: number): Promise<Recurrence> => 
+  getById: (id: number): Promise<IntentionWithRecurrence> => 
     apiClient.get(`/data/recurrences/${id}`).then(response => response.data),
 
   create: (recurrence: Omit<Recurrence, 'id' | 'created_at' | 'updated_at'>): Promise<{ id: number }> => 

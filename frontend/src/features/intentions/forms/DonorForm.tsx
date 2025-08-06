@@ -112,7 +112,7 @@ const DonorForm: React.FC<DonorFormProps> = ({
 
   return (
     <div className="flex flex-col flex-1 h-[550px]">
-      <div className="flex-grow space-y-6 overflow-y-auto">
+      <div className="flex-grow space-y-4 overflow-y-auto">
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <DropdownSearch

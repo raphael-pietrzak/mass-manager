@@ -2,10 +2,11 @@ import { Label } from "@radix-ui/react-label";
 import { Input } from "../../../components/ui/input";
 import { AlertTriangle } from "lucide-react";
 import { AlertDescription } from "../../../components/ui/alert";
-import { Checkbox } from "@radix-ui/react-checkbox";
 import React, { useEffect, useState } from "react";
 import { DropdownSearch } from "../../../components/DropdownSearch";
 import { Button } from "../../../components/ui/button";
+import { IntentionWithRecurrence } from "./RecurringIntentionModal";
+import { Checkbox } from "../../../components/ui/checkbox";
 
 interface DropdownOption {
   value: string;
@@ -13,19 +14,25 @@ interface DropdownOption {
 }
 
 interface RecurringIntentionFormProps {
+  formData: Partial<IntentionWithRecurrence>
+  updateFormData: (data: Partial<IntentionWithRecurrence>) => void;
   nextStep: () => void;
   celebrantOptions: DropdownOption[];
-  //updateFormData: (data: Partial<Intention>) => void;
 }
 
-const RecurringIntentionForm: React.FC<RecurringIntentionFormProps> = ({ nextStep, celebrantOptions }) => {
+const RecurringIntentionForm: React.FC<RecurringIntentionFormProps> = ({
+  formData,
+  updateFormData,
+  nextStep,
+  celebrantOptions,
+}) => {
 
   const [errorIntentionText, setErrorIntentionText] = useState<string>();
   const handleNextStep = () => {
-    // if (!formData.intention_text || formData.intention_text.trim() === "") {
-    //   setErrorIntentionText("L'intention est requise")
-    //   return
-    // }
+    if (!formData.intention_text || formData.intention_text.trim() === "") {
+      setErrorIntentionText("L'intention est requise")
+      return
+    }
     setErrorIntentionText("")
     nextStep();
   };
@@ -41,7 +48,7 @@ const RecurringIntentionForm: React.FC<RecurringIntentionFormProps> = ({ nextSte
 
   return (
     <div className="flex flex-col flex-1 h-[550px]">
-      <div className="flex-grow space-y-2 overflow-y-auto">
+      <div className="flex-grow space-y-6 overflow-y-auto">
         {/* Intention */}
         <div className="space-y-2">
           <Label htmlFor="intention_text">
@@ -50,8 +57,8 @@ const RecurringIntentionForm: React.FC<RecurringIntentionFormProps> = ({ nextSte
           <Input
             id="intention_text"
             name="intention_text"
-            //value={formData.intention_text}
-            //onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ intention_text: e.target.value })}
+            value={formData.intention_text}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ intention_text: e.target.value })}
             required
             placeholder="Votre intention..."
           />
@@ -68,8 +75,8 @@ const RecurringIntentionForm: React.FC<RecurringIntentionFormProps> = ({ nextSte
         <div className="flex items-center space-x-2">
           <Checkbox
             id="deceased"
-          //checked={formData.deceased}
-          //onCheckedChange={(checked: boolean | "indeterminate") => updateFormData({ deceased: checked as boolean })}
+            checked={formData.deceased}
+            onCheckedChange={(checked: boolean) => updateFormData({ deceased: checked as boolean })}
           />
           <Label htmlFor="deceased">
             Intention pour un défunt
@@ -80,8 +87,8 @@ const RecurringIntentionForm: React.FC<RecurringIntentionFormProps> = ({ nextSte
           <Label>Célébrant</Label>
           <DropdownSearch
             options={celebrantOptions}
-            //value={formData.celebrant_id}
-            onChange={(value: string) => console.log(value)}
+            value={formData.celebrant_id}
+            onChange={(value: string) => updateFormData({ celebrant_id: value })}
             placeholder="Sélectionner un célébrant"
             searchType='celebrant'
           />

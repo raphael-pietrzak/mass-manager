@@ -4,11 +4,12 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { toast } from 'sonner';
 import { Recurrence } from '../../../api/recurrenceService';
 import CalendarSelector from '../../../components/CalendarSelector';
 import { formatDateForApi, parseApiDate } from '../../../utils/dateUtils';
 import { IntentionWithRecurrence } from './RecurringIntentionModal';
+import { AlertTriangle } from 'lucide-react';
+import { AlertDescription } from '../../../components/ui/alert';
 
 
 interface RecurrenceFormProps {
@@ -25,6 +26,7 @@ const RecurrenceForm: React.FC<RecurrenceFormProps> = ({
   prevStep
 }) => {
   const [formData, setFormData] = useState<Partial<IntentionWithRecurrence>>(recurrence);
+  const [errors, setErrors] = useState<{ start_date?: string; end_date?: string }>({});
 
   useEffect(() => {
     setFormData(recurrence);
@@ -61,26 +63,18 @@ const RecurrenceForm: React.FC<RecurrenceFormProps> = ({
   };
 
   const handleValidate = () => {
-    if (!formData.type || !formData.start_date || !formData.end_type) {
-      toast.error('Veuillez remplir tous les champs requis');
-      return;
+    const newErrors: { start_date?: string; end_date?: string } = {};
+    if (!formData.start_date) {
+      newErrors.start_date = 'La date de début est requise';
     }
-
-    if (formData.end_type === 'occurrences' && !formData.occurrences) {
-      toast.error('Le nombre d\'occurrences est requis');
-      return;
-    }
-
     if (formData.end_type === 'date' && !formData.end_date) {
-      toast.error('La date de fin est requise');
+      newErrors.end_date = 'La date de fin est requise';
+    }
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
-
-    if (formData.type === 'relative_position' && (!formData.position || !formData.weekday)) {
-      toast.error('Position et jour requis');
-      return;
-    }
-
+    setErrors({});
     updateRecurrence(formData);
     nextStep();
   };
@@ -95,6 +89,12 @@ const RecurrenceForm: React.FC<RecurrenceFormProps> = ({
             onDateChange={(date) => handleChange('start_date', formatDateForApi(date))}
             ignoreAvailability
           />
+          {errors.start_date && (
+            <div className="flex items-center gap-2 text-red-500">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>{errors.start_date}</AlertDescription>
+            </div>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -179,6 +179,12 @@ const RecurrenceForm: React.FC<RecurrenceFormProps> = ({
               onDateChange={(date) => handleChange('end_date', formatDateForApi(date))}
               ignoreAvailability
             />
+          )}
+          {errors.end_date && (
+            <div className="flex items-center gap-2 text-red-500">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>{errors.end_date}</AlertDescription>
+            </div>
           )}
         </div>
       </div>
