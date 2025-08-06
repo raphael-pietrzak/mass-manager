@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Trash2, Plus, Edit } from 'lucide-react';
 import { recurrenceService, Recurrence } from '../api/recurrenceService';
-import RecurrenceDialog from '../components/RecurrenceDialog';
 import { formatDateForDisplay, parseApiDate } from '../utils/dateUtils';
 import { toast } from 'sonner';
+import { IntentionWithRecurrence, RecurringIntentionModal } from '../features/intentions/recurring/RecurringIntentionModal';
+import RecurrenceDialog from '../components/RecurrenceDialog';
 
 const RecurrencePage: React.FC = () => {
-  const [recurrences, setRecurrences] = useState<Recurrence[]>([]);
+  const [recurringIntentions, setRecurringIntentions] = useState<IntentionWithRecurrence[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingRecurrence, setEditingRecurrence] = useState<Recurrence | null>(null);
+  const [editingRecurrence, setEditingRecurrence] = useState<IntentionWithRecurrence | null>(null);
+  const [recurrenceDialogOpen, setRecurrenceDialogOpen] = useState(false);
+  const [recurrenceToEdit, setRecurrenceToEdit] = useState<IntentionWithRecurrence | null>(null);
 
   useEffect(() => {
     loadRecurrences();
@@ -18,8 +21,8 @@ const RecurrencePage: React.FC = () => {
   const loadRecurrences = async () => {
     try {
       setLoading(true);
-      const data = await recurrenceService.getAll();
-      setRecurrences(data);
+      const allRecurringIntentions = await recurrenceService.getAll();
+      setRecurringIntentions(allRecurringIntentions);
     } catch (error) {
       console.error('Erreur lors du chargement des récurrences:', error);
       toast.error('Erreur lors du chargement des récurrences');
@@ -28,21 +31,29 @@ const RecurrencePage: React.FC = () => {
     }
   };
 
-  const handleCreate = () => {
+  const handleSaveNewRecurringIntention = async (newIntention: IntentionWithRecurrence) => {
+    try {
+      await recurrenceService.create(newIntention);
+      await loadRecurrences()
+    } catch (error) {
+      console.error("Erreur lors de la création de l'intention récurrente", error);
+    }
+  };
+
+  const handleCreateNew = () => {
     setEditingRecurrence(null);
     setDialogOpen(true);
   };
 
-  const handleEdit = (recurrence: Recurrence) => {
-    setEditingRecurrence(recurrence);
-    setDialogOpen(true);
+  const handleEdit = (recurrence: IntentionWithRecurrence) => {
+    setRecurrenceToEdit(recurrence);
+    setRecurrenceDialogOpen(true);
   };
 
   const handleDelete = async (id: number) => {
     if (!confirm('Êtes-vous sûr de vouloir supprimer cette récurrence ?')) {
       return;
     }
-
     try {
       await recurrenceService.delete(id);
       await loadRecurrences();
@@ -55,8 +66,8 @@ const RecurrencePage: React.FC = () => {
 
   const handleSave = async () => {
     await loadRecurrences();
-    setDialogOpen(false);
-    setEditingRecurrence(null);
+    setRecurrenceDialogOpen(false);
+    setRecurrenceToEdit(null);
   };
 
   const getRecurrenceTypeLabel = (type: string) => {
@@ -95,7 +106,7 @@ const RecurrencePage: React.FC = () => {
     <div className="min-h-screen bg-gray-100">
       <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
         <h1 className="text-2xl font-bold mb-6">Liste des intentions récurrences</h1>
-        
+
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <div className="text-lg">Chargement...</div>
@@ -103,7 +114,7 @@ const RecurrencePage: React.FC = () => {
         ) : (
           <div className="bg-white rounded-lg shadow p-4">
             <div className="bg-white rounded-lg shadow overflow-hidden">
-              {recurrences.length === 0 ? (
+              {recurringIntentions.length === 0 ? (
                 <div className="p-4 text-center text-gray-500">
                   Aucune intention récurrente trouvée
                 </div>
@@ -132,45 +143,45 @@ const RecurrencePage: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {recurrences.map((recurrence) => (
+                    {recurringIntentions.map((intention) => (
                       <tr
-                        key={recurrence.id}
+                        key={intention.recurrence_id}
                         className="hover:bg-gray-50"
                       >
                         <td className="px-3 py-2 whitespace-nowrap text-sm">
-                          <span className="px-2 py-0.5 rounded-full text-xs">
-                            INTENTION TEXT
+                          <span className="px-2 py-0.5 rounded-full text-s italic">
+                            {intention.intention_text}
                           </span>
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap text-sm">
                           <span className="px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-700">
-                            {getRecurrenceTypeLabel(recurrence.type)}
+                            {getRecurrenceTypeLabel(intention.type)}
                           </span>
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap text-sm">
-                          {formatDateForDisplay(parseApiDate(recurrence.start_date))}
+                          {formatDateForDisplay(parseApiDate(intention.start_date))}
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap text-sm">
-                          {getEndTypeLabel(recurrence.end_type, recurrence)}
+                          {getEndTypeLabel(intention.end_type, intention)}
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap text-sm">
-                          {recurrence.type === 'relative_position' && recurrence.position && recurrence.weekday && (
+                          {intention.type === 'relative_position' && intention.position && intention.weekday && (
                             <span className="text-gray-600">
-                              {recurrence.position} {recurrence.weekday}
+                              {intention.position} {intention.weekday}
                             </span>
                           )}
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap text-sm">
                           <div className="flex space-x-2">
                             <button
-                              onClick={() => handleEdit(recurrence)}
+                              onClick={() => handleEdit(intention)}
                               className="p-1 text-gray-400 hover:text-blue-500 rounded-full hover:bg-gray-100 transition-colors"
                               title="Modifier cette récurrence"
                             >
                               <Edit className="w-4 h-4" />
                             </button>
                             <button
-                              onClick={() => handleDelete(recurrence.id!)}
+                              onClick={() => handleDelete(intention.recurrence_id!)}
                               className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100 transition-colors"
                               title="Supprimer cette récurrence"
                             >
@@ -186,17 +197,29 @@ const RecurrencePage: React.FC = () => {
             </div>
           </div>
         )}
-        
-        <RecurrenceDialog
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
-          recurrence={editingRecurrence}
-          onSave={handleSave}
+
+        <RecurringIntentionModal
+          intention={editingRecurrence}
+          isOpen={dialogOpen}
+          onClose={() => {
+            setDialogOpen(false);
+            setEditingRecurrence(null);
+          }}
+          onSave={handleSaveNewRecurringIntention}
         />
+
+        {recurrenceDialogOpen && (
+          <RecurrenceDialog
+            open={recurrenceDialogOpen}
+            onOpenChange={setRecurrenceDialogOpen}
+            recurrence={recurrenceToEdit}
+            onSave={() => { handleSave }}
+          />
+        )}
 
         {!dialogOpen && (
           <button
-            onClick={handleCreate}
+            onClick={handleCreateNew}
             className="fixed bottom-6 right-6 p-4 bg-gray-900 text-white rounded-full shadow-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 z-50"
           >
             <Plus className="h-6 w-6" />

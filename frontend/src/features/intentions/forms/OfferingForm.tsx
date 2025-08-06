@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Intention } from '../../../api/intentionService';
 import { AlertTriangle } from 'lucide-react';
 import { AlertDescription } from '../../../components/ui/alert';
+import { IntentionWithRecurrence } from '../recurring/RecurringIntentionModal';
 
 interface OfferingFormProps {
   formData: Partial<Intention>;
-  updateFormData: (data: Partial<Intention>) => void;
+  updateFormData: (data: Partial<IntentionWithRecurrence>) => void;
   nextStep: () => void;
   prevStep: () => void;
 }

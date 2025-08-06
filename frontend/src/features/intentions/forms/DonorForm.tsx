@@ -8,10 +8,11 @@ import { Donor, donorsService } from '../../../api/donorService';
 import { DropdownSearch } from '../../../components/DropdownSearch';
 import { AlertTriangle } from 'lucide-react';
 import { AlertDescription } from '../../../components/ui/alert';
+import { IntentionWithRecurrence } from '../recurring/RecurringIntentionModal';
 
 interface DonorFormProps {
   formData: Partial<Intention>;
-  updateFormData: (data: Partial<Intention>) => void;
+  updateFormData: (data: Partial<IntentionWithRecurrence>) => void;
   prevStep: () => void;
   onValidate: () => void;
 }
@@ -71,7 +72,6 @@ const DonorForm: React.FC<DonorFormProps> = ({
     }
   };
 
-
   useEffect(() => {
     const fetchDonors = async () => {
       try {
@@ -112,7 +112,7 @@ const DonorForm: React.FC<DonorFormProps> = ({
 
   return (
     <div className="flex flex-col flex-1 h-[550px]">
-      <div className="flex-grow space-y-6 overflow-y-auto">
+      <div className="flex-grow space-y-4 overflow-y-auto">
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <DropdownSearch

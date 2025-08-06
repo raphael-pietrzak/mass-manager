@@ -13,6 +13,8 @@ const Intention = {
 			.leftJoin("Donors", "Intentions.donor_id", "Donors.id")
 			.first(),
 
+	findByRecurrenceId: (recurrence_id) => db("Intentions").where("Intentions.recurrence_id", recurrence_id).select("Intentions.*").first(),
+
 	create: (intentionData) =>
 		db("Intentions")
 			.insert(intentionData)

@@ -6,6 +6,14 @@ const Celebrant = require("../models/celebrant.model")
 
 exports.getIntentions = async (req, res) => {
 	try {
+		const { recurrence_id } = req.query
+		if (recurrence_id) {
+			const data = await Intention.findByRecurrenceId(recurrence_id)
+			if (!data || data.length === 0) {
+				return res.status(404).json({ message: "Aucune intention trouvée pour cette récurrence" })
+			}
+			return res.json(data)
+		}
 		const data = await Intention.getAll()
 		res.json(data)
 	} catch (error) {
@@ -234,7 +242,7 @@ exports.getIntentionMasses = async (req, res) => {
 
 exports.getPonctualIntentions = async (req, res) => {
 	try {
-		const {status} = req.query
+		const { status } = req.query
 		const data = await Intention.getPonctualIntentions(status)
 		res.json(data)
 	} catch (error) {
