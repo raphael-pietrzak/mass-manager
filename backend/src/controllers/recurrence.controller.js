@@ -97,6 +97,7 @@ exports.createRecurrence = async (req, res) => {
 			status: "pending",
 			brother_name: req.body.brother_name || null,
 			wants_celebration_date: req.body.wants_celebration_date,
+			date_type: "imperative"
 		}
 
 		const intentionId = await Intention.create(intention)
@@ -124,7 +125,7 @@ exports.createRecurrence = async (req, res) => {
 			console.log("Traitement de la date:", format(currentDate, "yyyy-MM-dd"))
 			console.log("Création messe pour la date:", format(currentDate, "yyyy-MM-dd"))
 			const massData = {
-				date: format(currentDate, "yyyy-MM-dd"),
+				//date: format(currentDate, "yyyy-MM-dd"),
 				celebrant_id: req.body.celebrant_id || null,
 				intention_id: intentionId,
 				status: "pending",

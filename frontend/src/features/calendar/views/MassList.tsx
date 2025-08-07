@@ -217,13 +217,15 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
                           : "invisible" // bouton caché mais garde sa place
                           }`}
                         title="Modifier cette messe"
-                        disabled={!(mass.intention_type === "unit")}
                       >
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
                         onClick={(e) => handleDeleteClick(e, mass)}
-                        className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100 transition-colors"
+                        className={`p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100 transition-colors ${mass.intention_type === "unit"
+                          ? "hover:text-blue-500 hover:bg-gray-100"
+                          : "invisible" // bouton caché mais garde sa place"
+                          }`}
                         title="Supprimer cette messe"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -260,16 +262,23 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
             <div className="space-y-4">
               <div>
                 <h3 className="text-sm font-medium text-gray-500">Date</h3>
-                <p className="flex items-center mt-1">
-                  <Calendar className="w-4 h-4 text-gray-400 mr-2" />
+                <p className="flex items-center mt-1 gap-x-2">
+                  <Calendar className="w-4 h-4 text-gray-600" />
                   {format(new Date(selectedDetailMass.date), 'EEEE d MMMM yyyy', { locale: fr })}
+                  {selectedDetailMass.dateType === "imperative" || selectedDetailMass.dateType === "desired" ? (
+                    <span className="px-2 py-0.5 rounded-full text-sm bg-red-100 text-gray-900">
+                      Fixe
+                    </span>
+                  ) : <span className="px-2 py-0.5 rounded-full text-sm bg-blue-100 text-gray-900">
+                    Mobile
+                  </span>}
                 </p>
               </div>
 
               <div>
                 <h3 className="text-sm font-medium text-gray-500">Célébrant</h3>
                 <p className="flex items-center mt-1">
-                  <User className="w-4 h-4 text-gray-400 mr-2" />
+                  <User className="w-4 h-4 text-gray-600 mr-2" />
                   {selectedDetailMass.celebrant_title} {selectedDetailMass.celebrant_religious_name}
                 </p>
               </div>
@@ -277,17 +286,33 @@ export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDelet
               <div>
                 <h3 className="text-sm font-medium text-gray-500">Type</h3>
                 <p className="mt-1">
-                  {selectedDetailMass.deceased === 1 ? (
-                    <span className="px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-700">
-                      Défunt
+                  {selectedDetailMass.intention_type === "novena" ? (
+                    <span className="px-2 py-0.5 rounded-full text-sm bg-blue-200">
+                      Neuvaine
                     </span>
-                  ) : 'Unité'}
+                  ) : selectedDetailMass.intention_type === "thirty" ? (
+                    <span className="px-2 py-0.5 rounded-full text-sm bg-gray-300">
+                      Trentain
+                    </span>
+                  ) : (
+                    <span className="px-2 py-0.5 rounded-full text-sm bg-blue-100 text-gray-900">
+                      Unité
+                    </span>
+                  )}
                 </p>
               </div>
-
               <div>
                 <h3 className="text-sm font-medium text-gray-500">Intention</h3>
-                <p className="mt-1 text-gray-600">{selectedDetailMass.intention}</p>
+                <p className="mt-1 text-gray-900 flex items-center gap-x-3">
+                  <span>
+                    {selectedDetailMass.intention}
+                  </span>
+                  {selectedDetailMass.deceased ? (
+                    <span className="px-2 py-0.5 rounded-full text-sm bg-gray-100 text-gray-900">
+                      Défunt
+                    </span>
+                  ) : ""}
+                </p>
               </div>
             </div>
 
