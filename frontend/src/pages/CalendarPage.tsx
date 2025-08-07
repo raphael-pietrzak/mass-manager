@@ -15,8 +15,6 @@ export type ViewMode = 'calendar' | 'list';
 function CalendarPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [masses, setMasses] = useState<Mass[]>([]);
-  // const [selectedMass, setSelectedMass] = useState<Mass | null>(null);
-  // const [isMassModalOpen, setIsMassModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isSliderOpen, setIsSliderOpen] = useState(false);
 
@@ -48,9 +46,7 @@ function CalendarPage() {
   }, [filters.startDate, filters.endDate]);
 
   const handleMassClick = (mass: Mass) => {
-    // setSelectedMass(mass);
-    // setIsMassModalOpen(true);
-    console.log('Messe cliquée dans le calendrier ou le slider', mass);
+    console.log('Messe cliquée dans le slider du calendrier', mass);
   };
 
   const handleDateClick = (date: string) => {
