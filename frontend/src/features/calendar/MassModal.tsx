@@ -10,7 +10,7 @@ interface MassModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (mass: Mass) => void;
-  mass: Mass | null;
+  mass?: Partial<Mass> | null;
 }
 
 export const MassModal: React.FC<MassModalProps> = ({ isOpen, onClose, onSave, mass }) => {
@@ -214,7 +214,7 @@ export const MassModal: React.FC<MassModalProps> = ({ isOpen, onClose, onSave, m
                 selectedDate={editedMass.date ? new Date(editedMass.date) : undefined}
                 onDateChange={handleDateChange}
                 unavailableDates={unavailableDates}
-                disabled={!(editedMass.dateType === "indifferent")}
+                disabled={!(editedMass.dateType === "indifferent") || editedMass.status === "pending"}
               />
             </div>
           </div>

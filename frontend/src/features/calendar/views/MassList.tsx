@@ -213,7 +213,7 @@ export const MassList: React.FC<MassListProps> = ({ masses, onDeleteMass, onUpda
                         }}
                         className={`p-1 text-gray-400 rounded-full transition-colors ${mass.intention_type === "unit"
                           ? "hover:text-blue-500 hover:bg-gray-100"
-                          : "invisible" // bouton caché mais garde sa place
+                          : "invisible"
                           }`}
                         title="Modifier cette messe"
                       >

@@ -9,6 +9,8 @@ import { AlertDescription } from '../../../../components/ui/alert';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../../components/ui/card';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { MassModal } from '../../../calendar/MassModal';
+import { Mass } from '../../../../api/massService';
 
 interface IntentionFormProps {
   intention: Intention;
@@ -24,6 +26,8 @@ const IntentionMassModalEdit: React.FC<IntentionFormProps> = ({
 }) => {
 
   const [errorIntentionText, setErrorIntentionText] = useState<string>();
+  const [isMassModalOpen, setIsMassModalOpen] = useState(false);
+  const [selectedMass, setSelectedMass] = useState<Partial<Mass> | null>(null);
 
   useEffect(() => {
     if (errorIntentionText) {
@@ -45,7 +49,20 @@ const IntentionMassModalEdit: React.FC<IntentionFormProps> = ({
   }
 
   const handleEditMassClick = (mass: Masses) => {
-    console.log("Click sur mass : ", mass)
+    const partialMass: Partial<Mass> = {
+      date: mass.date || "",
+      celebrant_id: mass.celebrant_id || "",
+      celebrant_religious_name: mass.celebrant_name,
+      celebrant_title: mass.celebrant_title,
+      status: mass.status,
+      intention: String(mass.intention_id),
+      intention_type: intention.intention_type,
+      dateType: intention.date_type,
+      deceased: intention.deceased ? 1 : 0,
+    };
+
+    setSelectedMass(partialMass);
+    setIsMassModalOpen(true);
   };
 
   return (
@@ -264,6 +281,15 @@ const IntentionMassModalEdit: React.FC<IntentionFormProps> = ({
           </div>
         </CardContent>
       </Card>
+      <MassModal
+        isOpen={isMassModalOpen}
+        onClose={() => setIsMassModalOpen(false)}
+        onSave={(updatedMass) => {
+          console.log('Mass saved:', updatedMass);
+          setIsMassModalOpen(false);
+        }}
+        mass={selectedMass}
+      />
     </div>
   );
 };
