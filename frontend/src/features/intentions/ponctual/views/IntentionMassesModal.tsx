@@ -1,12 +1,12 @@
 import React from 'react';
-import { Intention, IntentionWithMasses } from '../../../../api/intentionService';
+import { Intention, Masses } from '../../../../api/intentionService';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { X, Calendar, User, Clock } from 'lucide-react';
 
 interface IntentionMassesModalProps {
   intention: Intention;
-  masses: IntentionWithMasses[];
+  masses: Masses[];
   onClose: () => void;
 }
 
