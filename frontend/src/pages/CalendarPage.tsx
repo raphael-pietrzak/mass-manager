@@ -145,7 +145,6 @@ function CalendarPage() {
           ) : (
             <MassList
               masses={masses}
-              onMassClick={handleMassClick}
               filters={filters}
               onDeleteMass={handleDeleteMass}
               onUpdateMass={handleUpdateMass}

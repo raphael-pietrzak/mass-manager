@@ -7,7 +7,6 @@ import { MassModal } from '../MassModal';
 
 interface MassListProps {
   masses: Mass[];
-  onMassClick: (mass: Mass) => void;
   onDeleteMass: (mass: Mass) => void;
   onUpdateMass: (mass: Mass) => void;
   filters: {
@@ -19,7 +18,7 @@ interface MassListProps {
   loading: boolean;
 }
 
-export const MassList: React.FC<MassListProps> = ({ masses, onMassClick, onDeleteMass, onUpdateMass, filters, loading }) => {
+export const MassList: React.FC<MassListProps> = ({ masses, onDeleteMass, onUpdateMass, filters, loading }) => {
   // État pour la modale de confirmation
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [massToDelete, setMassToDelete] = useState<Mass | null>(null);
