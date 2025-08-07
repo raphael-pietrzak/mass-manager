@@ -15,8 +15,8 @@ export type ViewMode = 'calendar' | 'list';
 function CalendarPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [masses, setMasses] = useState<Mass[]>([]);
-  const [selectedMass, setSelectedMass] = useState<Mass | null>(null);
-  const [isMassModalOpen, setIsMassModalOpen] = useState(false);
+  // const [selectedMass, setSelectedMass] = useState<Mass | null>(null);
+  // const [isMassModalOpen, setIsMassModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isSliderOpen, setIsSliderOpen] = useState(false);
 
@@ -48,8 +48,9 @@ function CalendarPage() {
   }, [filters.startDate, filters.endDate]);
 
   const handleMassClick = (mass: Mass) => {
-    setSelectedMass(mass);
-    setIsMassModalOpen(true);
+    // setSelectedMass(mass);
+    // setIsMassModalOpen(true);
+    console.log('Messe cliquée dans le calendrier ou le slider', mass);
   };
 
   const handleDateClick = (date: string) => {
@@ -58,9 +59,9 @@ function CalendarPage() {
   };
 
   const handleUpdateMass = async (mass: Mass) => {
-    setSelectedMass(mass);
+    //setSelectedMass(mass);
     await massService.updateMass(mass);
-    setIsMassModalOpen(true);
+    //setIsMassModalOpen(true);
     fetchMasses();
   };
 
@@ -71,7 +72,7 @@ function CalendarPage() {
         const newMasses = await massService.getMasses();
         setMasses(newMasses);
       }
-      setIsMassModalOpen(false);
+      //setIsMassModalOpen(false);
     } catch (err) {
       setError('Erreur lors de la suppression de la messe');
     }
@@ -139,7 +140,6 @@ function CalendarPage() {
           {viewMode === 'calendar' ? (
             <MassCalendar
               masses={masses}
-              onMassClick={handleMassClick}
               onDateClick={handleDateClick}
             />
           ) : (
