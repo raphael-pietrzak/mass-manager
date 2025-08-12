@@ -54,7 +54,7 @@ function CalendarPage() {
     setIsSliderOpen(true);
   };
 
-  const handleUpdateMass = async (mass: Mass) => {
+  const handleUpdateMass = async (mass: Partial<Mass>) => {
     //setSelectedMass(mass);
     await massService.updateMass(mass);
     //setIsMassModalOpen(true);

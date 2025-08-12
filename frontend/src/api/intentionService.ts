@@ -40,6 +40,7 @@ export interface Intention {
 }
 
 export interface Masses {
+	id?: string
 	date: string | null // peut être null pour les messes sans date assignée
 	celebrant_id: string | null // peut être null si non assigné
 	celebrant_name: string

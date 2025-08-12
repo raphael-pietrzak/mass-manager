@@ -4,30 +4,45 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { AlertTriangle, Calendar, Edit, Trash2, User, X } from 'lucide-react';
-import { Intention, Masses } from '../../../../api/intentionService';
+import { Intention, intentionService, Masses } from '../../../../api/intentionService';
 import { AlertDescription } from '../../../../components/ui/alert';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../../components/ui/card';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { MassModal } from '../../../calendar/MassModal';
-import { Mass } from '../../../../api/massService';
+import { Mass, massService } from '../../../../api/massService';
 
 interface IntentionFormProps {
   intention: Intention;
   masses: Masses[]
   onClose: () => void
-  //updateData: (data: Partial<Intention>) => void;
+  onDeleteMass: (mass: Masses) => void
+  onUpdateIntention: (data: Partial<Intention>) => void;
 }
 
 const IntentionMassModalEdit: React.FC<IntentionFormProps> = ({
   intention,
   masses,
   onClose,
+  onDeleteMass,
+  onUpdateIntention
 }) => {
 
   const [errorIntentionText, setErrorIntentionText] = useState<string>();
   const [isMassModalOpen, setIsMassModalOpen] = useState(false);
   const [selectedMass, setSelectedMass] = useState<Partial<Mass> | null>(null);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [massToDelete, setMassToDelete] = useState<Masses | null>(null);
+  const [localMasses, setLocalMasses] = useState<Masses[]>(masses);
+  const [localIntention, setLocalIntention] = useState<Intention>(intention);
+
+  useEffect(() => {
+    setLocalMasses(masses);
+  }, [masses]);
+
+  useEffect(() => {
+    setLocalIntention(intention);
+  }, [intention]);
 
   useEffect(() => {
     if (errorIntentionText) {
@@ -38,31 +53,72 @@ const IntentionMassModalEdit: React.FC<IntentionFormProps> = ({
     }
   }, [errorIntentionText]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!intention.intention_text || intention.intention_text.trim() === "") {
       setErrorIntentionText("L'intention est requise")
       return
     }
     setErrorIntentionText("")
-    console.log("Intention Saved")
+    onUpdateIntention({
+      intention_text: localIntention.intention_text,
+      deceased: localIntention.deceased,
+    });
     onClose()
   }
 
+  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalIntention(prev => ({
+      ...prev,
+      intention_text: e.target.value,
+    }));
+  };
+
+  const handleDeceasedChange = (checked: boolean) => {
+    setLocalIntention(prev => ({
+      ...prev,
+      deceased: checked === true,
+    }));
+  };
+
   const handleEditMassClick = (mass: Masses) => {
     const partialMass: Partial<Mass> = {
+      id: mass.id,
       date: mass.date || "",
       celebrant_id: mass.celebrant_id || "",
       celebrant_religious_name: mass.celebrant_name,
       celebrant_title: mass.celebrant_title,
-      status: mass.status,
-      intention: String(mass.intention_id),
-      intention_type: intention.intention_type,
-      dateType: intention.date_type,
-      deceased: intention.deceased ? 1 : 0,
+      dateType: intention.date_type
     };
-
     setSelectedMass(partialMass);
     setIsMassModalOpen(true);
+  };
+
+  const handleSaveMass = async (updatedMass: Partial<Mass>) => {
+    await massService.updateMass(updatedMass);
+    const updatedMasses = await intentionService.getIntentionMasses(intention.id);
+    setLocalMasses(updatedMasses)
+    setIsMassModalOpen(false);
+    setSelectedMass(null);
+  }
+
+  const handleDeleteMassClick = (e: React.MouseEvent, mass: Masses) => {
+    e.stopPropagation();
+    setMassToDelete(mass);
+    setIsConfirmModalOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (massToDelete?.id) {
+      setLocalMasses(prev => prev.filter(m => m.id !== massToDelete.id));
+      onDeleteMass(massToDelete);
+      setIsConfirmModalOpen(false);
+      setMassToDelete(null);
+    }
+  };
+
+  const cancelDelete = () => {
+    setIsConfirmModalOpen(false);
+    setMassToDelete(null);
   };
 
   return (
@@ -91,8 +147,8 @@ const IntentionMassModalEdit: React.FC<IntentionFormProps> = ({
               <Input
                 id="intention_text"
                 name="intention_text"
-                value={intention.intention_text}
-                //onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateData({ intention_text: e.target.value })}
+                value={localIntention.intention_text}
+                onChange={handleTextChange}
                 required
                 placeholder="Votre intention..."
               />
@@ -109,8 +165,8 @@ const IntentionMassModalEdit: React.FC<IntentionFormProps> = ({
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="deceased"
-                checked={intention.deceased}
-              //onCheckedChange={(checked: boolean | "indeterminate") => updateData({ deceased: checked as boolean })}
+                checked={localIntention.deceased}
+                onCheckedChange={handleDeceasedChange}
               />
               <Label htmlFor="deceased">
                 Intention pour un défunt
@@ -162,9 +218,9 @@ const IntentionMassModalEdit: React.FC<IntentionFormProps> = ({
 
           <div className="flex-grow flex flex-col overflow-hidden mt-6">
             <h4 className="font-medium mb-3">
-              {masses.length === 1 ? "Messe associée" : "Messes associées"}
+              {localMasses.length === 1 ? "Messe associée" : "Messes associées"}
             </h4>
-            {masses.length === 0 ? (
+            {localMasses.length === 0 ? (
               <div className="bg-yellow-50 p-4 rounded-lg text-center text-yellow-700">
                 Aucune messe associée à cette intention
               </div>
@@ -188,7 +244,7 @@ const IntentionMassModalEdit: React.FC<IntentionFormProps> = ({
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {masses.map((mass, index) => (
+                    {localMasses.map((mass, index) => (
                       <tr key={index} className="hover:bg-gray-50">
                         <td className="px-3 py-2 whitespace-nowrap text-sm">
                           <div className="flex items-center">
@@ -240,7 +296,7 @@ const IntentionMassModalEdit: React.FC<IntentionFormProps> = ({
                                 <Edit className="w-4 h-4" />
                               </button>
                               <button
-                                //onClick={(e) => handleDeleteClick(e, mass)}
+                                onClick={(e) => handleDeleteMassClick(e, mass)}
                                 className={`p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100 transition-colors ${intention.intention_type === "unit"
                                   ? "hover:text-blue-500 hover:bg-gray-100"
                                   : "invisible"
@@ -281,13 +337,56 @@ const IntentionMassModalEdit: React.FC<IntentionFormProps> = ({
           </div>
         </CardContent>
       </Card>
+
+      {/* Modale de confirmation de suppression */}
+      {isConfirmModalOpen && massToDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg max-w-md w-full mx-4">
+            <div className="p-4 flex justify-between items-center border-b">
+              <h3 className="font-medium">Confirmer la suppression</h3>
+              <button
+                onClick={cancelDelete}
+                className="p-1 hover:bg-gray-100 rounded-full"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-5">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="rounded-full bg-red-100 p-2">
+                  <AlertTriangle className="h-5 w-5 text-red-600" />
+                </div>
+                <div>
+                  <h4 className="text-lg font-medium">Supprimer cette messe ?</h4>
+                  <p className="text-sm text-gray-500">
+                    Cette action est irréversible. Toutes les informations liées à cette messe seront définitivement supprimées.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-4 border-t pt-4 flex justify-end space-x-3">
+                <button
+                  onClick={cancelDelete}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium bg-white hover:bg-gray-50"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700"
+                >
+                  Supprimer
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <MassModal
         isOpen={isMassModalOpen}
         onClose={() => setIsMassModalOpen(false)}
-        onSave={(updatedMass) => {
-          console.log('Mass saved:', updatedMass);
-          setIsMassModalOpen(false);
-        }}
+        onSave={handleSaveMass}
         mass={selectedMass}
       />
     </div>

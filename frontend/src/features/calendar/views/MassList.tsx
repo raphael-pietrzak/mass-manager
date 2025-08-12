@@ -8,7 +8,7 @@ import { MassModal } from '../MassModal';
 interface MassListProps {
   masses: Mass[];
   onDeleteMass: (mass: Mass) => void;
-  onUpdateMass: (mass: Mass) => void;
+  onUpdateMass: (mass: Partial<Mass>) => void;
   filters: {
     celebrant: string;
     startDate: Date | null;
@@ -81,7 +81,7 @@ export const MassList: React.FC<MassListProps> = ({ masses, onDeleteMass, onUpda
     setIsDetailsModalOpen(true);
   };
 
-  const handleSaveMass = (updatedMass: Mass) => {
+  const handleSaveMass = (updatedMass: Partial<Mass>) => {
     onUpdateMass(updatedMass);
     setIsEditModalOpen(false);
     setSelectedMass(null);

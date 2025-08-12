@@ -163,19 +163,6 @@ export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ inte
                             </span>
                           )}
                         </td>
-                        {/* {mass.date_type === "indifferent" && mass.intention_type === "unit" && ( */}
-                        {/* <td className="px-3 py-2 whitespace-nowrap text-sm">
-                            <div className="flex items-center">
-                              <Button
-                                type="button"
-                                onClick={() => console.log("click")}
-                                className="h-7 px-3 text-xs font-medium"
-                              >
-                                Modifier
-                              </Button>
-                            </div>
-                          </td> */}
-                        {/* )} */}
                       </tr>
                     ))}
                   </tbody>

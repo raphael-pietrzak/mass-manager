@@ -167,6 +167,7 @@ exports.updateIntention = async (req, res) => {
 			start_date: req.body.start_date,
 			end_type: req.body.end_type,
 			end_date: req.body.end_date,
+			number_of_masses: req.body.number_of_masses
 		}
 
 		await Intention.update(id, intentionData)
@@ -223,6 +224,7 @@ exports.getIntentionMasses = async (req, res) => {
 
 		// Transformer les données pour correspondre au format attendu par le frontend
 		const formattedMasses = masses.map((mass) => ({
+			id: mass.id,
 			date: mass.date ? new Date(mass.date).toISOString().split("T")[0] : null,
 			intention: mass.intention || "",
 			type: mass.deceased ? "defunts" : "vivants",

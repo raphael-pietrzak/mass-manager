@@ -9,7 +9,7 @@ import { specialDayService } from '../../api/specialDaysService';
 interface MassModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (mass: Mass) => void;
+  onSave: (mass: Partial<Mass>) => void;
   mass?: Partial<Mass> | null;
 }
 
@@ -214,7 +214,7 @@ export const MassModal: React.FC<MassModalProps> = ({ isOpen, onClose, onSave, m
                 selectedDate={editedMass.date ? new Date(editedMass.date) : undefined}
                 onDateChange={handleDateChange}
                 unavailableDates={unavailableDates}
-                disabled={!(editedMass.dateType === "indifferent") || editedMass.status === "pending"}
+                disabled={(editedMass.dateType !== "indifferent") || (editedMass.dateType === "indifferent" && editedMass.status === "pending")}
               />
             </div>
           </div>

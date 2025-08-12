@@ -3,6 +3,7 @@ import { intentionService, Intention, Masses } from '../../../../api/intentionSe
 import { User, Trash2, AlertTriangle, X, Edit } from 'lucide-react';
 import { IntentionMassesModal } from './IntentionMassesModal';
 import IntentionMassModalEdit from './IntentionMassModalEdit';
+import { deleteMass } from '../../../../api';
 
 interface IntentionListProps {
   onSelectionChange?: (ids: string[]) => void;
@@ -102,6 +103,34 @@ export const PonctualIntentionList: React.FC<IntentionListProps> = ({ intentions
     setIsConfirmModalOpen(false);
     setIntentionToDelete(null);
   };
+
+  const handleDeleteMass = async (mass: Masses) => {
+    if (mass.id) {
+      try {
+        await deleteMass(mass.id);
+        const updatedMasses = associatedMasses.filter(m => m.id !== mass.id);
+        setAssociatedMasses(updatedMasses);
+        const numberOfMasses = updatedMasses.length;
+        if (selectedIntention && selectedIntention.id) {
+          await intentionService.updateMass(selectedIntention.id, { number_of_masses: numberOfMasses });
+        }
+        onRefresh();
+      } catch (error) {
+        console.error("Erreur lors de la suppression de la messe :", error);
+      }
+    }
+  };
+
+
+  const handleUpdateIntention = async (data: Partial<Intention>) => {
+    try {
+      if (selectedIntention?.id)
+        intentionService.updateMass(selectedIntention.id, data)
+      onRefresh();
+    } catch (error) {
+      console.error("Erreur lors de la modification de l'intention :", error);
+    }
+  }
 
   return (
     <>
@@ -260,6 +289,8 @@ export const PonctualIntentionList: React.FC<IntentionListProps> = ({ intentions
           intention={selectedIntention}
           masses={associatedMasses}
           onClose={() => setIsEditModalOpen(false)}
+          onDeleteMass={handleDeleteMass}
+          onUpdateIntention={handleUpdateIntention}
         />
       )}
 
