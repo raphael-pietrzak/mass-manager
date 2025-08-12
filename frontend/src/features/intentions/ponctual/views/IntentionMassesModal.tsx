@@ -1,16 +1,18 @@
 import React from 'react';
-import { Intention, IntentionWithMasses } from '../../../../api/intentionService';
+import { Intention, Masses } from '../../../../api/intentionService';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { X, Calendar, User, Clock } from 'lucide-react';
+import { Button } from '../../../../components/ui/button';
 
 interface IntentionMassesModalProps {
   intention: Intention;
-  masses: IntentionWithMasses[];
+  masses: Masses[];
   onClose: () => void;
+  onEditClick: () => void;
 }
 
-export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ intention, masses, onClose }) => {
+export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ intention, masses, onClose, onEditClick }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-lg max-w-4xl w-full mx-4 max-h-[90vh] flex flex-col">
@@ -161,19 +163,6 @@ export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ inte
                             </span>
                           )}
                         </td>
-                        {/* {mass.date_type === "indifferent" && mass.intention_type === "unit" && ( */}
-                          {/* <td className="px-3 py-2 whitespace-nowrap text-sm">
-                            <div className="flex items-center">
-                              <Button
-                                type="button"
-                                onClick={() => console.log("click")}
-                                className="h-7 px-3 text-xs font-medium"
-                              >
-                                Modifier
-                              </Button>
-                            </div>
-                          </td> */}
-                        {/* )} */}
                       </tr>
                     ))}
                   </tbody>
@@ -184,13 +173,13 @@ export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ inte
         </div>
 
         <div className="p-4 border-t mt-auto">
-          <div className="flex justify-end">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
-            >
+          <div className="flex gap-4 justify-end">
+            <Button variant="default" type="button" onClick={onEditClick}>
+              Modifier
+            </Button>
+            <Button variant="outline" type="button" onClick={onClose}>
               Fermer
-            </button>
+            </Button>
           </div>
         </div>
       </div>

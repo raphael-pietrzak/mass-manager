@@ -75,7 +75,7 @@ exports.seed = function (knex) {
 				{
 					firstname: "Jacques",
 					lastname: "Michel",
-					email: "jaques.michelexample.com",
+					email: "jaques.michel@example.com",
 					phone: "0123456789",
 					address: "1 rue de Paris",
 					city: "Montpellier",

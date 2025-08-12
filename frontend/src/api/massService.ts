@@ -109,7 +109,7 @@ export const massService = {
 		}))
 	},
 
-	updateMass: async (mass: Mass) => {
+	updateMass: async (mass: Partial<Mass>)=> {
 		const response = await axios.put(`${API_URL}/${mass.id}`, mass)
 		return response.data
 	},

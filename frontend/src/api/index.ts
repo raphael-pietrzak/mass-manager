@@ -21,7 +21,7 @@ export const deleteCelebrant = (id: string) => api.delete(`/celebrants/${id}`);
 // Intentions
 export const getIntentions = () => api.get('/intentions');
 export const createIntention = (intention: any) => api.post('/intentions', intention);
-export const updateIntention = (id: string, intention: any) => api.patch(`/intentions/${id}`, intention);
+export const updateIntention = (id: string, intention: any) => api.put(`/intentions/${id}`, intention);
 export const deleteIntention = (id: string) => api.delete(`/intentions/${id}`);
 
 // Masses

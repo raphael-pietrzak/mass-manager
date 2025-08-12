@@ -7,13 +7,11 @@ import { fr } from 'date-fns/locale';
 
 interface MassCalendarProps {
   masses: Mass[];
-  onMassClick: (mass: Mass) => void;
   onDateClick: (date: string) => void;
 }
 
 export const MassCalendar: React.FC<MassCalendarProps> = ({
   masses,
-  onMassClick,
   onDateClick,
 }) => {
   // Group masses by date

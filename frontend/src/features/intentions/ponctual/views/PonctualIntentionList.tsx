@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { intentionService, Intention, Masses } from '../../../../api/intentionService';
-import { User, Trash2, AlertTriangle, X, Info } from 'lucide-react';
+import { User, Trash2, AlertTriangle, X, Edit } from 'lucide-react';
 import { IntentionMassesModal } from './IntentionMassesModal';
+import IntentionMassModalEdit from './IntentionMassModalEdit';
+import { deleteMass } from '../../../../api';
 
 interface IntentionListProps {
   onSelectionChange?: (ids: string[]) => void;
@@ -18,6 +20,7 @@ export const PonctualIntentionList: React.FC<IntentionListProps> = ({ intentions
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [intentionToDelete, setIntentionToDelete] = useState<Intention | null>(null);
   const [selectedIntentionId, setSelectedIntentionId] = useState<string[]>([]);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
     if (onSelectionChange) {
@@ -49,6 +52,19 @@ export const PonctualIntentionList: React.FC<IntentionListProps> = ({ intentions
     setSelectedIntentionId((prev) =>
       checked ? [...prev, id] : prev.filter((selectedId) => selectedId !== id)
     );
+  };
+
+  const handleEditIntention = async (intention: Intention) => {
+    setSelectedIntention(intention);
+    try {
+      if (intention.id) {
+        const masses = await intentionService.getIntentionMasses(intention.id);
+        setAssociatedMasses(masses);
+      }
+      setIsEditModalOpen(true);
+    } catch (error) {
+      console.error('Erreur lors de la récupération des messes pour l’édition:', error);
+    }
   };
 
   const handleIntentionClick = async (intention: Intention) => {
@@ -87,6 +103,34 @@ export const PonctualIntentionList: React.FC<IntentionListProps> = ({ intentions
     setIsConfirmModalOpen(false);
     setIntentionToDelete(null);
   };
+
+  const handleDeleteMass = async (mass: Masses) => {
+    if (mass.id) {
+      try {
+        await deleteMass(mass.id);
+        const updatedMasses = associatedMasses.filter(m => m.id !== mass.id);
+        setAssociatedMasses(updatedMasses);
+        const numberOfMasses = updatedMasses.length;
+        if (selectedIntention && selectedIntention.id) {
+          await intentionService.updateMass(selectedIntention.id, { number_of_masses: numberOfMasses });
+        }
+        onRefresh();
+      } catch (error) {
+        console.error("Erreur lors de la suppression de la messe :", error);
+      }
+    }
+  };
+
+
+  const handleUpdateIntention = async (data: Partial<Intention>) => {
+    try {
+      if (selectedIntention?.id)
+        intentionService.updateMass(selectedIntention.id, data)
+      onRefresh();
+    } catch (error) {
+      console.error("Erreur lors de la modification de l'intention :", error);
+    }
+  }
 
   return (
     <>
@@ -141,7 +185,8 @@ export const PonctualIntentionList: React.FC<IntentionListProps> = ({ intentions
                   {intentions.map(intention => (
                     <tr
                       key={intention.id}
-                      className="hover:bg-gray-50"
+                      onClick={() => handleIntentionClick(intention)}
+                      className="hover:bg-gray-50 cursor-pointer"
                     >
                       <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-90 truncate max-w-xs">
                         <div className="flex ">
@@ -187,11 +232,14 @@ export const PonctualIntentionList: React.FC<IntentionListProps> = ({ intentions
                       <td className="px-3 py-2 whitespace-nowrap text-sm">
                         <div className="flex space-x-2">
                           <button
-                            onClick={() => handleIntentionClick(intention)}
-                            className="p-1 text-gray-400 hover:text-blue-500 rounded-full hover:bg-gray-100 transition-colors"
-                            title="Voir les messes associées"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditIntention(intention);
+                            }}
+                            className="p-1 text-gray-400 rounded-full transition-colors hover:text-blue-500 hover:bg-gray-100"
+                            title="Modifier cette messe"
                           >
-                            <Info className="w-4 h-4" />
+                            <Edit className="w-4 h-4" />
                           </button>
                           <button
                             onClick={(e) => handleDeleteClick(e, intention)}
@@ -229,6 +277,20 @@ export const PonctualIntentionList: React.FC<IntentionListProps> = ({ intentions
           intention={selectedIntention}
           masses={associatedMasses}
           onClose={() => setShowMassesModal(false)}
+          onEditClick={() => {
+            setShowMassesModal(false);
+            setIsEditModalOpen(true);
+          }}
+        />
+      )}
+
+      {isEditModalOpen && selectedIntention && (
+        <IntentionMassModalEdit
+          intention={selectedIntention}
+          masses={associatedMasses}
+          onClose={() => setIsEditModalOpen(false)}
+          onDeleteMass={handleDeleteMass}
+          onUpdateIntention={handleUpdateIntention}
         />
       )}
 

@@ -35,7 +35,7 @@ const formDataIntention: IntentionWithRecurrence = {
   donor_address: '',
   donor_postal_code: '',
   donor_city: '',
-  wants_celebration_date: true,
+  wants_celebration_date: false,
   type: 'monthly',
   start_date: '',
   end_type: 'occurrences',
