@@ -42,8 +42,8 @@ const formDataIntention: IntentionWithRecurrence = {
   end_type: 'occurrences',
   occurrences: 5,
   end_date: '',
-  position: 'first',
-  weekday: 'monday',
+  position: undefined,
+  weekday: undefined,
 };
 
 export const RecurringIntentionModal: React.FC<IntentionModalProps> = ({

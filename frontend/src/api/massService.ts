@@ -31,7 +31,7 @@ export interface Mass {
 	intention_type: "unit" | "thirty" | "novena"
 	//massType?: string
 	dateType?: string
-	// Données de récurrence
+	recurrence_id?: number
 }
 
 // Type pour la réponse de prévisualisation avec une structure simplifiée des masses

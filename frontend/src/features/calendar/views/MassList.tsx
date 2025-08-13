@@ -211,7 +211,7 @@ export const MassList: React.FC<MassListProps> = ({ masses, onDeleteMass, onUpda
                           e.stopPropagation();
                           handleMassClick(mass);
                         }}
-                        className={`p-1 text-gray-400 rounded-full transition-colors ${mass.intention_type === "unit"
+                        className={`p-1 text-gray-400 rounded-full transition-colors ${mass.recurrence_id !== null || mass.intention_type === "unit"
                           ? "hover:text-blue-500 hover:bg-gray-100"
                           : "invisible"
                           }`}
@@ -221,9 +221,9 @@ export const MassList: React.FC<MassListProps> = ({ masses, onDeleteMass, onUpda
                       </button>
                       <button
                         onClick={(e) => handleDeleteClick(e, mass)}
-                        className={`p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100 transition-colors ${mass.intention_type === "unit"
-                          ? "hover:text-blue-500 hover:bg-gray-100"
-                          : "invisible" // bouton caché mais garde sa place"
+                        className={`p-1 text-gray-400 rounded-full transition-colors ${mass.recurrence_id !== null || mass.intention_type === "unit"
+                          ? "hover:text-red-500 hover:bg-gray-100"
+                          : "invisible"
                           }`}
                         title="Supprimer cette messe"
                       >
@@ -322,7 +322,7 @@ export const MassList: React.FC<MassListProps> = ({ masses, onDeleteMass, onUpda
               >
                 Fermer
               </button>
-              {selectedDetailMass?.intention_type === "unit" && (
+              {selectedDetailMass?.intention_type === "unit" || selectedDetailMass?.recurrence_id !== null && (
                 <button
                   onClick={() => {
                     setIsDetailsModalOpen(false);

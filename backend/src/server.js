@@ -50,6 +50,8 @@ app.listen(PORT, () => {
   console.log('unavailable-days : http://localhost:3001/api/data/unavailable-days');
   console.log('recurrences  : http://localhost:3001/api/data/recurrences');
   console.log('export masses: http://localhost:3001/api/export/masses/[format]');
-
   console.log('\n [CTRL + CLICK] on the links to open in browser');
+
+  require("./services/cron/massCheck");
+  require("./services/cron/recurrenceSchedule");
 });

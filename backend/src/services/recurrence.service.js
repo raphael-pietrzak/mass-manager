@@ -1,73 +1,83 @@
-import cron from "node-cron";
-import db from "../../config/database";
+const Mass = require("../models/mass.model")
+const { addDays, format, addYears } = require("date-fns")
 
-// 1er janvier à minuit → messes annuelles
-cron.schedule("0 0 1 1 *", async () => {
-  console.log("⏳ Job annuel : affecter les messes annuelles…");
-  await assignAnnualMasses();
-});
+const RecurringIntentionService = {
+	handleGenerateDailyMass: async (startDate, celebrant_id, end_type, end_date, occurrences, intentionId) => {
+		let currentDate = startDate
+		let occurrenceCount = 0
+		const masses = []
 
-// 1er de chaque mois à minuit → messes mensuelles
-cron.schedule("0 0 1 * *", async () => {
-  console.log("⏳ Job mensuel : affecter les messes mensuelles…");
-  await assignMonthlyMasses();
-});
+		while ((end_type === "date" && currentDate <= end_date) || (end_type === "occurrences" && occurrenceCount < occurrences)) {
+			console.log("Création messe pour la date:", format(currentDate, "yyyy-MM-dd"))
+			const massData = {
+				date: format(currentDate, "yyyy-MM-dd"),
+				celebrant_id: celebrant_id || null,
+				intention_id: intentionId,
+				status: "scheduled",
+			}
+			await Mass.create(massData)
+			masses.push(massData)
+			occurrenceCount++
+			currentDate = addDays(currentDate, 1)
+		}
+		return masses
+	},
 
-// ---- LOGIQUE ----
+	handleGenerateAnnualMass: async (startDate, celebrant_id, end_type, end_date, occurrences, intentionId) => {
+		let currentDate = startDate
+		let occurrenceCount = 0
+		const masses = []
+		const currentYear = new Date().getFullYear()
 
-// Messes annuelles (month NULL)
-async function assignAnnualMasses() {
-  const intentions = await db("Intentions")
-    .whereNull("month")
-    .andWhere("recurrence_type", "annual");
+		// Cas end_type = no-end
+		if (end_type === "no-end") {
+			const startYear = new Date(startDate).getFullYear()
 
-  const nextYear = new Date().getFullYear() + 1;
+			// 1️⃣ Créer une messe pour cette année si startDate est encore cette année
+			if (startYear <= currentYear) {
+				console.log("Création messe pour cette année:", format(currentDate, "yyyy-MM-dd"))
+				const massData = {
+					date: format(currentDate, "yyyy-MM-dd"),
+					celebrant_id: celebrant_id || null,
+					intention_id: intentionId,
+					status: "scheduled",
+				}
+				await Mass.create(massData)
+				masses.push(massData)
+			}
 
-  for (const intent of intentions) {
-    for (let month = 1; month <= 12; month++) {
-      const date = `${nextYear}-${String(month).padStart(2, "0")}-01`;
+			// 2️⃣ Créer toujours une messe pour l'année prochaine
+			const nextYearDate = addYears(new Date(currentDate), 1)
+			console.log("Création messe pour l'année prochaine:", format(nextYearDate, "yyyy-MM-dd"))
+			const nextMassData = {
+				date: format(nextYearDate, "yyyy-MM-dd"),
+				celebrant_id: celebrant_id || null,
+				intention_id: intentionId,
+				status: "scheduled",
+			}
+			await Mass.create(nextMassData)
+			masses.push(nextMassData)
+		} else {
+			// Cas end_type = occurences ou end_type = date
+			while ((end_type === "date" && currentDate <= end_date) || (end_type === "occurrences" && occurrenceCount < occurrences)) {
+				console.log("Création messe pour la date:", format(currentDate, "yyyy-MM-dd"))
+				const massData = {
+					date: format(currentDate, "yyyy-MM-dd"),
+					celebrant_id: celebrant_id || null,
+					intention_id: intentionId,
+					status: "scheduled",
+				}
+				await Mass.create(massData)
+				masses.push(massData)
+				occurrenceCount++
+				currentDate = addYears(currentDate, 1)
+			}
+		}
+		return masses
+	},
 
-      const exists = await db("Masses")
-        .where("intention_id", intent.id)
-        .andWhere("date", date)
-        .first();
-
-      if (!exists) {
-        await db("Masses").insert({
-          intention_id: intent.id,
-          date,
-          celebrant_id: intent.celebrant_id || null,
-        });
-      }
-    }
-  }
-  console.log(`✅ ${intentions.length} intentions annuelles traitées`);
+	handleGenerateMonthlyMass: async (startDate, celebrant_id, end_type, end_date, occurences) => {},
+	handlegenerateRelativePositionMass: async (startDate, celebrant_id, end_type, end_date, occurences) => {},
 }
 
-// Messes mensuelles (month NOT NULL)
-async function assignMonthlyMasses() {
-  const intentions = await db("Intentions")
-    .whereNotNull("month")
-    .andWhere("recurrence_type", "monthly");
-
-  const nextYear = new Date().getFullYear() + 1;
-
-  for (const intent of intentions) {
-    const month = String(intent.month).padStart(2, "0");
-    const date = `${nextYear}-${month}-01`;
-
-    const exists = await db("Masses")
-      .where("intention_id", intent.id)
-      .andWhere("date", date)
-      .first();
-
-    if (!exists) {
-      await db("Masses").insert({
-        intention_id: intent.id,
-        date,
-        celebrant_id: intent.celebrant_id || null,
-      });
-    }
-  }
-  console.log(`✅ ${intentions.length} intentions mensuelles traitées`);
-}
+module.exports = RecurringIntentionService
