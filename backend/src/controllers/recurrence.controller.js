@@ -133,7 +133,7 @@ exports.createRecurrence = async (req, res) => {
 			await Mass.create(massData)
 			masses.push(massData)
 			occurrenceCount++
-			currentDate = addDays(currentDate, 1)
+			//currentDate = addDays(currentDate, 1)
 		}
 
 		console.log(`${masses.length} messes créées avec succès`)
