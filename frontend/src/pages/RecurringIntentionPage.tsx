@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Trash2, Plus, Edit } from 'lucide-react';
+import { Trash2, Plus, Edit, AlertTriangle, X } from 'lucide-react';
 import { recurrenceService, Recurrence } from '../api/recurrenceService';
 import { formatDateForDisplay, parseApiDate } from '../utils/dateUtils';
 import { toast } from 'sonner';
 import { IntentionWithRecurrence, RecurringIntentionModal } from '../features/intentions/recurring/RecurringIntentionModal';
 import RecurrenceDialog from '../components/RecurrenceDialog';
+import { intentionService } from '../api/intentionService';
 
 const RecurrencePage: React.FC = () => {
   const [recurringIntentions, setRecurringIntentions] = useState<IntentionWithRecurrence[]>([]);
@@ -13,6 +14,8 @@ const RecurrencePage: React.FC = () => {
   const [editingRecurrence, setEditingRecurrence] = useState<IntentionWithRecurrence | null>(null);
   const [recurrenceDialogOpen, setRecurrenceDialogOpen] = useState(false);
   const [recurrenceToEdit, setRecurrenceToEdit] = useState<IntentionWithRecurrence | null>(null);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [intentionToDelete, setIntentionToDelete] = useState<IntentionWithRecurrence | null>(null);
 
   useEffect(() => {
     loadRecurrences();
@@ -50,24 +53,47 @@ const RecurrencePage: React.FC = () => {
     setRecurrenceDialogOpen(true);
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cette récurrence ?')) {
-      return;
-    }
-    try {
-      await recurrenceService.delete(id);
-      await loadRecurrences();
-      toast.success('Récurrence supprimée avec succès');
-    } catch (error) {
-      console.error('Erreur lors de la suppression:', error);
-      toast.error('Erreur lors de la suppression de la récurrence');
+  const handleDeleteClick = (e: React.MouseEvent, intention: IntentionWithRecurrence) => {
+    e.stopPropagation();
+    setIntentionToDelete(intention);
+    setIsConfirmModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (intentionToDelete && intentionToDelete.id) {
+      try {
+        await recurrenceService.delete(Number(intentionToDelete.recurrence_id));
+        await loadRecurrences();
+      } catch (error) {
+        console.error('Erreur lors de la suppression:', error);
+      }
+      setIsConfirmModalOpen(false);
+      setIntentionToDelete(null);
     }
   };
 
-  const handleSave = async () => {
-    await loadRecurrences();
-    setRecurrenceDialogOpen(false);
-    setRecurrenceToEdit(null);
+  const cancelDelete = () => {
+    setIsConfirmModalOpen(false);
+    setIntentionToDelete(null);
+  };
+
+  const handleSave = async (formData: Partial<Recurrence>, localIntention: Partial<IntentionWithRecurrence>) => {
+    try {
+      setLoading(true);
+      if (formData.recurrence_id && localIntention.id) {
+        await recurrenceService.update(formData.recurrence_id, formData);
+        await intentionService.updateMass(localIntention.id, {
+          intention_text: localIntention.intention_text,
+          deceased: localIntention.deceased,
+        });
+      }
+      await loadRecurrences();
+      setRecurrenceDialogOpen(false);
+      setRecurrenceToEdit(null);
+    } finally {
+      setLoading(false);
+    }
+
   };
 
   const getRecurrenceTypeLabel = (type: string) => {
@@ -181,7 +207,7 @@ const RecurrencePage: React.FC = () => {
                               <Edit className="w-4 h-4" />
                             </button>
                             <button
-                              onClick={() => handleDelete(intention.recurrence_id!)}
+                              onClick={(e) => handleDeleteClick(e, intention)}
                               className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100 transition-colors"
                               title="Supprimer cette récurrence"
                             >
@@ -194,6 +220,51 @@ const RecurrencePage: React.FC = () => {
                   </tbody>
                 </table>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Modale de confirmation de suppression */}
+        {isConfirmModalOpen && intentionToDelete && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-lg max-w-md w-full mx-4">
+              <div className="p-4 flex justify-between items-center border-b">
+                <h3 className="font-medium">Confirmer la suppression</h3>
+                <button
+                  onClick={cancelDelete}
+                  className="p-1 hover:bg-gray-100 rounded-full"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-5">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="rounded-full bg-red-100 p-2">
+                    <AlertTriangle className="h-5 w-5 text-red-600" />
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-medium">Supprimer cette intention ?</h4>
+                    <p className="text-sm text-gray-500">
+                      Cette action est irréversible. Toutes les informations liées à cette intention et ses messes associées seront définitivement supprimées.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4 border-t pt-4 flex justify-end space-x-3">
+                  <button
+                    onClick={cancelDelete}
+                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium bg-white hover:bg-gray-50"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={confirmDelete}
+                    className="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700"
+                  >
+                    Supprimer
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -213,7 +284,7 @@ const RecurrencePage: React.FC = () => {
             open={recurrenceDialogOpen}
             onOpenChange={setRecurrenceDialogOpen}
             recurrence={recurrenceToEdit}
-            onSave={() => { handleSave }}
+            onSave={handleSave}
           />
         )}
 

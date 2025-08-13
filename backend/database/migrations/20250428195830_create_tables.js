@@ -25,7 +25,7 @@ exports.up = function(knex) {
       table.increments('id').primary();
       table.enu('type', ['daily', 'weekly', 'monthly', 'relative_position', 'yearly']).notNullable();
       table.date('start_date').notNullable();
-      table.enu('end_type', ['occurrences', 'date']).notNullable();
+      table.enu('end_type', ['occurrences', 'date', 'no-end']).notNullable();
       table.integer('occurrences').nullable();
       table.date('end_date').nullable();
       

@@ -328,7 +328,8 @@ class Mass {
 				"Intentions.wants_celebration_date as wants_notification",
 				"Donors.firstname as donor_firstname",
 				"Donors.lastname as donor_lastname",
-				"Donors.email as donor_email"
+				"Donors.email as donor_email",
+				"Intentions.recurrence_id"
 			)
 			.where("Masses.status", "=", "scheduled")
 			.orderBy("Masses.date")

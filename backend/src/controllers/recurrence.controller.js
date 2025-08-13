@@ -1,8 +1,9 @@
 const Recurrence = require("../models/recurrence.model")
 const Mass = require("../models/mass.model")
 const Intention = require("../models/intention.model")
-const { addDays, parseISO, format } = require("date-fns")
+const { parseISO, format } = require("date-fns")
 const Donor = require("../models/donor.model")
+const RecurringIntentionService = require("../services/recurrence.service")
 
 exports.getRecurrences = async (req, res) => {
 	console.log("Récupération de toutes les récurrences")
@@ -39,8 +40,8 @@ exports.createRecurrence = async (req, res) => {
 			end_type: req.body.end_type,
 			occurrences: req.body.occurrences || null,
 			end_date: req.body.end_date || null,
-			position: req.body.position || null,
-			weekday: req.body.weekday || null,
+			position: req.body.type === "relative_position" ? req.body.position : null,
+			weekday: req.body.type === "relative_position" ? req.body.weekday : null,
 		}
 
 		// Validation de la récurrence
@@ -94,10 +95,10 @@ exports.createRecurrence = async (req, res) => {
 			amount: req.body.amount,
 			payment_method: req.body.payment_method,
 			recurrence_id: recurrenceId[0].id,
-			status: "pending",
+			status: "in_progress",
 			brother_name: req.body.brother_name || null,
 			wants_celebration_date: req.body.wants_celebration_date,
-			date_type: "imperative"
+			date_type: "imperative",
 		}
 
 		const intentionId = await Intention.create(intention)
@@ -105,35 +106,22 @@ exports.createRecurrence = async (req, res) => {
 
 		// Générer les dates des messes
 		console.log("Génération des messes...")
+		let masses = []
 		const startDate = parseISO(recurrence.start_date)
 		const endDate = recurrence.end_date ? parseISO(recurrence.end_date) : null
-		let currentDate = startDate
-		let occurrenceCount = 0
-		const masses = []
+		const celebrantId = req.body.celebrant_id || null
+		const endType = recurrence.end_type
+		const occurrences = recurrence.occurrences || null
 		console.log("Date de début:", format(startDate, "yyyy-MM-dd"))
 		console.log("Date de fin:", endDate ? format(endDate, "yyyy-MM-dd") : "Aucune")
-		console.log("End Type:", recurrence.end_type)
-		console.log("Occurrences:", recurrence.occurrences || "Aucune")
-		console.log("Position:", recurrence.position || "Aucune")
-		console.log("Jour de la semaine:", recurrence.weekday !== null ? recurrence.weekday : "Aucun")
-		while (
-			(recurrence.end_type === "date" && currentDate <= endDate) ||
-			(recurrence.end_type === "occurrences" && occurrenceCount < recurrence.occurrences)
-		) {
-			console.log("Traitement de la date:", format(currentDate, "yyyy-MM-dd"))
-			console.log("Création messe pour la date:", format(currentDate, "yyyy-MM-dd"))
-			console.log("Traitement de la date:", format(currentDate, "yyyy-MM-dd"))
-			console.log("Création messe pour la date:", format(currentDate, "yyyy-MM-dd"))
-			const massData = {
-				//date: format(currentDate, "yyyy-MM-dd"),
-				celebrant_id: req.body.celebrant_id || null,
-				intention_id: intentionId,
-				status: "pending",
-			}
-			await Mass.create(massData)
-			masses.push(massData)
-			occurrenceCount++
-			currentDate = addDays(currentDate, 1)
+		console.log("End Type:", endType)
+		console.log("Occurrences:", occurrences || "Aucune")
+
+		// if (recurrence.type === "daily") {
+		// 	masses = await RecurringIntentionService.handleGenerateDailyMass(startDate, celebrantId, endType, endDate, occurrences, intentionId)
+		// }
+		if (recurrence.type === "yearly") {
+			masses = await RecurringIntentionService.handleGenerateAnnualMass(startDate, celebrantId, endType, endDate, occurrences, intentionId)
 		}
 
 		console.log(`${masses.length} messes créées avec succès`)

@@ -33,8 +33,8 @@ const RecurrenceForm: React.FC<RecurrenceFormProps> = ({
   }, [recurrence]);
 
   const recurrenceOptions = [
-    { value: 'daily', label: 'Quotidien' },
-    { value: 'weekly', label: 'Hebdomadaire' },
+    // { value: 'daily', label: 'Quotidien' },
+    // { value: 'weekly', label: 'Hebdomadaire' },
     { value: 'monthly', label: 'Mensuel' },
     { value: 'relative_position', label: 'Position relative mensuelle' },
     { value: 'yearly', label: 'Annuel' }
@@ -171,21 +171,27 @@ const RecurrenceForm: React.FC<RecurrenceFormProps> = ({
               <RadioGroupItem value="date" id="date" />
               <Label htmlFor="date">Jusqu’à une date</Label>
             </div>
-          </RadioGroup>
 
-          {formData.end_type === 'date' && (
-            <CalendarSelector
-              selectedDate={formData.end_date ? parseApiDate(formData.end_date) : undefined}
-              onDateChange={(date) => handleChange('end_date', formatDateForApi(date))}
-              ignoreAvailability={false}
-            />
-          )}
-          {errors.end_date && (
-            <div className="flex items-center gap-2 text-red-500">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>{errors.end_date}</AlertDescription>
+            {formData.end_type === 'date' && (
+              <CalendarSelector
+                selectedDate={formData.end_date ? parseApiDate(formData.end_date) : undefined}
+                onDateChange={(date) => handleChange('end_date', formatDateForApi(date))}
+                ignoreAvailability={false}
+              />
+            )}
+            {errors.end_date && (
+              <div className="flex items-center gap-2 text-red-500">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>{errors.end_date}</AlertDescription>
+              </div>
+            )}
+
+            <div className="flex items-center gap-2 mt-2">
+              <RadioGroupItem value="no-end" id="no-end" />
+              <Label htmlFor="date">Pas de date de fin (sauf suppression)</Label>
             </div>
-          )}
+
+          </RadioGroup>
         </div>
       </div>
       <div className="pt-6 flex justify-between space-x-4 border-t">

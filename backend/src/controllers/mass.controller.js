@@ -99,6 +99,26 @@ exports.updateMass = async (req, res) => {
     res.status(500).send('Erreur lors de la mise à jour de la messe');
   }
 }
+
+exports.updateMassWithoutDate = async (req, res) => {
+  try {
+    // Mise à jour de la messe sans toucher à la date
+    const mass = {
+      id: req.params.id,
+      celebrant_id: req.body.celebrant_id,
+      intention_id: req.body.intention_id,
+      status: req.body.status
+    };
+
+    await Mass.update(mass);
+    res.status(204).send();
+  }
+  catch (error) {
+    console.error(error);
+    res.status(500).send('Erreur lors de la mise à jour de la messe (sans date)');
+  }
+}
+
 exports.deleteMass = async (req, res) => {
   try {
     const id = req.params.id;

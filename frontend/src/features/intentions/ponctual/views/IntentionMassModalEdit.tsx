@@ -54,7 +54,7 @@ const IntentionMassModalEdit: React.FC<IntentionFormProps> = ({
   }, [errorIntentionText]);
 
   const handleSave = async () => {
-    if (!intention.intention_text || intention.intention_text.trim() === "") {
+    if (!localIntention.intention_text || localIntention.intention_text.trim() === "") {
       setErrorIntentionText("L'intention est requise")
       return
     }
@@ -87,14 +87,15 @@ const IntentionMassModalEdit: React.FC<IntentionFormProps> = ({
       celebrant_id: mass.celebrant_id || "",
       celebrant_religious_name: mass.celebrant_name,
       celebrant_title: mass.celebrant_title,
-      dateType: intention.date_type
+      dateType: intention.date_type,
+      status: mass.status
     };
     setSelectedMass(partialMass);
     setIsMassModalOpen(true);
   };
 
   const handleSaveMass = async (updatedMass: Partial<Mass>) => {
-    await massService.updateMass(updatedMass);
+    await massService.updateMassWithoutDate(updatedMass);
     const updatedMasses = await intentionService.getIntentionMasses(intention.id);
     setLocalMasses(updatedMasses)
     setIsMassModalOpen(false);

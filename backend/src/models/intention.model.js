@@ -35,7 +35,9 @@ const Intention = {
 			.leftJoin("Masses", "Masses.intention_id", "Intentions.id")
 			.modify((query) => {
 				if (status === "pending") {
-					query.whereNull("Masses.date")
+					query.where((qb) => {
+						qb.whereNull("Masses.date").orWhere("Masses.date", "")
+					})
 				}
 			})
 			.leftJoin("Donors", "Intentions.donor_id", "Donors.id")

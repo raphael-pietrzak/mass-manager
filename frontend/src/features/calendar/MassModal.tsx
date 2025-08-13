@@ -21,6 +21,18 @@ export const MassModal: React.FC<MassModalProps> = ({ isOpen, onClose, onSave, m
   const [initialDate, setInitialDate] = useState<string | null>(null);
   const [initialCelebrantId, setInitialCelebrantId] = useState<string | null>(null);
 
+  const fetchAllCelebrants = async () => {
+    try {
+      const data = await celebrantService.getCelebrants()
+      setCelebrants(data);
+    } catch (error) {
+      console.error('Erreur lors de la récupération des célébrants:', error);
+      setCelebrants([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   // Récupérer la liste des célébrants disponibles 
   const fetchAvailableCelebrants = async (selectedDate: string) => {
     try {
@@ -69,6 +81,9 @@ export const MassModal: React.FC<MassModalProps> = ({ isOpen, onClose, onSave, m
   useEffect(() => {
     if (initialDate && initialCelebrantId) {
       fetchAvailableCelebrants(initialDate);
+    }
+    else {
+      fetchAllCelebrants()
     }
   }, [initialDate, initialCelebrantId]);
 
@@ -214,7 +229,7 @@ export const MassModal: React.FC<MassModalProps> = ({ isOpen, onClose, onSave, m
                 selectedDate={editedMass.date ? new Date(editedMass.date) : undefined}
                 onDateChange={handleDateChange}
                 unavailableDates={unavailableDates}
-                disabled={(editedMass.dateType !== "indifferent") || (editedMass.dateType === "indifferent" && editedMass.status === "pending")}
+                disabled={(editedMass.dateType !== "indifferent" || editedMass.status === "pending")}
               />
             </div>
           </div>

@@ -21,6 +21,7 @@ interface IntentionModalProps {
 export type IntentionWithRecurrence = Partial<Intention> & Recurrence
 
 const formDataIntention: IntentionWithRecurrence = {
+  id: '',
   intention_text: '',
   deceased: true,
   celebrant_name: '',
@@ -41,8 +42,8 @@ const formDataIntention: IntentionWithRecurrence = {
   end_type: 'occurrences',
   occurrences: 5,
   end_date: '',
-  position: 'first',
-  weekday: 'monday',
+  position: undefined,
+  weekday: undefined,
 };
 
 export const RecurringIntentionModal: React.FC<IntentionModalProps> = ({

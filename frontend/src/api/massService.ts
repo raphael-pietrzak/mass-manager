@@ -2,7 +2,7 @@ import axios from "axios"
 import { API_BASE_URL } from "."
 
 // mass status
-export type MassStatus = 'pending' | 'scheduled' | 'cancelled' | 'completed'
+export type MassStatus = "pending" | "scheduled" | "cancelled" | "completed"
 
 export interface Mass {
 	id?: string
@@ -28,11 +28,10 @@ export interface Mass {
 	brotherName?: string
 	// Données de masse
 	massCount?: number
-	intention_type: 'unit' | 'thirty' | 'novena';
+	intention_type: "unit" | "thirty" | "novena"
 	//massType?: string
 	dateType?: string
-	// Données de récurrence
-
+	recurrence_id?: number
 }
 
 // Type pour la réponse de prévisualisation avec une structure simplifiée des masses
@@ -40,7 +39,7 @@ export interface MassPreview {
 	masses: {
 		date: string | null // peut être null pour les messes sans date assignée
 		intention: string
-		intention_type: 'unit' | 'thirty' | 'novena';
+		intention_type: "unit" | "thirty" | "novena"
 		celebrant_id: string | null // peut être null si non assigné
 		celebrant_name: string
 		status: MassStatus
@@ -109,8 +108,13 @@ export const massService = {
 		}))
 	},
 
-	updateMass: async (mass: Partial<Mass>)=> {
+	updateMass: async (mass: Partial<Mass>) => {
 		const response = await axios.put(`${API_URL}/${mass.id}`, mass)
+		return response.data
+	},
+
+	updateMassWithoutDate: async (mass: Partial<Mass>) => {
+		const response = await axios.patch(`${API_URL}/${mass.id}`, mass)
 		return response.data
 	},
 
