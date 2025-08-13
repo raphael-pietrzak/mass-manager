@@ -21,6 +21,7 @@ interface IntentionModalProps {
 export type IntentionWithRecurrence = Partial<Intention> & Recurrence
 
 const formDataIntention: IntentionWithRecurrence = {
+  id: '',
   intention_text: '',
   deceased: true,
   celebrant_name: '',

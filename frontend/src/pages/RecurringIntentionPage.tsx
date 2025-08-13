@@ -5,6 +5,7 @@ import { formatDateForDisplay, parseApiDate } from '../utils/dateUtils';
 import { toast } from 'sonner';
 import { IntentionWithRecurrence, RecurringIntentionModal } from '../features/intentions/recurring/RecurringIntentionModal';
 import RecurrenceDialog from '../components/RecurrenceDialog';
+import { intentionService } from '../api/intentionService';
 
 const RecurrencePage: React.FC = () => {
   const [recurringIntentions, setRecurringIntentions] = useState<IntentionWithRecurrence[]>([]);
@@ -76,10 +77,23 @@ const RecurrencePage: React.FC = () => {
     setIntentionToDelete(null);
   };
 
-  const handleSave = async () => {
-    await loadRecurrences();
-    setRecurrenceDialogOpen(false);
-    setRecurrenceToEdit(null);
+  const handleSave = async (formData: Partial<Recurrence>, localIntention: Partial<IntentionWithRecurrence>) => {
+    try {
+      setLoading(true);
+      if (formData.recurrence_id && localIntention.id) {
+        await recurrenceService.update(formData.recurrence_id, formData);
+        await intentionService.updateMass(localIntention.id, {
+          intention_text: localIntention.intention_text,
+          deceased: localIntention.deceased,
+        });
+      }
+      await loadRecurrences();
+      setRecurrenceDialogOpen(false);
+      setRecurrenceToEdit(null);
+    } finally {
+      setLoading(false);
+    }
+
   };
 
   const getRecurrenceTypeLabel = (type: string) => {
@@ -270,7 +284,7 @@ const RecurrencePage: React.FC = () => {
             open={recurrenceDialogOpen}
             onOpenChange={setRecurrenceDialogOpen}
             recurrence={recurrenceToEdit}
-            onSave={() => { handleSave }}
+            onSave={handleSave}
           />
         )}
 
