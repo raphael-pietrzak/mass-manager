@@ -33,8 +33,8 @@ const RecurrenceForm: React.FC<RecurrenceFormProps> = ({
   }, [recurrence]);
 
   const recurrenceOptions = [
-    { value: 'daily', label: 'Quotidien' },
-    { value: 'weekly', label: 'Hebdomadaire' },
+    // { value: 'daily', label: 'Quotidien' },
+    // { value: 'weekly', label: 'Hebdomadaire' },
     { value: 'monthly', label: 'Mensuel' },
     { value: 'relative_position', label: 'Position relative mensuelle' },
     { value: 'yearly', label: 'Annuel' }
