@@ -95,7 +95,7 @@ const IntentionMassModalEdit: React.FC<IntentionFormProps> = ({
   };
 
   const handleSaveMass = async (updatedMass: Partial<Mass>) => {
-    await massService.updateMass(updatedMass);
+    await massService.updateMassWithoutDate(updatedMass);
     const updatedMasses = await intentionService.getIntentionMasses(intention.id);
     setLocalMasses(updatedMasses)
     setIsMassModalOpen(false);
