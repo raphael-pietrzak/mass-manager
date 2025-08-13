@@ -94,8 +94,8 @@ const RecurrenceDialog: React.FC<RecurrenceDialogProps> = ({
     try {
       setLoading(true);
 
-      if (recurrence?.id) {
-        await recurrenceService.update(recurrence.id, formData);
+      if (recurrence?.recurrence_id) {
+        await recurrenceService.update(recurrence.recurrence_id, formData);
         toast.success('Récurrence mise à jour avec succès');
       } else {
         await recurrenceService.create(formData as Omit<Recurrence, 'id' | 'created_at' | 'updated_at'>);
@@ -120,7 +120,7 @@ const RecurrenceDialog: React.FC<RecurrenceDialogProps> = ({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {recurrence ? 'Modifier la récurrence' : 'Nouvelle récurrence'}
+            Modifier l'intention récurrente
           </DialogTitle>
         </DialogHeader>
 
