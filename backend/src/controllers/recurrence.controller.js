@@ -117,45 +117,13 @@ exports.createRecurrence = async (req, res) => {
 		console.log("End Type:", endType)
 		console.log("Occurrences:", occurrences || "Aucune")
 
-		if (recurrence.type === "daily") {
-			masses = await RecurringIntentionService.handleGenerateDailyMass(startDate, celebrantId, endType, endDate, occurrences, intentionId)
-		}
+		// if (recurrence.type === "daily") {
+		// 	masses = await RecurringIntentionService.handleGenerateDailyMass(startDate, celebrantId, endType, endDate, occurrences, intentionId)
+		// }
 		if (recurrence.type === "yearly") {
 			masses = await RecurringIntentionService.handleGenerateAnnualMass(startDate, celebrantId, endType, endDate, occurrences, intentionId)
 		}
 
-		// Générer les dates des messes
-		// console.log("Génération des messes...")
-		// const startDate = parseISO(recurrence.start_date)
-		// const endDate = recurrence.end_date ? parseISO(recurrence.end_date) : null
-		// let currentDate = startDate
-		// let occurrenceCount = 0
-		// const masses = []
-		// console.log("Date de début:", format(startDate, "yyyy-MM-dd"))
-		// console.log("Date de fin:", endDate ? format(endDate, "yyyy-MM-dd") : "Aucune")
-		// console.log("End Type:", recurrence.end_type)
-		// console.log("Occurrences:", recurrence.occurrences || "Aucune")
-		// console.log("Position:", recurrence.position || "Aucune")
-		// console.log("Jour de la semaine:", recurrence.weekday !== null ? recurrence.weekday : "Aucun")
-		// while (
-		// 	(recurrence.end_type === "date" && currentDate <= endDate) ||
-		// 	(recurrence.end_type === "occurrences" && occurrenceCount < recurrence.occurrences)
-		// ) {
-		// 	console.log("Traitement de la date:", format(currentDate, "yyyy-MM-dd"))
-		// 	console.log("Création messe pour la date:", format(currentDate, "yyyy-MM-dd"))
-		// 	console.log("Traitement de la date:", format(currentDate, "yyyy-MM-dd"))
-		// 	console.log("Création messe pour la date:", format(currentDate, "yyyy-MM-dd"))
-		// 	const massData = {
-		// 		//date: format(currentDate, "yyyy-MM-dd"),
-		// 		celebrant_id: req.body.celebrant_id || null,
-		// 		intention_id: intentionId,
-		// 		status: "pending",
-		// 	}
-		// 	await Mass.create(massData)
-		// 	masses.push(massData)
-		// 	occurrenceCount++
-		// 	currentDate = addDays(currentDate, 1)
-		// }
 		console.log(`${masses.length} messes créées avec succès`)
 		res.status(201).json({
 			message: "Récurrence, intention et messes créées avec succès",
