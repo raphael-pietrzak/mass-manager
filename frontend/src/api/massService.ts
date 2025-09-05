@@ -6,7 +6,7 @@ export type MassStatus = "pending" | "scheduled" | "cancelled" | "completed"
 
 export interface Mass {
 	id?: string
-	date: string // format YYYY-MM-DD
+	date: string | null// format YYYY-MM-DD
 	deceased: number
 	intention?: string
 	celebrant_id: string
@@ -110,11 +110,6 @@ export const massService = {
 
 	updateMass: async (mass: Partial<Mass>) => {
 		const response = await axios.put(`${API_URL}/${mass.id}`, mass)
-		return response.data
-	},
-
-	updateMassWithoutDate: async (mass: Partial<Mass>) => {
-		const response = await axios.patch(`${API_URL}/${mass.id}`, mass)
 		return response.data
 	},
 

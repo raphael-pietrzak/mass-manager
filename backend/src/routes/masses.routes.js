@@ -6,7 +6,6 @@ router.get('/', massController.getMasses);
 router.get('/:id', massController.getMass);
 router.post('/', massController.createMass);
 router.put('/:id', massController.updateMass);
-router.patch('/:id', massController.updateMassWithoutDate);
 router.delete('/:id', massController.deleteMass);
 router.delete('/', massController.deleteMassBeforeDate); // Routes pour supprimer les messes avant une certaine date
 

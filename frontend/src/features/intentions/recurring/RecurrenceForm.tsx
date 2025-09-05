@@ -10,6 +10,8 @@ import { formatDateForApi, parseApiDate } from '../../../utils/dateUtils';
 import { IntentionWithRecurrence } from './RecurringIntentionModal';
 import { AlertTriangle } from 'lucide-react';
 import { AlertDescription } from '../../../components/ui/alert';
+import { specialDayService } from '../../../api/specialDaysService';
+import { celebrantService } from '../../../api/celebrantService';
 
 
 interface RecurrenceFormProps {
@@ -27,6 +29,7 @@ const RecurrenceForm: React.FC<RecurrenceFormProps> = ({
 }) => {
   const [formData, setFormData] = useState<Partial<IntentionWithRecurrence>>(recurrence);
   const [errors, setErrors] = useState<{ start_date?: string; end_date?: string }>({});
+  const [unavailableDates, setUnavailableDates] = useState<string[]>([]);
 
   useEffect(() => {
     setFormData(recurrence);
@@ -79,6 +82,38 @@ const RecurrenceForm: React.FC<RecurrenceFormProps> = ({
     nextStep();
   };
 
+  useEffect(() => {
+    if (!recurrence.celebrant_id) {
+      setUnavailableDates([]);
+      return;
+    }
+    const fetchAvailability = async () => {
+      try {
+        let dates: string[] = [];
+
+        // Récupérer les specialDays globales
+        const specialDays = await specialDayService.getSpecialDays({ number_of_masses: 0 });
+        const specialDates = specialDays.map((d) => d.date);
+
+        // Récupérer les jours complets où des messes existent
+        const fullDates = await celebrantService.getFullDates();
+
+        // Récupérer les indisponibilités spécifiques au célébrant
+        const unavailable = await celebrantService.getUnavailableDates(recurrence.celebrant_id!);
+
+        // Fusionner toutes les dates sans doublons
+        dates = [...new Set([...specialDates, ...fullDates, ...unavailable])];
+
+        setUnavailableDates(dates);
+      } catch (error) {
+        console.error('Erreur lors de la récupération des dates indisponibles :', error);
+        setUnavailableDates([]);
+      }
+    };
+    fetchAvailability();
+  }, [recurrence.celebrant_id]);
+
+
   return (
     <div className="flex flex-col flex-1 h-[550px]">
       <div className="flex-grow space-y-2 overflow-y-auto">
@@ -87,6 +122,7 @@ const RecurrenceForm: React.FC<RecurrenceFormProps> = ({
           <CalendarSelector
             selectedDate={formData.start_date ? parseApiDate(formData.start_date) : undefined}
             onDateChange={(date) => handleChange('start_date', formatDateForApi(date))}
+            unavailableDates={unavailableDates}
             ignoreAvailability={false}
           />
           {errors.start_date && (

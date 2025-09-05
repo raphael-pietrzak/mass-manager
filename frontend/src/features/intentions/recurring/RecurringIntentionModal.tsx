@@ -186,6 +186,7 @@ export const RecurringIntentionModal: React.FC<IntentionModalProps> = ({
               <RecurringIntentionSummury
                 nextStep={nextStep}
                 prevStep={prevStep}
+                data={formData}
               />
             </div>
           )}

@@ -117,9 +117,6 @@ exports.createRecurrence = async (req, res) => {
 		console.log("End Type:", endType)
 		console.log("Occurrences:", occurrences || "Aucune")
 
-		// if (recurrence.type === "daily") {
-		// 	masses = await RecurringIntentionService.handleGenerateDailyMass(startDate, celebrantId, endType, endDate, occurrences, intentionId)
-		// }
 		if (recurrence.type === "yearly") {
 			masses = await RecurringIntentionService.handleGenerateAnnualMass(startDate, celebrantId, endType, endDate, occurrences, intentionId)
 		}

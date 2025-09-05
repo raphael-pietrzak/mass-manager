@@ -1,8 +1,9 @@
 const Mass = require("../models/mass.model")
 const { addDays, format, addYears } = require("date-fns")
+const MassService = require("./mass.service")
 
 const RecurringIntentionService = {
-	handleGenerateDailyMass: async (startDate, celebrant_id, end_type, end_date, occurrences, intentionId) => {
+	handleGenerateDailyMass: async (startDate, celebrant_id, end_type, end_date, occurrences, intentionId, usedCelebrantsByDate = {}) => {
 		let currentDate = startDate
 		let occurrenceCount = 0
 		const masses = []
@@ -16,6 +17,9 @@ const RecurringIntentionService = {
 				status: "scheduled",
 			}
 			await Mass.create(massData)
+
+			// mise à jour des célébrants utilisés
+			await MassService.updateUsedCelebrants(massData, usedCelebrantsByDate)
 			masses.push(massData)
 			occurrenceCount++
 			currentDate = addDays(currentDate, 1)
@@ -23,7 +27,7 @@ const RecurringIntentionService = {
 		return masses
 	},
 
-	handleGenerateAnnualMass: async (startDate, celebrant_id, end_type, end_date, occurrences, intentionId) => {
+	handleGenerateAnnualMass: async (startDate, celebrant_id, end_type, end_date, occurrences, intentionId, usedCelebrantsByDate = {}) => {
 		let currentDate = startDate
 		let occurrenceCount = 0
 		const masses = []
@@ -43,6 +47,8 @@ const RecurringIntentionService = {
 					status: "scheduled",
 				}
 				await Mass.create(massData)
+				// mise à jour des célébrants utilisés
+				await MassService.updateUsedCelebrants(massData, usedCelebrantsByDate)
 				masses.push(massData)
 			}
 
@@ -56,6 +62,8 @@ const RecurringIntentionService = {
 				status: "scheduled",
 			}
 			await Mass.create(nextMassData)
+			// mise à jour des célébrants utilisés
+			await MassService.updateUsedCelebrants(nextMassData, usedCelebrantsByDate)
 			masses.push(nextMassData)
 		} else {
 			// Cas end_type = occurences ou end_type = date
@@ -68,6 +76,8 @@ const RecurringIntentionService = {
 					status: "scheduled",
 				}
 				await Mass.create(massData)
+				// mise à jour des célébrants utilisés
+				await MassService.updateUsedCelebrants(massData, usedCelebrantsByDate)
 				masses.push(massData)
 				occurrenceCount++
 				currentDate = addYears(currentDate, 1)

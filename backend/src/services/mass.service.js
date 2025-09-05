@@ -1,4 +1,3 @@
-const db = require("../../config/database")
 const Mass = require("../models/mass.model")
 const Intention = require("../models/intention.model")
 const Celebrant = require("../models/celebrant.model")
