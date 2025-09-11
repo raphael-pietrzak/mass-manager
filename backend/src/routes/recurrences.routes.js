@@ -7,6 +7,7 @@ router.get('/active', recurrenceController.getActiveRecurrences);
 router.get('/type/:type', recurrenceController.getRecurrencesByType);
 router.get('/:id', recurrenceController.getRecurrence);
 router.post('/', recurrenceController.createRecurrence);
+router.post('/preview', recurrenceController.previewRecurringMass)
 router.put('/:id', recurrenceController.updateRecurrence);
 router.delete('/:id', recurrenceController.deleteRecurrence);
 

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { AlertTriangle, X } from 'lucide-react';
-import { Intention } from '../../../api/intentionService';
+import { Intention, Masses } from '../../../api/intentionService';
 import { celebrantService, Celebrant } from '../../../api/celebrantService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import DonorForm from '../forms/DonorForm';
 import OfferingForm from '../forms/OfferingForm';
-import { Recurrence } from '../../../api/recurrenceService';
+import { Recurrence, recurrenceService, RecurringIntentionSubmission } from '../../../api/recurrenceService';
 import RecurringIntentionForm from './RecurringIntentionForm';
 import RecurrenceForm from './RecurrenceForm';
 import RecurringIntentionSummury from './RecurringIntentionSmmury';
@@ -15,7 +15,7 @@ interface IntentionModalProps {
   intention: IntentionWithRecurrence | null;
   isOpen: boolean;
   onClose: () => void;
-  onSave: (intention: IntentionWithRecurrence) => void;
+  onSave: (intention: RecurringIntentionSubmission) => void;
 }
 
 export type IntentionWithRecurrence = Partial<Intention> & Recurrence
@@ -54,13 +54,9 @@ export const RecurringIntentionModal: React.FC<IntentionModalProps> = ({
 }) => {
   const [celebrants, setCelebrants] = useState<Celebrant[]>([]);
   const [step, setStep] = useState(1); // État pour suivre l'étape actuelle
-  //const [isLoading, setIsLoading] = useState(false);
-
+  const [previewData, setPreviewData] = useState<Masses[]>([]);
   const [formData, setFormData] = useState(formDataIntention);
-
-  // const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-  //   intention?.date ? parseApiDate(intention.date) : new Date()
-  // );
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchCelebrants = async () => {
@@ -81,8 +77,8 @@ export const RecurringIntentionModal: React.FC<IntentionModalProps> = ({
       const defaultForm = intention || formDataIntention;
       // Réinitialiser aux valeurs par défaut ou aux valeurs de l'intention si fournie
       setFormData(defaultForm);
-      //setSelectedDate(defaultForm?.date ? parseApiDate(defaultForm.date) : new Date());
       setStep(1);
+      setPreviewData([]);
     }
   }, [isOpen, intention]);
 
@@ -116,15 +112,29 @@ export const RecurringIntentionModal: React.FC<IntentionModalProps> = ({
 
   const [isError, setIsError] = useState<string | null>(null);
 
-  const confirmAndSave = async () => {
+  const previewMasses = async (data: Partial<IntentionWithRecurrence>) => {
     try {
-      //setIsLoading(true);
-      onSave(formData as IntentionWithRecurrence);
+      setIsLoading(true);
+      // Met à jour tout de suite le formData du parent avec les dernières valeurs
+      setFormData(prev => ({ ...prev, ...data }));
+      const preview = await recurrenceService.previewMasses(data);
+      setPreviewData(preview);
+      setStep(3); // Passer à l'étape de récapitulatif
+    } catch (error: any) {
+      console.error("Erreur lors de la prévisualisation des messes:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const confirmAndSave = async () => {
+    if (!previewData) return;
+    try {
+      setIsLoading(true);
+      onSave({ ...formData, masses: previewData });
       onClose();
     } catch (error) {
       console.error("Erreur lors de la sauvegarde de l'intention:", error);
-    } finally {
-      //setIsLoading(false);
     }
   };
 
@@ -175,7 +185,7 @@ export const RecurringIntentionModal: React.FC<IntentionModalProps> = ({
               <RecurrenceForm
                 recurrence={formData}
                 updateRecurrence={handleFormUpdate}
-                nextStep={nextStep}
+                nextStep={previewMasses}
                 prevStep={prevStep}
               />
             </div>
@@ -187,6 +197,8 @@ export const RecurringIntentionModal: React.FC<IntentionModalProps> = ({
                 nextStep={nextStep}
                 prevStep={prevStep}
                 data={formData}
+                previewData={previewData}
+                isLoading={isLoading}
               />
             </div>
           )}

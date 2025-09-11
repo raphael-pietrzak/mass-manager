@@ -198,7 +198,7 @@ const MassService = {
 		// Pas de célébrant spécifique (chercher n'importe quel célébrant disponible)
 		else {
 			// Récupérer les célébrants déjà utilisés à cette date
-			const usedCelebrants = usedCelebrantsByDate[date] ? Array.from(usedCelebrantsByDate[date]) : []
+			const usedCelebrants = usedCelebrantsByDate[date] ? Array.from(usedCelebrantsByDate[date]) : [] 
 			// Trouver un célébrant disponible à cette date
 			const availableCelebrant = await Mass.getRandomAvailableCelebrant(date, usedCelebrants)
 
