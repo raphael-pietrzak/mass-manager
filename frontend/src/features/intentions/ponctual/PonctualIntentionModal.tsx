@@ -38,6 +38,7 @@ const testFormData: Partial<Intention> = {
   donor_address: '',
   donor_postal_code: '',
   donor_city: '',
+  random_celebrant: true
 };
 
 export const PonctualIntentionModal: React.FC<IntentionModalProps> = ({
@@ -76,8 +77,8 @@ export const PonctualIntentionModal: React.FC<IntentionModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       const defaultForm = intention || testFormData;
-      // Réinitialiser aux valeurs par défaut ou aux valeurs de l'intention si fournie
-      setFormData(defaultForm);
+      defaultForm.random_celebrant = !defaultForm.celebrant_id;
+      setFormData(prev => ({ ...prev, ...defaultForm }));
       setSelectedDate(defaultForm?.date ? parseApiDate(defaultForm.date) : new Date());
       setStep(1);
       setPreviewData([]);
@@ -119,7 +120,10 @@ export const PonctualIntentionModal: React.FC<IntentionModalProps> = ({
     if (data.celebrant_id !== undefined && data.celebrant_id !== formData.celebrant_id) {
       fetchUnavailableDates(data.celebrant_id || undefined);
     }
-
+    // mettre à jour random_celebrant selon ce que l’utilisateur fait
+    if (data.celebrant_id !== undefined) {
+      data.random_celebrant = data.celebrant_id === '' || data.celebrant_id === null;
+    }
     setFormData((prev: any) => ({ ...prev, ...data }));
   };
 
@@ -178,6 +182,11 @@ export const PonctualIntentionModal: React.FC<IntentionModalProps> = ({
 
     try {
       setIsLoading(true);
+      // Injecter random_celebrant dans chaque masse
+      const massesWithRandomFlag = previewData.map(m => ({
+        ...m,
+        random_celebrant: formData.random_celebrant ? 1 : 0
+      }));
       onSave({
         donor: {
           firstname: formData.donor_firstname || '',
@@ -198,7 +207,8 @@ export const PonctualIntentionModal: React.FC<IntentionModalProps> = ({
           payment_method: formData.payment_method as 'cheque' | 'cash' | 'card' | 'transfer',
           brother_name: formData.brother_name || undefined,
         },
-        masses: previewData
+        //masses: previewData,
+        masses: massesWithRandomFlag
       });
       onClose();
     } catch (error) {

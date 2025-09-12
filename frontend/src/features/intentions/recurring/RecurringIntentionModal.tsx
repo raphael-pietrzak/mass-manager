@@ -44,6 +44,7 @@ const formDataIntention: IntentionWithRecurrence = {
   end_date: '',
   position: undefined,
   weekday: undefined,
+  random_celebrant: true
 };
 
 export const RecurringIntentionModal: React.FC<IntentionModalProps> = ({
@@ -75,8 +76,8 @@ export const RecurringIntentionModal: React.FC<IntentionModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       const defaultForm = intention || formDataIntention;
-      // Réinitialiser aux valeurs par défaut ou aux valeurs de l'intention si fournie
-      setFormData(defaultForm);
+      defaultForm.random_celebrant = !defaultForm.celebrant_id;
+      setFormData(prev => ({ ...prev, ...defaultForm }));
       setStep(1);
       setPreviewData([]);
     }
@@ -85,6 +86,10 @@ export const RecurringIntentionModal: React.FC<IntentionModalProps> = ({
   // Fonction mise à jour pour gérer le changement de célébrant
   const handleFormUpdate = (data: Partial<typeof formData>) => {
     setIsError(null);
+    // mettre à jour random_celebrant selon ce que l’utilisateur fait
+    if (data.celebrant_id !== undefined) {
+      data.random_celebrant = data.celebrant_id === '' || data.celebrant_id === null;
+    }
     setFormData((prev: any) => ({ ...prev, ...data }));
   };
 
@@ -131,7 +136,13 @@ export const RecurringIntentionModal: React.FC<IntentionModalProps> = ({
     if (!previewData) return;
     try {
       setIsLoading(true);
-      onSave({ ...formData, masses: previewData });
+      // Injecter random_celebrant dans chaque masse
+      const massesWithRandomFlag = previewData.map(m => ({
+        ...m,
+        random_celebrant: formData.random_celebrant ? 1 : 0
+      }));
+      console.log('masses envoyées au back:', massesWithRandomFlag);
+      onSave({ ...formData, masses: massesWithRandomFlag });
       onClose();
     } catch (error) {
       console.error("Erreur lors de la sauvegarde de l'intention:", error);
