@@ -6,10 +6,8 @@ const Donor = require("../models/donor.model")
 const RecurringIntentionService = require("../services/recurrence.service")
 
 exports.getRecurrences = async (req, res) => {
-	console.log("Récupération de toutes les récurrences")
 	try {
 		const data = await Recurrence.getAll()
-		console.log(`${data.length} récurrences trouvées`)
 		res.json(data)
 	} catch (error) {
 		console.error("Erreur getRecurrences:", error)
@@ -28,6 +26,35 @@ exports.getRecurrence = async (req, res) => {
 	} catch (error) {
 		console.error(error)
 		res.status(500).send("Erreur lors de la récupération de la récurrence")
+	}
+}
+
+exports.previewRecurringMass = async (req, res) => {
+	console.log("Début prévisualisation intention:", JSON.stringify(req.body, null, 2))
+	try {
+		const params = {
+			type: req.body.type,
+			start_date: req.body.start_date,
+			end_type: req.body.end_type,
+			occurrences: req.body.occurrences,
+			end_date: req.body.end_date,
+			position: req.body.position,
+			weekday: req.body.weekday,
+			celebrant_id: req.body.celebrant_id,
+			celebrant_name: req.body.celebrant_name,
+			celebrant_title: req.body.celebrant_title,
+			intention_text: req.body.intention_text,
+			deceased: req.body.deceased,
+		}
+		if (!params.type || !params.start_date || !params.end_type) {
+			return res.status(400).json({ message: "Type, date de début et type de fin sont requis" })
+		}
+		const masses = await RecurringIntentionService.handleGenerateRecurringMassPreview(params)
+		console.log("Prévisualisation générée:", JSON.stringify(masses, null, 2))
+		res.status(200).json(masses)
+	} catch (error) {
+		console.error("Erreur prévisualisation:", error)
+		res.status(400).json({ message: error.message })
 	}
 }
 
@@ -87,6 +114,7 @@ exports.createRecurrence = async (req, res) => {
 			console.log("Nouveau donateur créé:", donorId)
 		}
 
+		const masses = req.body.masses
 		// Créer l'intention associée - Correction de l'ID de récurrence
 		const intention = {
 			donor_id: donorId,
@@ -99,6 +127,7 @@ exports.createRecurrence = async (req, res) => {
 			brother_name: req.body.brother_name || null,
 			wants_celebration_date: req.body.wants_celebration_date,
 			date_type: "imperative",
+			number_of_masses: recurrence.end_type !== "no-end" ? masses.length : null
 		}
 
 		const intentionId = await Intention.create(intention)
@@ -106,10 +135,8 @@ exports.createRecurrence = async (req, res) => {
 
 		// Générer les dates des messes
 		console.log("Génération des messes...")
-		let masses = []
 		const startDate = parseISO(recurrence.start_date)
 		const endDate = recurrence.end_date ? parseISO(recurrence.end_date) : null
-		const celebrantId = req.body.celebrant_id || null
 		const endType = recurrence.end_type
 		const occurrences = recurrence.occurrences || null
 		console.log("Date de début:", format(startDate, "yyyy-MM-dd"))
@@ -117,12 +144,15 @@ exports.createRecurrence = async (req, res) => {
 		console.log("End Type:", endType)
 		console.log("Occurrences:", occurrences || "Aucune")
 
-		// if (recurrence.type === "daily") {
-		// 	masses = await RecurringIntentionService.handleGenerateDailyMass(startDate, celebrantId, endType, endDate, occurrences, intentionId)
-		// }
-		if (recurrence.type === "yearly") {
-			masses = await RecurringIntentionService.handleGenerateAnnualMass(startDate, celebrantId, endType, endDate, occurrences, intentionId)
-		}
+		//if (recurrence.type === "yearly") {
+			for (const mass of masses) {
+				await Mass.create({
+					intention_id: intentionId,
+					date: mass.date,
+					celebrant_id: mass.celebrant_id,
+					status: "scheduled",
+				})
+			}
 
 		console.log(`${masses.length} messes créées avec succès`)
 		res.status(201).json({

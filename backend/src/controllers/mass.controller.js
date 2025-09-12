@@ -85,7 +85,7 @@ exports.updateMass = async (req, res) => {
     // Mise à jour de la messe uniquement (pas l'intention)
     const mass = {
       id: req.params.id,
-      date: req.body.date,
+      date: req.body.date || null,
       celebrant_id: req.body.celebrant_id,
       intention_id: req.body.intention_id,
       status: req.body.status
@@ -97,25 +97,6 @@ exports.updateMass = async (req, res) => {
   catch (error) {
     console.error(error);
     res.status(500).send('Erreur lors de la mise à jour de la messe');
-  }
-}
-
-exports.updateMassWithoutDate = async (req, res) => {
-  try {
-    // Mise à jour de la messe sans toucher à la date
-    const mass = {
-      id: req.params.id,
-      celebrant_id: req.body.celebrant_id,
-      intention_id: req.body.intention_id,
-      status: req.body.status
-    };
-
-    await Mass.update(mass);
-    res.status(204).send();
-  }
-  catch (error) {
-    console.error(error);
-    res.status(500).send('Erreur lors de la mise à jour de la messe (sans date)');
   }
 }
 

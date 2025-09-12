@@ -88,7 +88,13 @@ const RecurringIntentionForm: React.FC<RecurringIntentionFormProps> = ({
           <DropdownSearch
             options={celebrantOptions}
             value={formData.celebrant_id}
-            onChange={(value: string) => updateFormData({ celebrant_id: value })}
+            onChange={(value: string) => {
+              const selectedOption = celebrantOptions.find(option => option.value === value);
+              updateFormData({
+                celebrant_id: value,
+                celebrant_name: selectedOption ? selectedOption.label : ''
+              });
+            }}
             placeholder="Sélectionner un célébrant"
             searchType='celebrant'
           />

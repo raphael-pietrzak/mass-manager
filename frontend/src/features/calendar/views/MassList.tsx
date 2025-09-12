@@ -32,7 +32,7 @@ export const MassList: React.FC<MassListProps> = ({ masses, onDeleteMass, onUpda
   const [selectedDetailMass, setSelectedDetailMass] = useState<Mass | null>(null);
 
   const filteredMasses = masses.filter(mass => {
-    const massDate = new Date(mass.date);
+    const massDate = new Date(mass.date ?? '');
 
     // Filter by celebrant
     const celebrantMatch = filters.celebrant === 'all' || String(mass.celebrant_id) === String(filters.celebrant);
@@ -49,7 +49,7 @@ export const MassList: React.FC<MassListProps> = ({ masses, onDeleteMass, onUpda
 
   // Trier les messes par date
   const sortedMasses = [...filteredMasses].sort((a, b) =>
-    new Date(a.date).getTime() - new Date(b.date).getTime()
+    new Date(a.date ?? '').getTime() - new Date(b.date ?? '').getTime()
   );
 
   const handleDeleteClick = (e: React.MouseEvent, mass: Mass) => {
@@ -138,7 +138,7 @@ export const MassList: React.FC<MassListProps> = ({ masses, onDeleteMass, onUpda
                   <td className="px-3 py-2 whitespace-nowrap text-sm">
                     <div className="flex items-center">
                       <Calendar className="w-3.5 h-3.5 text-gray-400 mr-1.5" />
-                      <span>{format(new Date(mass.date), 'EEE d MMM', { locale: fr })}</span>
+                      <span>{format(new Date(mass.date ?? ''), 'EEE d MMM', { locale: fr })}</span>
                     </div>
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap text-sm">
@@ -263,7 +263,7 @@ export const MassList: React.FC<MassListProps> = ({ masses, onDeleteMass, onUpda
                 <h3 className="text-sm font-medium text-gray-500">Date</h3>
                 <p className="flex items-center mt-1 gap-x-2">
                   <Calendar className="w-4 h-4 text-gray-600" />
-                  {format(new Date(selectedDetailMass.date), 'EEEE d MMMM yyyy', { locale: fr })}
+                  {format(new Date(selectedDetailMass.date ?? ''), 'EEEE d MMMM yyyy', { locale: fr })}
                   {selectedDetailMass.dateType === "imperative" || selectedDetailMass.dateType === "desired" ? (
                     <span className="px-2 py-0.5 rounded-full text-sm bg-red-100 text-gray-900">
                       Fixe
@@ -322,7 +322,7 @@ export const MassList: React.FC<MassListProps> = ({ masses, onDeleteMass, onUpda
               >
                 Fermer
               </button>
-              {selectedDetailMass?.intention_type === "unit" || selectedDetailMass?.recurrence_id !== null && (
+              {(selectedDetailMass?.intention_type === "unit" || selectedDetailMass?.recurrence_id !== null) && (
                 <button
                   onClick={() => {
                     setIsDetailsModalOpen(false);

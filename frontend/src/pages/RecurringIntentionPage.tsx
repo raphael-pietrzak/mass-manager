@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Trash2, Plus, Edit, AlertTriangle, X } from 'lucide-react';
-import { recurrenceService, Recurrence } from '../api/recurrenceService';
+import { recurrenceService, Recurrence, RecurringIntentionSubmission } from '../api/recurrenceService';
 import { formatDateForDisplay, parseApiDate } from '../utils/dateUtils';
 import { toast } from 'sonner';
 import { IntentionWithRecurrence, RecurringIntentionModal } from '../features/intentions/recurring/RecurringIntentionModal';
@@ -34,7 +34,7 @@ const RecurrencePage: React.FC = () => {
     }
   };
 
-  const handleSaveNewRecurringIntention = async (newIntention: IntentionWithRecurrence) => {
+  const handleSaveNewRecurringIntention = async (newIntention: RecurringIntentionSubmission) => {
     try {
       await recurrenceService.create(newIntention);
       await loadRecurrences()
@@ -117,17 +117,6 @@ const RecurrencePage: React.FC = () => {
     return endType;
   };
 
-  // const getRecurrenceVariant = (type: string) => {
-  //   const variants = {
-  //     daily: 'default',
-  //     weekly: 'secondary',
-  //     monthly: 'outline',
-  //     relative_position: 'destructive',
-  //     yearly: 'default'
-  //   };
-  //   return variants[type as keyof typeof variants] || 'default';
-  // };
-
   return (
     <div className="min-h-screen bg-gray-100">
       <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
@@ -175,9 +164,22 @@ const RecurrencePage: React.FC = () => {
                         className="hover:bg-gray-50"
                       >
                         <td className="px-3 py-2 whitespace-nowrap text-sm">
-                          <span className="px-2 py-0.5 rounded-full text-s italic">
-                            {intention.intention_text}
-                          </span>
+                          <div className="flex items-center space-x-2 max-w-[800px]">
+                            {/* intention text tronqué */}
+                            <span
+                              className="truncate inline-block max-w-[500px] px-2 py-0.5 rounded-full text-s italic"
+                              title={intention.intention_text} // Tooltip au survol
+                            >
+                              {intention.intention_text}
+                            </span>
+
+                            {/* badge défunt */}
+                            {intention.deceased ? (
+                              <span className="ml-2 px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-700">
+                                Défunt
+                              </span>
+                            ) : null}
+                          </div>
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap text-sm">
                           <span className="px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-700">

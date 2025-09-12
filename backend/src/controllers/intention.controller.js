@@ -191,7 +191,7 @@ exports.deleteIntention = async (req, res) => {
 	}
 }
 
-exports.previewIntention = async (req, res) => {
+exports.previewPonctualIntention = async (req, res) => {
 	console.log("Début prévisualisation intention:", JSON.stringify(req.body, null, 2))
 	try {
 		const preview = await MassService.generateMassPreview({

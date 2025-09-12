@@ -10,12 +10,14 @@ import { formatDateForApi, parseApiDate } from '../../../utils/dateUtils';
 import { IntentionWithRecurrence } from './RecurringIntentionModal';
 import { AlertTriangle } from 'lucide-react';
 import { AlertDescription } from '../../../components/ui/alert';
+import { specialDayService } from '../../../api/specialDaysService';
+import { celebrantService } from '../../../api/celebrantService';
 
 
 interface RecurrenceFormProps {
   recurrence: Partial<IntentionWithRecurrence>;
   updateRecurrence: (recurrence: Partial<IntentionWithRecurrence>) => void;
-  nextStep: () => void;
+  nextStep: (data: Partial<IntentionWithRecurrence>) => void;
   prevStep: () => void;
 }
 
@@ -26,7 +28,8 @@ const RecurrenceForm: React.FC<RecurrenceFormProps> = ({
   prevStep
 }) => {
   const [formData, setFormData] = useState<Partial<IntentionWithRecurrence>>(recurrence);
-  const [errors, setErrors] = useState<{ start_date?: string; end_date?: string }>({});
+  const [errors, setErrors] = useState<{ start_date?: string; end_date?: string; position?: string; weekday?: string }>({});
+  const [unavailableDates, setUnavailableDates] = useState<string[]>([]);
 
   useEffect(() => {
     setFormData(recurrence);
@@ -63,12 +66,21 @@ const RecurrenceForm: React.FC<RecurrenceFormProps> = ({
   };
 
   const handleValidate = () => {
-    const newErrors: { start_date?: string; end_date?: string } = {};
+    const newErrors: { start_date?: string; end_date?: string; position?: string; weekday?: string } = {};
     if (!formData.start_date) {
       newErrors.start_date = 'La date de début est requise';
     }
     if (formData.end_type === 'date' && !formData.end_date) {
       newErrors.end_date = 'La date de fin est requise';
+    }
+    if (formData.start_date && formData.end_date && formData.start_date > formData.end_date) {
+      newErrors.end_date = 'La date de fin doit être postérieure à la date de début';
+    }
+    if (formData.type === 'relative_position' && !formData.position) {
+      newErrors.position = 'La position est requise';
+    }
+    if (formData.type === 'relative_position' && !formData.weekday) {
+      newErrors.weekday = 'Le jour de la semaine est requis';
     }
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -76,8 +88,36 @@ const RecurrenceForm: React.FC<RecurrenceFormProps> = ({
     }
     setErrors({});
     updateRecurrence(formData);
-    nextStep();
+    nextStep(formData);
   };
+
+  useEffect(() => {
+    const fetchAvailability = async () => {
+      try {
+        // Toujours récupérer les specialDays
+        const specialDays = await specialDayService.getSpecialDays({ number_of_masses: 0 });
+        const specialDates = specialDays.map((d: any) => d.date);
+
+        // Toujours récupérer les fullDates globales (ou le celebrant a déjà une messe attribuée)
+        const fullDates = await celebrantService.getFullDates();
+
+        // Indisponibilités spécifiques au célébrant si sélectionné
+        let unavailable: string[] = [];
+        if (recurrence.celebrant_id) {
+          unavailable = await celebrantService.getUnavailableDates(recurrence.celebrant_id);
+        }
+
+        // Fusionner
+        const dates = [...new Set([...specialDates, ...fullDates, ...unavailable])];
+        setUnavailableDates(dates);
+      } catch (error) {
+        console.error('Erreur lors de la récupération des dates indisponibles :', error);
+        setUnavailableDates([]);
+      }
+    };
+    fetchAvailability();
+  }, [recurrence.celebrant_id]);
+
 
   return (
     <div className="flex flex-col flex-1 h-[550px]">
@@ -87,6 +127,7 @@ const RecurrenceForm: React.FC<RecurrenceFormProps> = ({
           <CalendarSelector
             selectedDate={formData.start_date ? parseApiDate(formData.start_date) : undefined}
             onDateChange={(date) => handleChange('start_date', formatDateForApi(date))}
+            unavailableDates={unavailableDates}
             ignoreAvailability={false}
           />
           {errors.start_date && (
@@ -130,7 +171,12 @@ const RecurrenceForm: React.FC<RecurrenceFormProps> = ({
                 ))}
               </SelectContent>
             </Select>
-
+            {errors.position && (
+              <div className="flex items-center gap-2 text-red-500">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>{errors.position}</AlertDescription>
+              </div>
+            )}
             <Label>Jour de la semaine</Label>
             <Select
               value={formData.weekday || ''}
@@ -145,6 +191,12 @@ const RecurrenceForm: React.FC<RecurrenceFormProps> = ({
                 ))}
               </SelectContent>
             </Select>
+            {errors.weekday && (
+              <div className="flex items-center gap-2 text-red-500">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>{errors.weekday}</AlertDescription>
+              </div>
+            )}
           </div>
         )}
 
@@ -177,6 +229,7 @@ const RecurrenceForm: React.FC<RecurrenceFormProps> = ({
                 selectedDate={formData.end_date ? parseApiDate(formData.end_date) : undefined}
                 onDateChange={(date) => handleChange('end_date', formatDateForApi(date))}
                 ignoreAvailability={false}
+                position='top'
               />
             )}
             {errors.end_date && (

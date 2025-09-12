@@ -40,7 +40,7 @@ async function assignAnnualMassesWithNoEnd() {
 		.andWhere("r.end_type", "no-end")
 
 	console.log(intentionsWithRecurrence)
-	const nextYear = new Date().getFullYear() + 1
+	const nextYear = new Date().getFullYear() + 2
 
 	for (const intent of intentionsWithRecurrence) {
 		// Récupérer la dernière messe pour cette intention
@@ -58,6 +58,7 @@ async function assignAnnualMassesWithNoEnd() {
 		// Créer la nouvelle messe
 		const mass = await db("Masses").insert({
 			date: nextDate.toISOString().split("T")[0], // format YYYY-MM-DD
+			// TODO : // si célébrant randomCelebrant === true on choisit un dispo
 			celebrant_id: lastMass.celebrant_id || null,
 			intention_id: intent.intention_id,
 			status: "scheduled",
