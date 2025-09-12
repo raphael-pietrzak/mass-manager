@@ -1,5 +1,5 @@
 const Mass = require("../models/mass.model")
-const { format, addMonths, addYears, parseISO } = require("date-fns")
+const { format, addMonths, addYears, getYear, parseISO } = require("date-fns")
 const MassService = require("./mass.service")
 const Celebrant = require("../models/celebrant.model")
 
@@ -67,31 +67,49 @@ const RecurringIntentionService = {
 				status: celebrant ? "scheduled" : "error",
 			})
 
-			// Boucle selon end_type
-			while (
-				(end_type === "date" && (!endDateObj || currentDate <= endDateObj)) ||
-				(end_type === "occurrences" && occurrenceCount < occurrences) ||
-				end_type === "no-end"
-			) {
-				const celebrant = await getCelebrant(currentDate)
-				masses.push(buildMass(currentDate, celebrant))
-				if (celebrant) {
-					const dateKey = format(currentDate, "yyyy-MM-dd")
-					if (!usedCelebrantsByDate[dateKey]) usedCelebrantsByDate[dateKey] = new Set()
-					usedCelebrantsByDate[dateKey].add(parseInt(celebrant.id))
-				}
-				occurrenceCount++
+			if (end_type === "no-end") {
+				if (type === "yearly") {
+					// Déterminer le nombre d'occurrences selon l'année du start_date
+					const currentYear = new Date().getFullYear()
+					const startYear = getYear(currentDate)
+					const totalOccurrences = startYear === currentYear ? 3 : startYear === currentYear + 1 ? 2 : 1
 
-				// avancer la date selon le type
-				if (type === "yearly") currentDate = addYears(currentDate, 1)
-				else if (type === "monthly") currentDate = addMonths(currentDate, 1)
-				else {
+					for (let i = 0; i < totalOccurrences; i++) {
+						const celebrant = await getCelebrant(currentDate)
+						masses.push(buildMass(currentDate, celebrant))
+						if (celebrant) {
+							const dateKey = format(currentDate, "yyyy-MM-dd")
+							if (!usedCelebrantsByDate[dateKey]) usedCelebrantsByDate[dateKey] = new Set()
+							usedCelebrantsByDate[dateKey].add(parseInt(celebrant.id))
+						}
+						currentDate = addYears(currentDate, 1) // Avancer d'un an à chaque itération
+					}
+				}
+				if (type === "monthly") {
 					// TODO
-					// type personnalisé (relative_position etc.)
-					currentDate = addMonths(currentDate, 1) // ex. simplifié
 				}
+				else {
+					// TODO (relative_position)
+				}
+			} else {
+				// Boucle selon end_type
+				while ((end_type === "date" && (!endDateObj || currentDate <= endDateObj)) || (end_type === "occurrences" && occurrenceCount < occurrences)) {
+					const celebrant = await getCelebrant(currentDate)
+					masses.push(buildMass(currentDate, celebrant))
+					if (celebrant) {
+						const dateKey = format(currentDate, "yyyy-MM-dd")
+						if (!usedCelebrantsByDate[dateKey]) usedCelebrantsByDate[dateKey] = new Set()
+						usedCelebrantsByDate[dateKey].add(parseInt(celebrant.id))
+					}
+					occurrenceCount++
 
-				if (end_type === "no-end" && occurrenceCount >= 2) break // ex: 2 masses max pour preview
+					// avancer la date selon le type
+					if (type === "yearly") currentDate = addYears(currentDate, 1)
+					else if (type === "monthly") currentDate = addMonths(currentDate, 1)
+					else {
+						// TODO (relative_position)
+					}
+				}
 			}
 			return masses
 		} catch (error) {

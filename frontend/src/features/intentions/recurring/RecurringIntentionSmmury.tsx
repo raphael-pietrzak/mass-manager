@@ -63,7 +63,7 @@ const RecurringIntentionSummury: React.FC<RecurringIntentionFormProps> = ({ next
               : 'Pas de date de fin (sauf suppression)'}
           </p>
           {data.end_type === "date" && (
-            <p><span className="font-medium">Date de fin:</span>
+            <p><span className="font-medium">Date de fin: </span>
               {data.end_date}
             </p>
           )}

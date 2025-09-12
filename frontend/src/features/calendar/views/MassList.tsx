@@ -211,9 +211,11 @@ export const MassList: React.FC<MassListProps> = ({ masses, onDeleteMass, onUpda
                           e.stopPropagation();
                           handleMassClick(mass);
                         }}
-                        className={`p-1 text-gray-400 rounded-full transition-colors ${mass.recurrence_id !== null || mass.intention_type === "unit"
-                          ? "hover:text-blue-500 hover:bg-gray-100"
-                          : "invisible"
+                        className={`p-1 text-gray-400 rounded-full transition-colors ${(mass.recurrence_id !== null || mass.intention_type === "unit") &&
+                            selectedDetailMass?.random_celebrant === 1 &&
+                            selectedDetailMass?.dateType === "indifferent"
+                            ? "hover:text-blue-500 hover:bg-gray-100"
+                            : "invisible"
                           }`}
                         title="Modifier cette messe"
                       >
@@ -322,17 +324,18 @@ export const MassList: React.FC<MassListProps> = ({ masses, onDeleteMass, onUpda
               >
                 Fermer
               </button>
-              {(selectedDetailMass?.intention_type === "unit" || selectedDetailMass?.recurrence_id !== null) && (
-                <button
-                  onClick={() => {
-                    setIsDetailsModalOpen(false);
-                    handleMassClick(selectedDetailMass);
-                  }}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
-                >
-                  Modifier
-                </button>
-              )}
+              {(selectedDetailMass?.intention_type === "unit" || selectedDetailMass?.recurrence_id !== null)
+                || (selectedDetailMass?.random_celebrant === 1 && selectedDetailMass?.dateType === "indifferent") && (
+                  <button
+                    onClick={() => {
+                      setIsDetailsModalOpen(false);
+                      handleMassClick(selectedDetailMass);
+                    }}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
+                  >
+                    Modifier
+                  </button>
+                )}
             </div>
           </div>
         </div>

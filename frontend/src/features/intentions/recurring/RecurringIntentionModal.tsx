@@ -141,7 +141,6 @@ export const RecurringIntentionModal: React.FC<IntentionModalProps> = ({
         ...m,
         random_celebrant: formData.random_celebrant ? 1 : 0
       }));
-      console.log('masses envoyées au back:', massesWithRandomFlag);
       onSave({ ...formData, masses: massesWithRandomFlag });
       onClose();
     } catch (error) {
