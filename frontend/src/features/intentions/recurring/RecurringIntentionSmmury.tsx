@@ -52,10 +52,12 @@ const RecurringIntentionSummury: React.FC<RecurringIntentionFormProps> = ({ next
           <p>
             <span className="font-medium">Type de récurrence:</span>{" "}
             {data.type === "monthly"
-              ? "mensuelle"
+              ? "Mensuelle"
               : data.type === "yearly"
-                ? "annuelle"
-                : data.type}
+                ? "Annuelle"
+                : data.type === "relative_position"
+                  ? "Position relative mensuelle"
+                  : data.type}
           </p>
           <p><span className="font-medium">Type de fin: </span>
             {data.end_type !== 'no-end'
@@ -83,7 +85,7 @@ const RecurringIntentionSummury: React.FC<RecurringIntentionFormProps> = ({ next
         </div>
 
         <div className="flex-col relative mt-10">
-          <h3 className="font-semibold text-lg mb-2 mt-4">Messes planifiées</h3>
+          <h3 className="font-semibold text-lg mb-2 mt-4">Messes planifiées <span className="italic">({previewData.length})</span></h3>
           {/* Indicateur de défilement */}
           {previewData.length > 5 && (
             <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-gray-100 to-transparent pointer-events-none z-10 rounded-b-md"></div>
@@ -123,29 +125,22 @@ const RecurringIntentionSummury: React.FC<RecurringIntentionFormProps> = ({ next
               </tbody>
             </table>
           </div>
-
-          {/* Texte d'indication de défilement si plusieurs éléments - Style amélioré */}
-          {previewData.length > 5 && (
-            <p className="text-sm text-gray-600 mt-2 text-center font-medium bg-gray-100 p-1 rounded border border-gray-200">
-              Faites défiler pour voir toutes les messes ({previewData.length} au total)
-            </p>
-          )}
         </div>
         {((data.end_type === "no-end" && data.type === "yearly") &&
           <div className="flex space-x-2 italic">
             <Info />
-            <p>Chaque 1er de l'an, une messe sera créé et affectée à la même date pour dans 2ans</p>
+            <p>Chaque 1er de l'an, une messe sera créée et affectée à la même date pour dans 2ans</p>
           </div>
         )}
         {((data.end_type === "no-end" && data.type === "monthly") &&
           <div className="flex space-x-2 italic">
             <Info />
-            <p>Chaque 1er du mois, une messe sera créé et affectée à la même date pour l'année suivante</p>
+            <p>Chaque 1er du mois, une messe sera créée et affectée au même jour du mois pour l'année suivante</p>
           </div>
         )}
       </div>
 
-      <div className="pt-6 flex justify-between space-x-4">
+      <div className="pt-4 flex justify-between space-x-4">
         <Button variant="outline" type="button" onClick={prevStep}>
           Précédent
         </Button>
