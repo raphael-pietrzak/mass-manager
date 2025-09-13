@@ -195,26 +195,20 @@ const RecurringIntentionService = {
 						currentDate = addMonths(currentDate, 1)
 					}
 				} else if (type === "relative_position") {
-					// Gestion des positions relatives sans fin
-					const totalOccurrences = 12 // Par défaut 12 occurrences
+					const totalOccurrences = 13 // par défaut 13 occurrences
 					// Trouver la première date valide à partir de currentDate
 					let nextOccurrence = getNextRelativePositionDate(currentDate, position, weekday)
-
 					for (let i = 0; i < totalOccurrences && nextOccurrence; i++) {
 						const celebrant = await getCelebrant(nextOccurrence)
 						masses.push(buildMass(nextOccurrence, celebrant))
-
 						if (celebrant) {
 							const dateKey = format(nextOccurrence, "yyyy-MM-dd")
-							if (!usedCelebrantsByDate[dateKey]) {
-								usedCelebrantsByDate[dateKey] = new Set()
-							}
+							if (!usedCelebrantsByDate[dateKey]) usedCelebrantsByDate[dateKey] = new Set()
 							usedCelebrantsByDate[dateKey].add(parseInt(celebrant.id))
 						}
-
-						// Chercher la prochaine occurrence (mois suivant)
-						const nextMonth = addMonths(nextOccurrence, 1)
-						nextOccurrence = getNextRelativePositionDate(nextMonth, position, weekday)
+						// Passer au mois suivant
+						const startNextMonth = startOfMonth(addMonths(nextOccurrence, 1));
+						nextOccurrence = getNextRelativePositionDate(startNextMonth, position, weekday)
 					}
 				}
 			} else {
@@ -247,14 +241,13 @@ const RecurringIntentionService = {
 					} else if (type === "monthly") {
 						currentDate = addMonths(currentDate, 1)
 					} else if (type === "relative_position") {
-						const nextMonth = addMonths(currentDate, 1)
+						const nextMonth = addMonths(startOfMonth(currentDate), 1)
 						const nextDate = getNextRelativePositionDate(nextMonth, position, weekday)
 
 						if (!nextDate) {
 							console.warn(`Plus d'occurrences trouvées après ${format(currentDate, "yyyy-MM-dd")}`)
 							break
 						}
-
 						currentDate = nextDate
 					}
 				}

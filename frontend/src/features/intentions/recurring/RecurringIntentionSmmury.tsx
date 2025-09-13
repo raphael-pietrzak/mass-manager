@@ -45,7 +45,7 @@ const RecurringIntentionSummury: React.FC<RecurringIntentionFormProps> = ({ next
 
   return (
     <div className="flex flex-col flex-1 h-[550px]">
-      <div className="flex-grow space-y-5 overflow-y-auto">
+      <div className="flex-grow space-y-4 overflow-y-auto">
         <div className="border p-3 rounded-md mb-4 bg-gray-50">
           <p><span className="font-medium">Intention: </span>{data.intention_text} <span>{data.deceased ? '(Défunt)' : ''}</span></p>
           <p><span className="font-medium">Date de début:</span> {data.start_date}</p>
@@ -63,15 +63,13 @@ const RecurringIntentionSummury: React.FC<RecurringIntentionFormProps> = ({ next
             {data.end_type !== 'no-end'
               ? data.end_type
               : 'Pas de date de fin (sauf suppression)'}
+            {data.end_type === "occurrences" && (
+              <span> ({data.occurrences}) </span>
+            )}
+            {data.end_type === "date" && (
+              <span> ({data.end_date})</span>
+            )}
           </p>
-          {data.end_type === "date" && (
-            <p><span className="font-medium">Date de fin: </span>
-              {data.end_date}
-            </p>
-          )}
-          {data.end_type === "occurrences" && (
-            <p><span className="font-medium">Nombre d'occurences:</span> {data.occurrences}</p>
-          )}
           {data.type === "relative_position" && (
             <p>
               <span className="font-medium">Jour: </span>
@@ -88,7 +86,7 @@ const RecurringIntentionSummury: React.FC<RecurringIntentionFormProps> = ({ next
           <h3 className="font-semibold text-lg mb-2 mt-4">Messes planifiées <span className="italic">({previewData.length})</span></h3>
           {/* Indicateur de défilement */}
           {previewData.length > 5 && (
-            <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-gray-100 to-transparent pointer-events-none z-10 rounded-b-md"></div>
+            <div className="absolute bottom-0 left-0 right-0 h-8 z-10 rounded-b-md"></div>
           )}
 
           <div className="overflow-auto max-h-[250px] border rounded-md scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
@@ -132,7 +130,7 @@ const RecurringIntentionSummury: React.FC<RecurringIntentionFormProps> = ({ next
             <p>Chaque 1er de l'an, une messe sera créée et affectée à la même date pour dans 2ans</p>
           </div>
         )}
-        {((data.end_type === "no-end" && data.type === "monthly") &&
+        {((data.end_type === "no-end" && data.type === "monthly" || data.type === "relative_position") &&
           <div className="flex space-x-2 italic">
             <Info />
             <p>Chaque 1er du mois, une messe sera créée et affectée au même jour du mois pour l'année suivante</p>
