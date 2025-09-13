@@ -70,15 +70,6 @@ const RecurringIntentionService = {
 			 * Renvoie la date du n-ième jour de la semaine ou du dernier jour de la semaine dans le mois
 			 */
 			const getNextRelativePositionDate = (fromDate, position, weekday) => {
-				// Debug : afficher les paramètres reçus
-				console.log("DEBUG getNextRelativePositionDate:", {
-					fromDate: format(fromDate, "yyyy-MM-dd"),
-					position,
-					weekday,
-					positionType: typeof position,
-					weekdayType: typeof weekday,
-				})
-
 				let searchDate = new Date(fromDate)
 
 				// Chercher dans les prochains mois
@@ -146,11 +137,8 @@ const RecurringIntentionService = {
 						} else {
 							positionIndex = position - 1
 						}
-						console.log(`DEBUG positionIndex calculé: ${positionIndex}`)
 						targetDate = matchingDays[positionIndex] || null
 					}
-
-					console.log(`DEBUG targetDate trouvée:`, targetDate ? format(targetDate, "yyyy-MM-dd") : null)
 
 					// Si on trouve une date valide ET qu'elle est >= à fromDate
 					if (targetDate && targetDate >= fromDate) {
