@@ -153,9 +153,9 @@ const MassService = {
 					usedCelebrantsByDate
 				)
 				for (const mass of indifferentDatesResult) {
-					// Si on a pas de célebrant spécifique (pas de celebrant_id passé), on affiche "Non attribuée"
+					// Si on a pas de célebrant spécifique (pas de celebrant_id passé), on affiche "Non attribué"
 					if (!mass.celebrant_id && mass.status === "pending") {
-						mass.celebrant_name = "Non attribuée"
+						mass.celebrant_name = "Non attribué"
 					}
 					masses.push(mass)
 				}

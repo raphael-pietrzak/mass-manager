@@ -205,6 +205,7 @@ export const MassModal: React.FC<MassModalProps> = ({ isOpen, onClose, onSave, m
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                   required
+                  disabled={editedMass.random_celebrant === 0}
                 >
                   <option value="">Sélectionner un célébrant</option>
                   {Array.isArray(celebrants) && celebrants.length > 0 ? (

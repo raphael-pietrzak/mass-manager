@@ -32,6 +32,7 @@ export interface Mass {
 	//massType?: string
 	dateType?: string
 	recurrence_id?: number
+	random_celebrant: number,
 }
 
 // Type pour la réponse de prévisualisation avec une structure simplifiée des masses

@@ -115,6 +115,7 @@ exports.createRecurrence = async (req, res) => {
 		}
 
 		const masses = req.body.masses
+		console.log(masses)
 		// Créer l'intention associée - Correction de l'ID de récurrence
 		const intention = {
 			donor_id: donorId,
@@ -127,7 +128,7 @@ exports.createRecurrence = async (req, res) => {
 			brother_name: req.body.brother_name || null,
 			wants_celebration_date: req.body.wants_celebration_date,
 			date_type: "imperative",
-			number_of_masses: recurrence.end_type !== "no-end" ? masses.length : null
+			number_of_masses: recurrence.end_type !== "no-end" ? masses.length : null,
 		}
 
 		const intentionId = await Intention.create(intention)
@@ -144,15 +145,15 @@ exports.createRecurrence = async (req, res) => {
 		console.log("End Type:", endType)
 		console.log("Occurrences:", occurrences || "Aucune")
 
-		//if (recurrence.type === "yearly") {
-			for (const mass of masses) {
-				await Mass.create({
-					intention_id: intentionId,
-					date: mass.date,
-					celebrant_id: mass.celebrant_id,
-					status: "scheduled",
-				})
-			}
+		for (const mass of masses) {
+			await Mass.create({
+				intention_id: intentionId,
+				date: mass.date,
+				celebrant_id: mass.celebrant_id,
+				status: "scheduled",
+				random_celebrant: mass.random_celebrant
+			})
+		}
 
 		console.log(`${masses.length} messes créées avec succès`)
 		res.status(201).json({

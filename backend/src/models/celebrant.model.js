@@ -34,7 +34,7 @@ const Celebrant = {
 				this.select("m.date")
 					.from("Masses as m")
 					.where("m.celebrant_id", id)
-					.andWhere("m.date", ">=", db.raw("DATETIME('now')"))
+					.andWhere(db.raw("DATE(m.date)"), ">=", db.raw("DATE('now')"))
 					.union([db.select("u.date").from("UnavailableDays as u").where("u.celebrant_id", id).andWhere("u.date", ">=", db.raw("DATETIME('now')"))])
 					.as("all_dates")
 			})

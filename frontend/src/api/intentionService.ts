@@ -17,7 +17,7 @@ export interface Intention {
 	intention_type: "unit" | "thirty" | "novena"
 	number_of_masses?: number
 	created_at: Date
-
+	random_celebrant: boolean
 	// Données du donateur
 	donor_firstname?: string
 	donor_lastname?: string
@@ -47,6 +47,7 @@ export interface Masses {
 	celebrant_title: string
 	status: MassStatus
 	intention_id: number
+	random_celebrant: number
 }
 
 export interface IntentionSubmission {

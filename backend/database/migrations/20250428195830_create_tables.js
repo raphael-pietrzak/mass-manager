@@ -48,7 +48,6 @@ exports.up = function(knex) {
 			table.enu('intention_type', ['thirty', 'novena', 'unit']);
       table.enum('status', ['pending', 'scheduled', 'in_progress', 'completed', 'cancelled']).defaultTo('pending');
       table.integer('number_of_masses').nullable();
-      table.boolean('random_celebrant').defaultTo(true)
       
       // Référence vers la table récurrence
       table.integer('recurrence_id').unsigned().nullable().references('id').inTable('Recurrences').onDelete('SET NULL');
@@ -60,6 +59,7 @@ exports.up = function(knex) {
       table.integer('celebrant_id').unsigned().nullable().references('id').inTable('Celebrants').onDelete('SET NULL');
       table.integer('intention_id').unsigned().references('id').inTable('Intentions').onDelete('CASCADE');
       table.enum('status', ['pending', 'scheduled', 'cancelled', 'completed']).defaultTo('pending');
+      table.boolean('random_celebrant').defaultTo(true)
       table.timestamps(true, true);
     })
     .createTable('SpecialDays', function(table) {

@@ -129,6 +129,7 @@ exports.createIntention = async (req, res) => {
 					intention_id: intentionId,
 					celebrant_id: mass.celebrant_id || null,
 					status: mass.status,
+					random_celebrant: mass.random_celebrant ?? (mass.celebrant_id ? 0 : 1),
 				}
 
 				await MassModel.create(massData)
@@ -233,6 +234,7 @@ exports.getIntentionMasses = async (req, res) => {
 			celebrant_title: mass.celebrant_title || "",
 			status: mass.status,
 			intention_id: mass.intention_id,
+			random_celebrant: mass.random_celebrant
 		}))
 
 		res.json(formattedMasses)

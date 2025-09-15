@@ -4,7 +4,10 @@ const Mass = require("../../models/mass.model")
 const Intention = require("../../models/intention.model")
 
 // Marquer les messes et intentions terminées en completed
-// Vérification effectuée tous ls jours
+// tous les jours ==> "0 0 * * *"
+// toutes les 30s ==> "*/30 * * * * *"
+
+// Vérification effectuée tous les jours  
 cron.schedule("0 0 * * *", async () => {
 	const today = new Date().toISOString().split("T")[0]
 	console.log("Vérification des messes le", today)
