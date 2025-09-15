@@ -234,6 +234,7 @@ exports.getIntentionMasses = async (req, res) => {
 			celebrant_title: mass.celebrant_title || "",
 			status: mass.status,
 			intention_id: mass.intention_id,
+			random_celebrant: mass.random_celebrant
 		}))
 
 		res.json(formattedMasses)

@@ -47,6 +47,7 @@ export interface Masses {
 	celebrant_title: string
 	status: MassStatus
 	intention_id: number
+	random_celebrant: number
 }
 
 export interface IntentionSubmission {

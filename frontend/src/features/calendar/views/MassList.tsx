@@ -211,11 +211,11 @@ export const MassList: React.FC<MassListProps> = ({ masses, onDeleteMass, onUpda
                           e.stopPropagation();
                           handleMassClick(mass);
                         }}
-                        className={`p-1 text-gray-400 rounded-full transition-colors ${(mass.recurrence_id !== null || mass.intention_type === "unit") &&
-                            selectedDetailMass?.random_celebrant === 1 &&
-                            selectedDetailMass?.dateType === "indifferent"
-                            ? "hover:text-blue-500 hover:bg-gray-100"
-                            : "invisible"
+                        className={`p-1 text-gray-400 rounded-full transition-colors ${(mass?.intention_type === "unit"
+                          ? (mass?.random_celebrant === 1 || mass?.dateType === "indifferent")
+                          : (mass?.intention_type == null && mass?.random_celebrant === 1))
+                          ? "hover:text-blue-500 hover:bg-gray-100"
+                          : "invisible"
                           }`}
                         title="Modifier cette messe"
                       >
@@ -223,7 +223,7 @@ export const MassList: React.FC<MassListProps> = ({ masses, onDeleteMass, onUpda
                       </button>
                       <button
                         onClick={(e) => handleDeleteClick(e, mass)}
-                        className={`p-1 text-gray-400 rounded-full transition-colors ${mass.recurrence_id !== null || mass.intention_type === "unit"
+                        className={`p-1 text-gray-400 rounded-full transition-colors ${mass.intention_type === "unit"
                           ? "hover:text-red-500 hover:bg-gray-100"
                           : "invisible"
                           }`}
@@ -324,8 +324,12 @@ export const MassList: React.FC<MassListProps> = ({ masses, onDeleteMass, onUpda
               >
                 Fermer
               </button>
-              {(selectedDetailMass?.intention_type === "unit" || selectedDetailMass?.recurrence_id !== null)
-                || (selectedDetailMass?.random_celebrant === 1 && selectedDetailMass?.dateType === "indifferent") && (
+              {(selectedDetailMass?.intention_type === "unit"
+                ? (selectedDetailMass?.random_celebrant === 1 ||
+                  selectedDetailMass?.dateType === "indifferent")
+                : (selectedDetailMass?.intention_type == null &&
+                  selectedDetailMass?.random_celebrant === 1))
+                && (
                   <button
                     onClick={() => {
                       setIsDetailsModalOpen(false);

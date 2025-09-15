@@ -88,7 +88,8 @@ const IntentionMassModalEdit: React.FC<IntentionFormProps> = ({
       celebrant_religious_name: mass.celebrant_name,
       celebrant_title: mass.celebrant_title,
       dateType: intention.date_type,
-      status: mass.status
+      status: mass.status,
+      random_celebrant: mass.random_celebrant
     };
     setSelectedMass(partialMass);
     setIsMassModalOpen(true);
@@ -288,7 +289,8 @@ const IntentionMassModalEdit: React.FC<IntentionFormProps> = ({
                                 onClick={() => {
                                   handleEditMassClick(mass);
                                 }}
-                                className={`p-1 text-gray-400 rounded-full transition-colors ${intention.intention_type === "unit"
+                                className={`p-1 text-gray-400 rounded-full transition-colors 
+                                  ${intention.intention_type === "unit" || intention.date_type === "indifferent"
                                   ? "hover:text-blue-500 hover:bg-gray-100"
                                   : "invisible"
                                   }`}
