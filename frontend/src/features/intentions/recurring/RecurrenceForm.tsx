@@ -9,7 +9,7 @@ import CalendarSelector from '../../../components/CalendarSelector';
 import { formatDateForApi, parseApiDate } from '../../../utils/dateUtils';
 import { IntentionWithRecurrence } from './RecurringIntentionModal';
 import { AlertTriangle } from 'lucide-react';
-import { AlertDescription } from '../../../components/ui/alert';
+import { Alert, AlertDescription } from '../../../components/ui/alert';
 import { specialDayService } from '../../../api/specialDaysService';
 import { celebrantService } from '../../../api/celebrantService';
 
@@ -19,13 +19,15 @@ interface RecurrenceFormProps {
   updateRecurrence: (recurrence: Partial<IntentionWithRecurrence>) => void;
   nextStep: (data: Partial<IntentionWithRecurrence>) => void;
   prevStep: () => void;
+  previewError?: string | null;
 }
 
 const RecurrenceForm: React.FC<RecurrenceFormProps> = ({
   recurrence,
   updateRecurrence,
   nextStep,
-  prevStep
+  prevStep,
+  previewError
 }) => {
   const [formData, setFormData] = useState<Partial<IntentionWithRecurrence>>(recurrence);
   const [errors, setErrors] = useState<{ start_date?: string; end_date?: string; position?: string; weekday?: string }>({});
@@ -247,6 +249,12 @@ const RecurrenceForm: React.FC<RecurrenceFormProps> = ({
           </RadioGroup>
         </div>
       </div>
+      {previewError && (
+        <Alert variant="destructive" className="mt-2">
+          <AlertTriangle className="h-4 w-4 mr-2" />
+          <AlertDescription>{previewError}</AlertDescription>
+        </Alert>
+      )}
       <div className="pt-6 flex justify-between space-x-4 border-t">
         <Button variant="outline" type="button" onClick={prevStep}>
           Précédent

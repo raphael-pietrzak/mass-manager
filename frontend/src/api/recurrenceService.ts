@@ -24,9 +24,18 @@ export const recurrenceService = {
 
 	getById: (id: number): Promise<IntentionWithRecurrence> => apiClient.get(`/data/recurrences/${id}`).then((response) => response.data),
 
-	previewMasses: (
-		data: Partial<IntentionWithRecurrence> //: Promise<{ date: string; celebrant_id: number; intention_id: number; status: string }>
-	) => apiClient.post("/data/recurrences/preview", data).then((response) => response.data),
+	previewMasses: async (data: Partial<IntentionWithRecurrence>) => {
+		try {
+			const response = await apiClient.post("/data/recurrences/preview", data)
+			return response.data
+		} catch (error: any) {
+			// Axios stocke le message côté server dans error.response.data
+			if (error.response && error.response.data && error.response.data.message) {
+				throw new Error(error.response.data.message)
+			}
+			throw error // ou error.message
+		}
+	},
 
 	create: (data: RecurringIntentionSubmission): Promise<{ recurrence_id: number; intention_id: string; masses_created: number }> =>
 		apiClient.post("/data/recurrences", data).then((response) => response.data),

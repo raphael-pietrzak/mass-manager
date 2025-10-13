@@ -86,6 +86,7 @@ export const RecurringIntentionModal: React.FC<IntentionModalProps> = ({
   // Fonction mise à jour pour gérer le changement de célébrant
   const handleFormUpdate = (data: Partial<typeof formData>) => {
     setIsError(null);
+    setRecurrenceError(null);
     // mettre à jour random_celebrant selon ce que l’utilisateur fait
     if (data.celebrant_id !== undefined) {
       data.random_celebrant = data.celebrant_id === '' || data.celebrant_id === null;
@@ -116,10 +117,12 @@ export const RecurringIntentionModal: React.FC<IntentionModalProps> = ({
   };
 
   const [isError, setIsError] = useState<string | null>(null);
+  const [recurrenceError, setRecurrenceError] = useState<string | null>(null);
 
   const previewMasses = async (data: Partial<IntentionWithRecurrence>) => {
     try {
       setIsLoading(true);
+      setRecurrenceError(null);
       // Met à jour tout de suite le formData du parent avec les dernières valeurs
       setFormData(prev => ({ ...prev, ...data }));
       const preview = await recurrenceService.previewMasses(data);
@@ -127,6 +130,10 @@ export const RecurringIntentionModal: React.FC<IntentionModalProps> = ({
       setStep(3); // Passer à l'étape de récapitulatif
     } catch (error: any) {
       console.error("Erreur lors de la prévisualisation des messes:", error);
+      const message =
+        error.message ||
+        "Une erreur est survenue lors de la génération de la récurrence.";
+      setRecurrenceError(message);
     } finally {
       setIsLoading(false);
     }
@@ -197,6 +204,7 @@ export const RecurringIntentionModal: React.FC<IntentionModalProps> = ({
                 updateRecurrence={handleFormUpdate}
                 nextStep={previewMasses}
                 prevStep={prevStep}
+                previewError={recurrenceError}
               />
             </div>
           )}
