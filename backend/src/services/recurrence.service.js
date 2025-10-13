@@ -29,25 +29,45 @@ const RecurringIntentionService = {
 
 			// Petite fonction utilitaire pour choisir un célébrant
 			const getCelebrant = async (dateObj) => {
+				const formattedDate = format(dateObj, "yyyy-MM-dd")
+
+				// === Cas 1 : un célébrant précis a été choisi ===
 				if (celebrant_id) {
-					// On a un célébrant fixe
+					// Vérifier si le célébrant est déjà pris sur cette date
+					const isAvailable =
+						(await Mass.isCelebrantAvailable(celebrant_id, formattedDate)) &&
+						(!usedCelebrantsByDate[formattedDate] || !usedCelebrantsByDate[formattedDate].has(parseInt(celebrant_id)))
+
+					if (!isAvailable) {
+						throw new Error(`Le célébrant sélectionné n'est pas disponible le ${formattedDate}`)
+					}
+
+					// Compléter les infos si besoin
+					let celebrantData = {
+						id: celebrant_id,
+						name: celebrant_name,
+						title: celebrant_title,
+					}
+
 					if (!celebrant_name || !celebrant_title) {
-						// Compléter nom / titre depuis DB
 						const celebrant = await Celebrant.getById(celebrant_id)
-						return {
+						celebrantData = {
 							id: celebrant_id,
 							name: celebrant.religious_name,
-							title: celebrant.title,
+							title: celebrant.celebrant_title,
 						}
 					}
-					return { id: celebrant_id, name: celebrant_name, title: celebrant_title }
+
+					return celebrantData
 				}
 
-				// Sinon on choisit un disponible aléatoirement
-				const formattedDate = format(dateObj, "yyyy-MM-dd")
+				// === Cas 2 : pas de célébrant spécifique → choisir un dispo aléatoire ===
 				const used = usedCelebrantsByDate[formattedDate] ? Array.from(usedCelebrantsByDate[formattedDate]) : []
+
 				const availableCelebrant = await Mass.getRandomAvailableCelebrant(formattedDate, used)
-				if (!availableCelebrant) return null
+
+				if (!availableCelebrant) throw new Error(`Aucun célébrant disponible le ${formattedDate}`)
+
 				return {
 					id: availableCelebrant.id,
 					name: availableCelebrant.religious_name,
@@ -195,7 +215,7 @@ const RecurringIntentionService = {
 						currentDate = addMonths(currentDate, 1)
 					}
 				} else if (type === "relative_position") {
-					const totalOccurrences = 13 // par défaut 13 occurrences
+					const totalOccurrences = 12 // par défaut 13 occurrences
 					// Trouver la première date valide à partir de currentDate
 					let nextOccurrence = getNextRelativePositionDate(currentDate, position, weekday)
 					for (let i = 0; i < totalOccurrences && nextOccurrence; i++) {
@@ -207,7 +227,7 @@ const RecurringIntentionService = {
 							usedCelebrantsByDate[dateKey].add(parseInt(celebrant.id))
 						}
 						// Passer au mois suivant
-						const startNextMonth = startOfMonth(addMonths(nextOccurrence, 1));
+						const startNextMonth = startOfMonth(addMonths(nextOccurrence, 1))
 						nextOccurrence = getNextRelativePositionDate(startNextMonth, position, weekday)
 					}
 				}
@@ -258,9 +278,6 @@ const RecurringIntentionService = {
 			throw error
 		}
 	},
-
-	handleGenerateMonthlyMass: async (startDate, celebrant_id, end_type, end_date, occurences) => {},
-	handlegenerateRelativePositionMass: async (startDate, celebrant_id, end_type, end_date, occurences) => {},
 }
 
 module.exports = RecurringIntentionService
