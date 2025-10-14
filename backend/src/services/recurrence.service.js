@@ -3,6 +3,82 @@ const { format, getDay, addMonths, startOfMonth, endOfMonth, addYears, eachDayOf
 const Celebrant = require("../models/celebrant.model")
 
 const RecurringIntentionService = {
+	/**
+	 * Renvoie la date du n-ième jour de la semaine ou du dernier jour de la semaine dans le mois
+	 */
+	getNextRelativePositionDate: (fromDate, position, weekday) => {
+		let searchDate = new Date(fromDate)
+
+		// Chercher dans les prochains mois
+		for (let monthOffset = 0; monthOffset < 24; monthOffset++) {
+			const currentMonth = addMonths(searchDate, monthOffset)
+			const monthStart = startOfMonth(currentMonth)
+			const monthEnd = endOfMonth(currentMonth)
+
+			// Convertir weekday en nombre si c'est une string
+			let adjustedWeekday
+			if (typeof weekday === "string") {
+				const weekdayMap = {
+					sunday: 0,
+					monday: 1,
+					tuesday: 2,
+					wednesday: 3,
+					thursday: 4,
+					friday: 5,
+					saturday: 6,
+				}
+				adjustedWeekday = weekdayMap[weekday.toLowerCase()]
+				if (adjustedWeekday === undefined) {
+					// Si la string n'est pas reconnue, essayer de la convertir en nombre
+					adjustedWeekday = parseInt(weekday)
+				}
+			} else {
+				adjustedWeekday = weekday % 7
+			}
+
+			// Vérifier que adjustedWeekday est valide
+			if (isNaN(adjustedWeekday) || adjustedWeekday < 0 || adjustedWeekday > 6) {
+				return null
+			}
+
+			const allDays = eachDayOfInterval({ start: monthStart, end: monthEnd })
+			const matchingDays = allDays.filter((d) => getDay(d) === adjustedWeekday)
+
+			if (matchingDays.length === 0) continue
+
+			let targetDate
+			if (position === "last") {
+				targetDate = matchingDays[matchingDays.length - 1]
+			} else {
+				// position est un nombre (1, 2, 3, 4) ou "first"
+				let positionIndex
+				if (typeof position === "string") {
+					const positionMap = {
+						first: 0,
+						second: 1,
+						third: 2,
+						fourth: 3,
+					}
+					positionIndex = positionMap[position.toLowerCase()]
+					if (positionIndex === undefined) {
+						positionIndex = parseInt(position) - 1
+					}
+				} else {
+					positionIndex = position - 1
+				}
+				targetDate = matchingDays[positionIndex] || null
+			}
+
+			// Si on trouve une date valide ET qu'elle est >= à fromDate
+			if (targetDate && targetDate >= fromDate) {
+				return targetDate
+			}
+		}
+
+		console.log("DEBUG: Aucune date trouvée")
+		return null
+	},
+	
 	handleGenerateRecurringMassPreview: async (params) => {
 		try {
 			const {
@@ -86,91 +162,6 @@ const RecurringIntentionService = {
 				status: celebrant ? "scheduled" : "error",
 			})
 
-			/**
-			 * Renvoie la date du n-ième jour de la semaine ou du dernier jour de la semaine dans le mois
-			 */
-			const getNextRelativePositionDate = (fromDate, position, weekday) => {
-				let searchDate = new Date(fromDate)
-
-				// Chercher dans les prochains mois
-				for (let monthOffset = 0; monthOffset < 24; monthOffset++) {
-					const currentMonth = addMonths(searchDate, monthOffset)
-					const monthStart = startOfMonth(currentMonth)
-					const monthEnd = endOfMonth(currentMonth)
-
-					// Convertir weekday en nombre si c'est une string
-					let adjustedWeekday
-					if (typeof weekday === "string") {
-						const weekdayMap = {
-							sunday: 0,
-							monday: 1,
-							tuesday: 2,
-							wednesday: 3,
-							thursday: 4,
-							friday: 5,
-							saturday: 6,
-						}
-						adjustedWeekday = weekdayMap[weekday.toLowerCase()]
-						if (adjustedWeekday === undefined) {
-							// Si la string n'est pas reconnue, essayer de la convertir en nombre
-							adjustedWeekday = parseInt(weekday)
-						}
-					} else {
-						adjustedWeekday = weekday % 7
-					}
-
-					console.log(`DEBUG mois ${monthOffset}: ${format(currentMonth, "yyyy-MM")}, adjustedWeekday: ${adjustedWeekday}`)
-
-					// Vérifier que adjustedWeekday est valide
-					if (isNaN(adjustedWeekday) || adjustedWeekday < 0 || adjustedWeekday > 6) {
-						console.error(`DEBUG: weekday invalide: ${adjustedWeekday}`)
-						return null
-					}
-
-					const allDays = eachDayOfInterval({ start: monthStart, end: monthEnd })
-					const matchingDays = allDays.filter((d) => getDay(d) === adjustedWeekday)
-
-					console.log(
-						`DEBUG jours trouvés:`,
-						matchingDays.map((d) => format(d, "yyyy-MM-dd"))
-					)
-
-					if (matchingDays.length === 0) continue
-
-					let targetDate
-					if (position === "last") {
-						targetDate = matchingDays[matchingDays.length - 1]
-					} else {
-						// position est un nombre (1, 2, 3, 4) ou "first"
-						let positionIndex
-						if (typeof position === "string") {
-							const positionMap = {
-								first: 0,
-								second: 1,
-								third: 2,
-								fourth: 3,
-							}
-							positionIndex = positionMap[position.toLowerCase()]
-							if (positionIndex === undefined) {
-								positionIndex = parseInt(position) - 1
-							}
-						} else {
-							positionIndex = position - 1
-						}
-						targetDate = matchingDays[positionIndex] || null
-					}
-
-					// Si on trouve une date valide ET qu'elle est >= à fromDate
-					if (targetDate && targetDate >= fromDate) {
-						console.log(`DEBUG date valide retournée:`, format(targetDate, "yyyy-MM-dd"))
-						return targetDate
-					}
-				}
-
-				console.log("DEBUG: Aucune date trouvée")
-				return null
-			}
-
 			if (end_type === "no-end") {
 				if (type === "yearly") {
 					// Déterminer le nombre d'occurrences selon l'année du start_date
@@ -215,9 +206,15 @@ const RecurringIntentionService = {
 						currentDate = addMonths(currentDate, 1)
 					}
 				} else if (type === "relative_position") {
-					const totalOccurrences = 12 // par défaut 13 occurrences
+					const now = new Date()
+					const currentMonth = now.getMonth()
+					const currentYear = now.getFullYear()
+					// Est-ce que start_date est dans le mois en cours ?
+					const isThisMonth = currentDate.getMonth() === currentMonth && currentDate.getFullYear() === currentYear
+					// 13 si mois courant, 12 sinon
+					const totalOccurrences = isThisMonth ? 13 : 12
 					// Trouver la première date valide à partir de currentDate
-					let nextOccurrence = getNextRelativePositionDate(currentDate, position, weekday)
+					let nextOccurrence = RecurringIntentionService.getNextRelativePositionDate(currentDate, position, weekday)
 					for (let i = 0; i < totalOccurrences && nextOccurrence; i++) {
 						const celebrant = await getCelebrant(nextOccurrence)
 						masses.push(buildMass(nextOccurrence, celebrant))
@@ -228,13 +225,13 @@ const RecurringIntentionService = {
 						}
 						// Passer au mois suivant
 						const startNextMonth = startOfMonth(addMonths(nextOccurrence, 1))
-						nextOccurrence = getNextRelativePositionDate(startNextMonth, position, weekday)
+						nextOccurrence = RecurringIntentionService.getNextRelativePositionDate(startNextMonth, position, weekday)
 					}
 				}
 			} else {
 				// Pour les positions relatives, s'assurer qu'on commence par une date valide
 				if (type === "relative_position") {
-					const firstValidDate = getNextRelativePositionDate(currentDate, position, weekday)
+					const firstValidDate = RecurringIntentionService.getNextRelativePositionDate(currentDate, position, weekday)
 					if (firstValidDate) {
 						currentDate = firstValidDate
 					} else {
@@ -262,7 +259,7 @@ const RecurringIntentionService = {
 						currentDate = addMonths(currentDate, 1)
 					} else if (type === "relative_position") {
 						const nextMonth = addMonths(startOfMonth(currentDate), 1)
-						const nextDate = getNextRelativePositionDate(nextMonth, position, weekday)
+						const nextDate = RecurringIntentionService.getNextRelativePositionDate(nextMonth, position, weekday)
 
 						if (!nextDate) {
 							console.warn(`Plus d'occurrences trouvées après ${format(currentDate, "yyyy-MM-dd")}`)

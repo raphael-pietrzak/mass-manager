@@ -121,7 +121,7 @@ const RecurrencePage: React.FC = () => {
       daily: 'Quotidien',
       weekly: 'Hebdomadaire',
       monthly: 'Mensuel',
-      relative_position: 'Position relative',
+      relative_position: 'Position relative mensuelle',
       yearly: 'Annuel'
     };
     return labels[type as keyof typeof labels] || type;
@@ -134,7 +134,28 @@ const RecurrencePage: React.FC = () => {
     if (endType === 'date' && recurrence.end_date) {
       return `Jusqu'au ${formatDateForDisplay(parseApiDate(recurrence.end_date))}`;
     }
+    if (endType === 'no-end') {
+      return 'Pas de fin'
+    }
     return endType;
+  };
+
+  const positionMapFr = {
+    first: "1er",
+    second: "2ème",
+    third: "3ème",
+    fourth: "4ème",
+    last: "Dernier",
+  };
+
+  const weekdayMapFr = {
+    monday: "Lundi",
+    tuesday: "Mardi",
+    wednesday: "Mercredi",
+    thursday: "Jeudi",
+    friday: "Vendredi",
+    saturday: "Samedi",
+    sunday: "Dimanche",
   };
 
   return (
@@ -230,7 +251,7 @@ const RecurrencePage: React.FC = () => {
                         <td className="px-3 py-2 whitespace-nowrap text-sm">
                           {intention.type === 'relative_position' && intention.position && intention.weekday && (
                             <span className="text-gray-600">
-                              {intention.position} {intention.weekday}
+                              {positionMapFr[intention.position]} {weekdayMapFr[intention.weekday]}
                             </span>
                           )}
                         </td>
