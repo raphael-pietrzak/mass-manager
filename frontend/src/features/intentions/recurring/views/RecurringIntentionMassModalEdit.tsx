@@ -1,30 +1,29 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { AlertTriangle, Calendar, Edit, Trash2, User, X } from 'lucide-react';
-import { Intention, intentionService, Masses } from '../../../../api/intentionService';
-import { AlertDescription } from '../../../../components/ui/alert';
-import { Card, CardContent, CardHeader, CardTitle } from '../../../../components/ui/card';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { AlertDescription } from '@/components/ui/alert';
+import { AlertTriangle, Calendar, Edit, User, X } from 'lucide-react';
+import { IntentionWithRecurrence } from '../RecurringIntentionModal';
+import { intentionService, Masses } from '../../../../api/intentionService';
 import { MassModal } from '../../../calendar/MassModal';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../../components/ui/card';
+import { fr } from 'date-fns/locale';
 import { Mass, massService } from '../../../../api/massService';
+import { format } from 'date-fns';
 
-interface IntentionFormProps {
-  intention: Intention;
+interface RecurrenceMassModalEditProps {
+  intention: IntentionWithRecurrence;
   masses: Masses[]
   onClose: () => void
-  onDeleteMass: (mass: Masses) => void
-  onUpdateIntention: (data: Partial<Intention>) => void;
+  onUpdateIntention: (data: Partial<IntentionWithRecurrence>) => void;
 }
 
-const IntentionMassModalEdit: React.FC<IntentionFormProps> = ({
+const RecurringIntentionMassModalEdit: React.FC<RecurrenceMassModalEditProps> = ({
   intention,
   masses,
   onClose,
-  onDeleteMass,
   onUpdateIntention
 }) => {
 
@@ -34,7 +33,7 @@ const IntentionMassModalEdit: React.FC<IntentionFormProps> = ({
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [massToDelete, setMassToDelete] = useState<Masses | null>(null);
   const [localMasses, setLocalMasses] = useState<Masses[]>(masses);
-  const [localIntention, setLocalIntention] = useState<Intention>(intention);
+  const [localIntention, setLocalIntention] = useState<IntentionWithRecurrence>(intention);
 
   useEffect(() => {
     setLocalMasses(masses);
@@ -97,26 +96,13 @@ const IntentionMassModalEdit: React.FC<IntentionFormProps> = ({
 
   const handleSaveMass = async (updatedMass: Partial<Mass>) => {
     await massService.updateMass(updatedMass);
-    const updatedMasses = await intentionService.getIntentionMasses(intention.id);
-    setLocalMasses(updatedMasses)
+    if (intention.id) {
+      const updatedMasses = await intentionService.getIntentionMasses(intention.id);
+      setLocalMasses(updatedMasses)
+    }
     setIsMassModalOpen(false);
     setSelectedMass(null);
   }
-
-  const handleDeleteMassClick = (e: React.MouseEvent, mass: Masses) => {
-    e.stopPropagation();
-    setMassToDelete(mass);
-    setIsConfirmModalOpen(true);
-  };
-
-  const confirmDelete = () => {
-    if (massToDelete?.id) {
-      setLocalMasses(prev => prev.filter(m => m.id !== massToDelete.id));
-      onDeleteMass(massToDelete);
-      setIsConfirmModalOpen(false);
-      setMassToDelete(null);
-    }
-  };
 
   const cancelDelete = () => {
     setIsConfirmModalOpen(false);
@@ -299,16 +285,6 @@ const IntentionMassModalEdit: React.FC<IntentionFormProps> = ({
                               >
                                 <Edit className="w-4 h-4" />
                               </button>
-                              <button
-                                onClick={(e) => handleDeleteMassClick(e, mass)}
-                                className={`p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100 transition-colors ${intention.intention_type === "unit"
-                                  ? "hover:text-blue-500 hover:bg-gray-100"
-                                  : "invisible"
-                                  }`}
-                                title="Supprimer cette messe"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
                             </div>
                           </div>
                         </td>
@@ -367,21 +343,6 @@ const IntentionMassModalEdit: React.FC<IntentionFormProps> = ({
                   </p>
                 </div>
               </div>
-
-              <div className="mt-4 border-t pt-4 flex justify-end space-x-3">
-                <button
-                  onClick={cancelDelete}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium bg-white hover:bg-gray-50"
-                >
-                  Annuler
-                </button>
-                <button
-                  onClick={confirmDelete}
-                  className="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700"
-                >
-                  Supprimer
-                </button>
-              </div>
             </div>
           </div>
         </div>
@@ -397,4 +358,4 @@ const IntentionMassModalEdit: React.FC<IntentionFormProps> = ({
   );
 };
 
-export default IntentionMassModalEdit;
+export default RecurringIntentionMassModalEdit;

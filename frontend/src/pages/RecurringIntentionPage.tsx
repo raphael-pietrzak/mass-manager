@@ -4,8 +4,9 @@ import { recurrenceService, Recurrence, RecurringIntentionSubmission } from '../
 import { formatDateForDisplay, parseApiDate } from '../utils/dateUtils';
 import { toast } from 'sonner';
 import { IntentionWithRecurrence, RecurringIntentionModal } from '../features/intentions/recurring/RecurringIntentionModal';
-import RecurrenceDialog from '../components/RecurrenceDialog';
-import { intentionService } from '../api/intentionService';
+import { intentionService, Masses } from '../api/intentionService';
+import RecurringIntentionMassModalEdit from '../features/intentions/recurring/views/RecurringIntentionMassModalEdit';
+import { RecurringIntentionMassModal } from '../features/intentions/recurring/views/RecurringIntentionMassModal';
 
 const RecurrencePage: React.FC = () => {
   const [recurringIntentions, setRecurringIntentions] = useState<IntentionWithRecurrence[]>([]);
@@ -14,10 +15,13 @@ const RecurrencePage: React.FC = () => {
   const [success, setSuccess] = useState<string | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingRecurrence, setEditingRecurrence] = useState<IntentionWithRecurrence | null>(null);
-  const [recurrenceDialogOpen, setRecurrenceDialogOpen] = useState(false);
-  const [recurrenceToEdit, setRecurrenceToEdit] = useState<IntentionWithRecurrence | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isMassModalOpen, setIsMassModalOpen] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [intentionToDelete, setIntentionToDelete] = useState<IntentionWithRecurrence | null>(null);
+  const [associatedMasses, setAssociatedMasses] = useState<Masses[]>([]);
+  const [selectedIntention, setSelectedIntention] = useState<IntentionWithRecurrence | null>(null);
+
 
   useEffect(() => {
     if (error) {
@@ -68,9 +72,30 @@ const RecurrencePage: React.FC = () => {
     setDialogOpen(true);
   };
 
-  const handleEdit = (recurrence: IntentionWithRecurrence) => {
-    setRecurrenceToEdit(recurrence);
-    setRecurrenceDialogOpen(true);
+  const handleIntentionClick = async (intention: IntentionWithRecurrence) => {
+    try {
+      setSelectedIntention(intention);
+      if (intention.id) {
+        const masses = await intentionService.getIntentionMasses(intention.id);
+        setAssociatedMasses(masses);
+        setIsMassModalOpen(true);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération des messes associées:', error);
+    }
+  }
+
+  const handleEdit = async (recurrence: IntentionWithRecurrence) => {
+    setSelectedIntention(recurrence);
+    try {
+      if (recurrence.id) {
+        const masses = await intentionService.getIntentionMasses(recurrence.id);
+        setAssociatedMasses(masses);
+      }
+      setIsEditModalOpen(true);
+    } catch (error) {
+      console.error('Erreur lors de la récupération des messes pour l’édition:', error);
+    }
   };
 
   const handleDeleteClick = (e: React.MouseEvent, intention: IntentionWithRecurrence) => {
@@ -97,31 +122,24 @@ const RecurrencePage: React.FC = () => {
     setIntentionToDelete(null);
   };
 
-  const handleSave = async (formData: Partial<Recurrence>, localIntention: Partial<IntentionWithRecurrence>) => {
+  const handleUpdateIntention = async (data: Partial<IntentionWithRecurrence>) => {
     try {
-      setLoading(true);
-      if (formData.recurrence_id && localIntention.id) {
-        await recurrenceService.update(formData.recurrence_id, formData);
-        await intentionService.updateMass(localIntention.id, {
-          intention_text: localIntention.intention_text,
-          deceased: localIntention.deceased,
-        });
-      }
+      if (selectedIntention?.id)
+        await intentionService.updateMass(selectedIntention.id, data);
       await loadRecurrences();
-      setRecurrenceDialogOpen(false);
-      setRecurrenceToEdit(null);
-    } finally {
-      setLoading(false);
+      setIsEditModalOpen(false);
+      setSelectedIntention(null);
+    } catch (error) {
+      console.error("Erreur lors de la modification de l'intention :", error);
     }
-
-  };
+  }
 
   const getRecurrenceTypeLabel = (type: string) => {
     const labels = {
       daily: 'Quotidien',
       weekly: 'Hebdomadaire',
       monthly: 'Mensuel',
-      relative_position: 'Position relative',
+      relative_position: 'Position relative mensuelle',
       yearly: 'Annuel'
     };
     return labels[type as keyof typeof labels] || type;
@@ -134,7 +152,28 @@ const RecurrencePage: React.FC = () => {
     if (endType === 'date' && recurrence.end_date) {
       return `Jusqu'au ${formatDateForDisplay(parseApiDate(recurrence.end_date))}`;
     }
+    if (endType === 'no-end') {
+      return 'Pas de fin'
+    }
     return endType;
+  };
+
+  const positionMapFr = {
+    first: "1er",
+    second: "2ème",
+    third: "3ème",
+    fourth: "4ème",
+    last: "Dernier",
+  };
+
+  const weekdayMapFr = {
+    monday: "Lundi",
+    tuesday: "Mardi",
+    wednesday: "Mercredi",
+    thursday: "Jeudi",
+    friday: "Vendredi",
+    saturday: "Samedi",
+    sunday: "Dimanche",
   };
 
   return (
@@ -196,7 +235,8 @@ const RecurrencePage: React.FC = () => {
                     {recurringIntentions.map((intention) => (
                       <tr
                         key={intention.recurrence_id}
-                        className="hover:bg-gray-50"
+                        onClick={() => handleIntentionClick(intention)}
+                        className="hover:bg-gray-50 cursor-pointer"
                       >
                         <td className="px-3 py-2 whitespace-nowrap text-sm">
                           <div className="flex items-center space-x-2 max-w-[800px]">
@@ -230,7 +270,7 @@ const RecurrencePage: React.FC = () => {
                         <td className="px-3 py-2 whitespace-nowrap text-sm">
                           {intention.type === 'relative_position' && intention.position && intention.weekday && (
                             <span className="text-gray-600">
-                              {intention.position} {intention.weekday}
+                              {positionMapFr[intention.position]} {weekdayMapFr[intention.weekday]}
                             </span>
                           )}
                         </td>
@@ -316,12 +356,24 @@ const RecurrencePage: React.FC = () => {
           onSave={handleSaveNewRecurringIntention}
         />
 
-        {recurrenceDialogOpen && (
-          <RecurrenceDialog
-            open={recurrenceDialogOpen}
-            onOpenChange={setRecurrenceDialogOpen}
-            recurrence={recurrenceToEdit}
-            onSave={handleSave}
+        {isEditModalOpen && selectedIntention && (
+          <RecurringIntentionMassModalEdit
+            intention={selectedIntention}
+            masses={associatedMasses}
+            onClose={() => setIsEditModalOpen(false)}
+            onUpdateIntention={handleUpdateIntention}
+          />
+        )}
+
+        {isMassModalOpen && selectedIntention && (
+          <RecurringIntentionMassModal
+            intention={selectedIntention}
+            masses={associatedMasses}
+            onClose={() => setIsMassModalOpen(false)}
+            onEditClick={() => {
+              setIsMassModalOpen(false);
+              setIsEditModalOpen(true);
+            }}
           />
         )}
 

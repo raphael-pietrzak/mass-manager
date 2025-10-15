@@ -121,7 +121,6 @@ export const PonctualIntentionList: React.FC<IntentionListProps> = ({ intentions
     }
   };
 
-
   const handleUpdateIntention = async (data: Partial<Intention>) => {
     try {
       if (selectedIntention?.id)
