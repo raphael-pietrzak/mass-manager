@@ -1,18 +1,19 @@
-import React from 'react';
-import { Intention, Masses } from '../../../../api/intentionService';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
-import { X, Calendar, User, Clock } from 'lucide-react';
-import { Button } from '../../../../components/ui/button';
+import { Calendar, Clock, User, X } from "lucide-react";
+import { Masses } from "../../../../api/intentionService";
+import { Button } from "../../../../components/ui/button";
+import { IntentionWithRecurrence } from "../RecurringIntentionModal";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
-interface IntentionMassesModalProps {
-  intention: Intention;
+
+interface RecurringIntentionMassModalProps {
+  intention: IntentionWithRecurrence;
   masses: Masses[];
   onClose: () => void;
   onEditClick: () => void;
 }
 
-export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ intention, masses, onClose, onEditClick }) => {
+export const RecurringIntentionMassModal: React.FC<RecurringIntentionMassModalProps> = ({ intention, masses, onClose, onEditClick }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-lg max-w-4xl w-full mx-4 max-h-[90vh] flex flex-col">
@@ -39,13 +40,7 @@ export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ inte
                 <div>
                   <p className="text-sm text-gray-500">Type d'intention</p>
                   <p className="font-medium">
-                    {intention.intention_type === "novena"
-                      ? "Neuvaine"
-                      : intention.intention_type === "thirty"
-                        ? "Trentain"
-                        : intention.intention_type === "unit" && intention.number_of_masses !== undefined
-                          ? `Unité (${intention.number_of_masses} messe${intention.number_of_masses > 1 ? "s" : ""})`
-                          : "Unité"}
+                    Récurrente
                   </p>
                 </div>
                 <div>
@@ -184,5 +179,5 @@ export const IntentionMassesModal: React.FC<IntentionMassesModalProps> = ({ inte
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
