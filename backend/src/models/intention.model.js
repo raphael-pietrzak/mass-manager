@@ -28,8 +28,12 @@ const Intention = {
 
 	delete: (id) => db("Intentions").where({ id }).del(),
 
-	getPonctualIntentions: (status) =>
-		db("Intentions")
+	getPonctualIntentions: async (status, page = 1) => {
+		const limit = 10
+		const offset = (page - 1) * limit
+
+		// Requête principale paginée
+		const query = db("Intentions")
 			.whereNull("Intentions.recurrence_id")
 			.andWhere("Intentions.status", status)
 			.leftJoin("Masses", "Masses.intention_id", "Intentions.id")
@@ -43,7 +47,56 @@ const Intention = {
 			.leftJoin("Donors", "Intentions.donor_id", "Donors.id")
 			.select("Intentions.*", "Donors.firstname as donor_firstname", "Donors.lastname as donor_lastname", "Donors.email as donor_email")
 			.orderBy("Intentions.created_at", "asc")
-			.groupBy("Intentions.id"),
+			.groupBy("Intentions.id")
+			.limit(limit)
+			.offset(offset)
+
+		// Comptage total pour la pagination
+		const countQuery = db("Intentions")
+			.whereNull("Intentions.recurrence_id")
+			.andWhere("Intentions.status", status)
+			.modify((query) => {
+				if (status === "pending") {
+					query.leftJoin("Masses", "Masses.intention_id", "Intentions.id")
+					query.where((qb) => {
+						qb.whereNull("Masses.date").orWhere("Masses.date", "")
+					})
+				}
+			})
+			.countDistinct("Intentions.id as total")
+			.first()
+
+		const [data, countResult] = await Promise.all([query, countQuery])
+		const total = Number(countResult.total)
+		const totalPages = Math.ceil(total / limit)
+
+		return {
+			data,
+			pagination: {
+				total,
+				page,
+				limit,
+				totalPages,
+			},
+		}
+	},
+
+	// getPonctualIntentions: (status) =>
+	// 	db("Intentions")
+	// 		.whereNull("Intentions.recurrence_id")
+	// 		.andWhere("Intentions.status", status)
+	// 		.leftJoin("Masses", "Masses.intention_id", "Intentions.id")
+	// 		.modify((query) => {
+	// 			if (status === "pending") {
+	// 				query.where((qb) => {
+	// 					qb.whereNull("Masses.date").orWhere("Masses.date", "")
+	// 				})
+	// 			}
+	// 		})
+	// 		.leftJoin("Donors", "Intentions.donor_id", "Donors.id")
+	// 		.select("Intentions.*", "Donors.firstname as donor_firstname", "Donors.lastname as donor_lastname", "Donors.email as donor_email")
+	// 		.orderBy("Intentions.created_at", "asc")
+	// 		.groupBy("Intentions.id"),
 
 	deleteBeforeDate: () =>
 		db("Intentions")

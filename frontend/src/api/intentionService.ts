@@ -78,6 +78,16 @@ export interface IntentionWithMasses extends Intention {
 	masses?: Masses[]
 }
 
+export interface PaginatedIntentions {
+  data: Intention[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
 const API_URL = `${API_BASE_URL}/api/data/intentions`
 
 export const intentionService = {
@@ -130,8 +140,8 @@ export const intentionService = {
 		return response.data
 	},
 
-	async getPonctualIntentions(status: string): Promise<Intention[]> {
-		const response = await axios.get(`${API_URL}/ponctual?status=${status}`)
+	async getPonctualIntentions(status: string, page = 1): Promise<PaginatedIntentions> {
+		const response = await axios.get(`${API_URL}/ponctual?status=${status}&page=${page}`);
 		return response.data
 	},
 

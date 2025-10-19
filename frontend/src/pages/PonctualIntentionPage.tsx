@@ -13,6 +13,8 @@ const PonctualIntentionPage: React.FC = () => {
 	const [loading, setLoading] = useState(true);
 	const [intentions, setIntentions] = useState<Intention[]>([]);
 	const [status, setStatus] = useState<string>("pending");
+	const [page, setPage] = useState(1);
+	const [totalPages, setTotalPages] = useState(1);
 
 	useEffect(() => {
 		if (error) {
@@ -35,10 +37,11 @@ const PonctualIntentionPage: React.FC = () => {
 	const fetchIntentions = async () => {
 		try {
 			setLoading(true);
-			const data = await intentionService.getPonctualIntentions(status);
-			setIntentions(data);
+			const response = await intentionService.getPonctualIntentions(status, page);
+			setIntentions(response.data);
+			setTotalPages(response.pagination.totalPages);
 		} catch (error) {
-			console.error('Erreur lors de la récupération des intentions:', error);
+			console.error("Erreur lors de la récupération des intentions:", error);
 		} finally {
 			setLoading(false);
 		}
@@ -46,7 +49,7 @@ const PonctualIntentionPage: React.FC = () => {
 
 	useEffect(() => {
 		fetchIntentions();
-	}, []);
+	}, [status, page]);
 
 	const handleAddIntention = () => {
 		setIsIntentionModalOpen(true);
@@ -129,8 +132,8 @@ const PonctualIntentionPage: React.FC = () => {
 		setStatus(status);
 		try {
 			setLoading(true);
-			const data = await intentionService.getPonctualIntentions(status);
-			setIntentions(data);
+			const data = await intentionService.getPonctualIntentions(status, page);
+			setIntentions(data.data);
 		} catch (error) {
 			console.error("Erreur lors du changement de statut :", error);
 		} finally {
@@ -207,6 +210,31 @@ const PonctualIntentionPage: React.FC = () => {
 					loading={loading}
 					status={status}
 				/>
+
+				{!loading && totalPages > 0 && intentions.length > 0 && (
+					<div className="flex justify-center items-center mt-6 gap-4">
+						<button
+							onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+							disabled={page === 1}
+							className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md disabled:opacity-50 hover:bg-gray-200"
+						>
+							← Précédent
+						</button>
+
+						<span className="text-sm text-gray-600">
+							Page <strong>{page}</strong> sur <strong>{totalPages}</strong>
+						</span>
+
+						<button
+							onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+							disabled={page === totalPages}
+							className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md disabled:opacity-50 hover:bg-gray-200"
+						>
+							Suivant →
+						</button>
+					</div>
+				)}
+
 				<PonctualIntentionModal
 					intention={null}
 					isOpen={isIntentionModalOpen}
