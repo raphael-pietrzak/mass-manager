@@ -19,8 +19,18 @@ export interface RecurringIntentionSubmission extends IntentionWithRecurrence {
 	masses: Masses[]
 }
 
+export interface PaginatedRecurringIntentions {
+	data: IntentionWithRecurrence[]
+	pagination: {
+		total: number
+		page: number
+		limit: number
+		totalPages: number
+	}
+}
+
 export const recurrenceService = {
-	getAll: (): Promise<IntentionWithRecurrence[]> => apiClient.get("/data/recurrences").then((response) => response.data),
+	getAll: (page = 1): Promise<PaginatedRecurringIntentions> => apiClient.get(`/data/recurrences?page=${page}`).then((response) => response.data),
 
 	getById: (id: number): Promise<IntentionWithRecurrence> => apiClient.get(`/data/recurrences/${id}`).then((response) => response.data),
 

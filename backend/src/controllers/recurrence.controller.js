@@ -7,7 +7,8 @@ const RecurringIntentionService = require("../services/recurrence.service")
 
 exports.getRecurrences = async (req, res) => {
 	try {
-		const data = await Recurrence.getAll()
+		const { page = 1 } = req.query
+		const data = await Recurrence.getAll(page)
 		res.json(data)
 	} catch (error) {
 		console.error("Erreur getRecurrences:", error)
@@ -151,7 +152,7 @@ exports.createRecurrence = async (req, res) => {
 				date: mass.date,
 				celebrant_id: mass.celebrant_id,
 				status: "scheduled",
-				random_celebrant: mass.random_celebrant
+				random_celebrant: mass.random_celebrant,
 			})
 		}
 
