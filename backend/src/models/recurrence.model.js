@@ -1,12 +1,35 @@
 const db = require("../../config/database")
 
 const Recurrence = {
-	getAll: async () => {
-		return db
+	getAll: async (page = 1) => {
+		const limit = 10
+		const offset = (page - 1) * limit
+
+		// Requête principale paginée
+		const query = db
 			.select("r.*", "i.*", "d.firstname as donor_firstname", "d.lastname as donor_lastname", "d.email as donor_email")
 			.from("Recurrences as r")
 			.leftJoin("Intentions as i", "r.id", "i.recurrence_id")
 			.leftJoin("Donors as d", "i.donor_id", "d.id")
+			.orderBy("r.created_at", "asc")
+			.limit(limit)
+			.offset(offset)
+
+		const countQuery = db("Recurrences as r").leftJoin("Intentions as i", "r.id", "i.recurrence_id").countDistinct("r.id as total").first()
+
+		const [data, countResult] = await Promise.all([query, countQuery])
+		const total = Number(countResult.total)
+		const totalPages = Math.ceil(total / limit)
+
+		return {
+			data,
+			pagination: {
+				total,
+				page,
+				limit,
+				totalPages,
+			},
+		}
 	},
 
 	create: async (recurrence) => {
