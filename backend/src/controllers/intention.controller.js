@@ -168,7 +168,7 @@ exports.updateIntention = async (req, res) => {
 			start_date: req.body.start_date,
 			end_type: req.body.end_type,
 			end_date: req.body.end_date,
-			number_of_masses: req.body.number_of_masses
+			number_of_masses: req.body.number_of_masses,
 		}
 
 		await Intention.update(id, intentionData)
@@ -234,7 +234,7 @@ exports.getIntentionMasses = async (req, res) => {
 			celebrant_title: mass.celebrant_title || "",
 			status: mass.status,
 			intention_id: mass.intention_id,
-			random_celebrant: mass.random_celebrant
+			random_celebrant: mass.random_celebrant,
 		}))
 
 		res.json(formattedMasses)
@@ -246,9 +246,9 @@ exports.getIntentionMasses = async (req, res) => {
 
 exports.getPonctualIntentions = async (req, res) => {
 	try {
-		const { status } = req.query
-		const data = await Intention.getPonctualIntentions(status)
-		res.json(data)
+		const { status, page = 1 } = req.query
+		const result = await Intention.getPonctualIntentions(status, Number(page))
+		res.json(result)
 	} catch (error) {
 		console.error(error)
 		res.status(500).send("Erreur lors de la récupération des intentions ponctuelles")
