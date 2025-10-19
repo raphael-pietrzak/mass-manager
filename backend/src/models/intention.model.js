@@ -81,23 +81,6 @@ const Intention = {
 		}
 	},
 
-	// getPonctualIntentions: (status) =>
-	// 	db("Intentions")
-	// 		.whereNull("Intentions.recurrence_id")
-	// 		.andWhere("Intentions.status", status)
-	// 		.leftJoin("Masses", "Masses.intention_id", "Intentions.id")
-	// 		.modify((query) => {
-	// 			if (status === "pending") {
-	// 				query.where((qb) => {
-	// 					qb.whereNull("Masses.date").orWhere("Masses.date", "")
-	// 				})
-	// 			}
-	// 		})
-	// 		.leftJoin("Donors", "Intentions.donor_id", "Donors.id")
-	// 		.select("Intentions.*", "Donors.firstname as donor_firstname", "Donors.lastname as donor_lastname", "Donors.email as donor_email")
-	// 		.orderBy("Intentions.created_at", "asc")
-	// 		.groupBy("Intentions.id"),
-
 	deleteBeforeDate: () =>
 		db("Intentions")
 			.whereNull("recurrence_id")
