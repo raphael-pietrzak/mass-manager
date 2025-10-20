@@ -91,7 +91,6 @@ const DatabaseTabs: React.FC = () => {
   // Calcul des pages
   const totalItems = data.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
-
   // Données paginées
   const paginatedData = data.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
