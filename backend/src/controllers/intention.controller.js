@@ -183,8 +183,6 @@ exports.deleteIntention = async (req, res) => {
 	try {
 		const id = req.params.id
 		await Intention.delete(id)
-		//await db.raw("PRAGMA foreign_keys = ON")
-		//await db("Intentions").where({ id }).del()
 		res.status(204).send()
 	} catch (error) {
 		console.error(error)

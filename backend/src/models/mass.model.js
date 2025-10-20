@@ -60,18 +60,12 @@ class Mass {
 			celebrant_id: mass.celebrant_id,
 			intention_id: mass.intention_id,
 			status: mass.status,
+			random_celebrant: mass.random_celebrant,
 		})
 	}
 
 	static async delete(id) {
 		return db("Masses").where("id", id).del()
-	}
-
-	static async deleteBeforeDate(date) {
-		const formattedDate = new Date(date).toISOString().split("T")[0]
-		return db("Masses")
-			.where(db.raw("DATE(date) < DATE(?)", [formattedDate]))
-			.del()
 	}
 
 	static async getMassesByCelebrantAndDate(celebrantId, date) {

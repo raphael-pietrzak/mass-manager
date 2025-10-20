@@ -3,7 +3,17 @@ const Intention = require('../models/intention.model');
 const Donor = require('../models/donor.model');
 const db = require('../../config/database');
 
-exports.getMasses = async (req, res) => {
+exports.getAll = async (req, res) => {
+  try {
+    const data = await Mass.getAll()
+    res.json(data);
+  } catch (error) {
+    console.error('Erreur getMasses:', error);
+    res.status(500).send('Erreur lors de la récupération des données');
+  }
+};
+
+exports.getMassesByDateRange = async (req, res) => {
   const {startDate, endDate, celebrant_id} = req.query
   try {
     const data = await Mass.getMassesByDateRange(startDate, endDate, celebrant_id);
@@ -88,7 +98,8 @@ exports.updateMass = async (req, res) => {
       date: req.body.date || null,
       celebrant_id: req.body.celebrant_id,
       intention_id: req.body.intention_id,
-      status: req.body.status
+      status: req.body.status,
+      random_celebrant: req.body.random_celebrant
     };
 
     await Mass.update(mass);
@@ -110,27 +121,7 @@ exports.deleteMass = async (req, res) => {
     res.status(500).send('Erreur lors de la suppression de la messe');
   }
 };
-exports.deleteMassBeforeDate = async (req, res) => {
-  try {
-    const date = req.query.date;
-    if (!date) {
-      return res.status(400).json({ message: "La date est requise." });
-    }
-    const parsedDate = new Date(date);
-    if (isNaN(parsedDate)) {
-      return res.status(400).json({ message: "Date invalide." });
-    }
-    const result = await Mass.deleteBeforeDate(parsedDate.toISOString());
-    if (result > 0) {
-      res.status(204).send();
-    } else {
-      res.status(404).json({ message: 'Aucune messe trouvée avant cette date.' });
-    }
-  } catch (error) {
-    console.error("Erreur lors de la suppression : ", error);
-    res.status(500).send('Erreur lors de la suppression de la messe');
-  }
-};
+
 exports.getMassesByIntention = async (req, res) => {
   try {
     const intentionId = req.params.intentionId;

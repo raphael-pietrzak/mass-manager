@@ -27,18 +27,6 @@ const Donor = {
 	findByEmail: async (email) => {
 		return db.select().from("Donors").where("email", email).first()
 	},
-
-	// Nouvelle fonction pour trouver un donateur par nom et prénom
-	findByName: async (firstname, lastname) => {
-		return db
-			.select()
-			.from("Donors")
-			.where({
-				firstname: firstname,
-				lastname: lastname,
-			})
-			.first()
-	},
 }
 
 module.exports = Donor

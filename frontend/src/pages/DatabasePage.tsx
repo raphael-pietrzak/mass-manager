@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { EditRowDialog } from '../components/dialogs/EditRowDialog';
 import { FormatterConfig } from '../components/dialogs/EditRowDialog';
 import { useFetchData } from '../hooks/useFetchData';
@@ -8,7 +8,6 @@ import { tabs } from '../features/database/tabs';
 import { useDeleteData } from '../hooks/useDeleteData';
 import { useUpdateData } from '../hooks/useUpdateData';
 import { DeleteConfirmationDialog } from '../components/dialogs/DeleteConfirmationDialog';
-import { Plus } from 'lucide-react';
 
 const DatabaseTabs: React.FC = () => {
   const [activeTab, setActiveTab] = useState(tabs[0].key);
@@ -76,6 +75,19 @@ const DatabaseTabs: React.FC = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);  // Nombre d'éléments par page
   const [currentPage, setCurrentPage] = useState(1);  // Page active
 
+  // Réinitialiser la page quand on change d'onglet
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
+
+  // Corriger si la page courante dépasse le nombre total de pages
+  useEffect(() => {
+    const totalPages = Math.ceil(data.length / itemsPerPage);
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    }
+  }, [data, itemsPerPage]);
+
   // Calcul des pages
   const totalItems = data.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
@@ -97,22 +109,9 @@ const DatabaseTabs: React.FC = () => {
 
   return (
     <div className="w-full bg-white shadow-xl rounded-lg p-6">
-      
+
       <div className="flex items-center justify-between mb-4">
         <TabsNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
-        
-        <button 
-          onClick={() => {
-            setEditRowData(null);
-            setEditColumns(selectedTab?.columns || []);
-            setIsCreating(true);
-            setIsEditDialogOpen(true);
-          }}
-          className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-gray-100 rounded-full transition-colors"
-          title="Ajouter une entrée"
-        >
-          <Plus className="h-5 w-5" />
-        </button>
       </div>
 
       <div className="p-4">
@@ -135,7 +134,7 @@ const DatabaseTabs: React.FC = () => {
           </div>
         )}
       </div>
-      
+
       {/* Pagination */}
       {data.length > 0 && (
         <div className="flex justify-between items-center mt-4 pt-4 border-t">
@@ -143,7 +142,7 @@ const DatabaseTabs: React.FC = () => {
             <div className="text-sm text-gray-700">
               Affichage de <span className="font-medium">{Math.min((currentPage - 1) * itemsPerPage + 1, totalItems)}</span> à <span className="font-medium">{Math.min(currentPage * itemsPerPage, totalItems)}</span> sur <span className="font-medium">{totalItems}</span> entrées
             </div>
-            
+
             <div className="flex items-center space-x-2">
               <span className="text-sm font-medium text-gray-700">Lignes par page:</span>
               <select
@@ -159,7 +158,7 @@ const DatabaseTabs: React.FC = () => {
               </select>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <button
               onClick={() => handlePageChange(1)}
@@ -175,11 +174,11 @@ const DatabaseTabs: React.FC = () => {
             >
               &lt;
             </button>
-            
+
             <span className="px-4 py-1 text-sm text-gray-700">
               Page <span className="font-medium">{currentPage}</span> sur <span className="font-medium">{totalPages}</span>
             </span>
-            
+
             <button
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
@@ -197,7 +196,7 @@ const DatabaseTabs: React.FC = () => {
           </div>
         </div>
       )}
-      
+
       {selectedTab && (
         <EditRowDialog
           isOpen={isEditDialogOpen}
