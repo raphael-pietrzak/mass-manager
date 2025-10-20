@@ -21,7 +21,8 @@ const RecurrencePage: React.FC = () => {
   const [intentionToDelete, setIntentionToDelete] = useState<IntentionWithRecurrence | null>(null);
   const [associatedMasses, setAssociatedMasses] = useState<Masses[]>([]);
   const [selectedIntention, setSelectedIntention] = useState<IntentionWithRecurrence | null>(null);
-
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     if (error) {
@@ -39,15 +40,12 @@ const RecurrencePage: React.FC = () => {
     }
   }, [error, success]);
 
-  useEffect(() => {
-    loadRecurrences();
-  }, []);
-
   const loadRecurrences = async () => {
     try {
       setLoading(true);
-      const allRecurringIntentions = await recurrenceService.getAll();
-      setRecurringIntentions(allRecurringIntentions);
+      const allRecurringIntentions = await recurrenceService.getAll(page);
+      setRecurringIntentions(allRecurringIntentions.data);
+      setTotalPages(allRecurringIntentions.pagination.totalPages);
     } catch (error) {
       console.error('Erreur lors du chargement des récurrences:', error);
       toast.error('Erreur lors du chargement des récurrences');
@@ -55,6 +53,10 @@ const RecurrencePage: React.FC = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadRecurrences();
+  }, [page]);
 
   const handleSaveNewRecurringIntention = async (newIntention: RecurringIntentionSubmission) => {
     try {
@@ -343,6 +345,30 @@ const RecurrencePage: React.FC = () => {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {!loading && totalPages > 0 && recurringIntentions.length > 0 && (
+          <div className="flex justify-center items-center mt-6 gap-4">
+            <button
+              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+              disabled={page === 1}
+              className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md disabled:opacity-50 hover:bg-gray-200"
+            >
+              ← Précédent
+            </button>
+
+            <span className="text-sm text-gray-600">
+              Page <strong>{page}</strong> sur <strong>{totalPages}</strong>
+            </span>
+
+            <button
+              onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={page === totalPages}
+              className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md disabled:opacity-50 hover:bg-gray-200"
+            >
+              Suivant →
+            </button>
           </div>
         )}
 
