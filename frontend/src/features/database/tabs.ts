@@ -31,7 +31,7 @@ export const tabs: TabColumn[] = [
 	},
 	{
 		key: "celebrants",
-		label: "Prêtres",
+		label: "Célébrants",
 		endpoint: "http://localhost:3001/api/data/celebrants",
 		columns: [
 			{ key: "title", label: "Titre" },
@@ -44,36 +44,44 @@ export const tabs: TabColumn[] = [
 	{
 		key: "masses",
 		label: "Messes",
-		endpoint: "http://localhost:3001/api/data/masses",
+		endpoint: "http://localhost:3001/api/data/masses/all",
 		columns: [
 			{ key: "date", label: "Date" },
 			{ key: "celebrant", label: "Célébrant" },
 			{ key: "intention", label: "Intention" },
-			{ key: "deceased", label: "Pour un défunt" },
 			{ key: "status", label: "Statut" },
+			{ key: "random_celebrant", label: "Célébrant aléatoire" },
 		],
 		formatters: {
 			date: {
 				type: "date",
 				display: (value: string) => new Date(value).toLocaleDateString("fr-FR"),
 			},
+			intention: {
+				type: "string",
+				display: (value: string) => {
+					if (!value) return ""
+					const maxLength = 50
+					return value.length > maxLength ? value.slice(0, maxLength) + "…" : value
+				},
+			},
 			status: {
 				type: "enum",
 				options: [
 					{ label: "Planifiée", value: "scheduled" },
-					{ label: "Confirmée", value: "confirmed" },
-					{ label: "Célébrée", value: "celebrated" },
+					{ label: "En attente", value: "pending" },
 					{ label: "Annulée", value: "cancelled" },
+					{ label: "Terminée", value: "completed" },
 				],
 			},
-			deceased: {
+			random_celebrant: {
 				type: "boolean",
 				options: [
 					{ label: "Oui", value: 1 },
 					{ label: "Non", value: 0 },
 				],
 			},
-	  celebrant: {
+			celebrant: {
 				type: "string",
 				display: (_value: any, row: any) => {
 					return `${row.celebrant_title} ${row.celebrant_religious_name}`.trim()
@@ -106,6 +114,35 @@ export const tabs: TabColumn[] = [
 		},
 	},
 	{
+		key: "unavailable-days",
+		label: "Jours indisponibles",
+		endpoint: "http://localhost:3001/api/data/unavailable-days",
+		columns: [
+			{ key: "date", label: "Date" },
+			{ key: "celebrant", label: "Célébrant" },
+			{ key: "is_recurrent", label: "Récurrent" },
+		],
+		formatters: {
+			date: {
+				type: "date",
+				display: (value: string) => new Date(value).toLocaleDateString("fr-FR"),
+			},
+			is_recurrent: {
+				type: "boolean",
+				options: [
+					{ label: "Oui", value: 1 },
+					{ label: "Non", value: 0 },
+				],
+			},
+			celebrant: {
+				type: "string",
+				display: (_value: any, row: any) => {
+					return `${row.celebrant_title} ${row.celebrant_religious_name}`.trim()
+				},
+			},
+		},
+	},
+	{
 		key: "intention",
 		label: "Intentions",
 		endpoint: "http://localhost:3001/api/data/intentions",
@@ -115,6 +152,13 @@ export const tabs: TabColumn[] = [
 			{ key: "amount", label: "Montant" },
 			{ key: "deceased", label: "Pour un défunt" },
 			{ key: "payment_method", label: "Méthode de paiement" },
+			{ key: "brother_name", label: "Passé par le Frère" },
+			{ key: "wants_celebration_date", label: "Donateur veux connaitre date" },
+			{ key: "date_type", label: "Type de date" },
+			{ key: "intention_type", label: "Type d'intention" },
+			{ key: "status", label: "Statut" },
+			{ key: "number_of_masses", label: "Nombre de messes" },
+			{ key: "recurrence_id", label: "ID Récurrence" },
 		],
 		formatters: {
 			donor: {
@@ -133,12 +177,55 @@ export const tabs: TabColumn[] = [
 				],
 				display: (value: number) => (value ? "Oui" : "Non"),
 			},
+			wants_celebration_date: {
+				type: "boolean",
+				options: [
+					{ label: "Oui", value: 1 },
+					{ label: "Non", value: 0 },
+				],
+				display: (value: number) => (value ? "Oui" : "Non"),
+			},
 			payment_method: {
 				type: "enum",
 				options: [
 					{ label: "Espèces", value: "cash" },
 					{ label: "Chèque", value: "cheque" },
 					{ label: "Virement", value: "transfer" },
+					{ label: "CB", value: "card" },
+				],
+			},
+			intention_text: {
+				type: "string",
+				display: (value: string) => {
+					if (!value) return ""
+					const maxLength = 50
+					return value.length > maxLength ? value.slice(0, maxLength) + "…" : value
+				},
+			},
+			status: {
+				type: "enum",
+				options: [
+					{ label: "Planifiée", value: "scheduled" },
+					{ label: "En attente", value: "pending" },
+					{ label: "En cours", value: "in_progress" },
+					{ label: "Terminée", value: "completed" },
+					{ label: "Annulée", value: "cancelled" },
+				],
+			},
+			date_type: {
+				type: "enum",
+				options: [
+					{ label: "Impérative", value: "imperative" },
+					{ label: "Souhaitée", value: "desired" },
+					{ label: "Indifférente", value: "indifferent" },
+				],
+			},
+			intention_type: {
+				type: "enum",
+				options: [
+					{ label: "Trentain", value: "thirty" },
+					{ label: "Neuvaine", value: "novena" },
+					{ label: "Unité", value: "unit" },
 				],
 			},
 		},
@@ -160,8 +247,6 @@ export const tabs: TabColumn[] = [
 			type: {
 				type: "enum",
 				options: [
-					{ label: "Quotidien", value: "daily" },
-					{ label: "Hebdomadaire", value: "weekly" },
 					{ label: "Mensuel", value: "monthly" },
 					{ label: "Position relative", value: "relative_position" },
 					{ label: "Annuel", value: "yearly" },
@@ -173,13 +258,14 @@ export const tabs: TabColumn[] = [
 			},
 			end_date: {
 				type: "date",
-				display: (value: string) => value ? new Date(value).toLocaleDateString("fr-FR") : "",
+				display: (value: string) => (value ? new Date(value).toLocaleDateString("fr-FR") : ""),
 			},
 			end_type: {
 				type: "enum",
 				options: [
 					{ label: "Nombre d'occurrences", value: "occurrences" },
 					{ label: "Date de fin", value: "date" },
+					{ label: "Pas de fin", value: "no-end" },
 				],
 			},
 			position: {

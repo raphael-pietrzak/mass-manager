@@ -24,7 +24,7 @@ const AppRouter: React.FC = () => (
       <Route path="/recurring-intentions" element={<ProtectedRoute requiredRole={['admin', 'secretary']}> <RecurrencePage /> </ProtectedRoute>} />
 
       {/* Routes réservées à admin uniquement */}
-      <Route path="/database" element={<ProtectedRoute requiredRole={['admin']}> <DatabaseTabs /> </ProtectedRoute>} />
+      <Route path="/admin/database" element={<ProtectedRoute requiredRole={['admin']}> <DatabaseTabs /> </ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute requiredRole={['admin']}> <AdminPage /> </ProtectedRoute>} />
     </Routes>
   </Router>

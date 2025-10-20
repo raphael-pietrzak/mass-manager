@@ -81,13 +81,7 @@ const Intention = {
 		}
 	},
 
-	deleteBeforeDate: () =>
-		db("Intentions")
-			.whereNull("recurrence_id")
-			.whereNotIn("id", function () {
-				this.select("intention_id").from("Masses").whereNotNull("intention_id")
-			})
-			.del(),
+	deleteBeforeDate: () => db("Intentions").whereNull("recurrence_id").andWhere("status", "completed").del(),
 }
 
 module.exports = Intention

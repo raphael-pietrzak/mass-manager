@@ -47,12 +47,47 @@ const AdminPage = () => {
     console.log('Sauvegarde effectuée');
   };
 
-  const handleDeleteHistory = (date: Date) => {
-    axios.delete(`${API_BASE_URL}/api/data/masses`, { params: { date: date } })
-    axios.delete(`${API_BASE_URL}/api/data/special-days`, {params : {date: date}})
-    axios.delete(`${API_BASE_URL}/api/data/unavailable-days`, {params : {date: date}})
-    axios.delete(`${API_BASE_URL}/api/data/intentions`)
-    setSuccessMessage('Les données antérieures à cette date ont bien été supprimées.');
+  const handleDeleteHistory = async (date: Date) => {
+    let deletedSomething = false; // pour savoir si au moins une suppression a fonctionné
+    // Suppression des jours spéciaux
+    try {
+      await axios.delete(`${API_BASE_URL}/api/data/special-days`, { params: { date } });
+      deletedSomething = true;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        console.log('Rien à supprimer pour special-days');
+      } else {
+        console.error('Erreur sur special-days:', error);
+      }
+    }
+    // Suppression des jours indisponibles
+    try {
+      await axios.delete(`${API_BASE_URL}/api/data/unavailable-days`, { params: { date } });
+      deletedSomething = true;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        console.log('Rien à supprimer pour unavailable-days');
+      } else {
+        console.error('Erreur sur unavailable-days:', error);
+      }
+    }
+    // Suppression des intentions
+    try {
+      await axios.delete(`${API_BASE_URL}/api/data/intentions`);
+      deletedSomething = true;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        console.log('Rien à supprimer pour intentions');
+      } else {
+        console.error('Erreur sur intentions:', error);
+      }
+    }
+    // Message final
+    if (deletedSomething) {
+      setSuccessMessage('Les données ont été supprimées avec succès.');
+    } else {
+      setSuccessMessage('Rien à supprimer.');
+    }
   };
 
   useEffect(() => {
@@ -179,7 +214,7 @@ const AdminPage = () => {
           <Button
             className="w-full justify-start"
             variant="outline"
-            onClick={() => navigate('/database')}
+            onClick={() => navigate('/admin/database')}
           >
             <Database className="mr-2 h-4 w-4" />
             Base de données
@@ -228,7 +263,7 @@ const AdminPage = () => {
                   />
                 </div>
                 <AlertDialogDescription className="mt-4">
-                  ⚠ Cette action va supprimer définitivement ttoutes les données non utilisées antérieures à cette date.
+                  ⚠ Cette action va supprimer définitivement toutes les données non utilisées antérieures à cette date.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

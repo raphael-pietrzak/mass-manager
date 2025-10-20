@@ -2,7 +2,17 @@ const db = require("../../config/database")
 
 const UnavailableDay = {
 	getAll: async () => {
-		return db.select().from("UnavailableDays")
+		return db
+			.select({
+				id: "UnavailableDays.id",
+				date: "UnavailableDays.date",
+				is_recurrent: "UnavailableDays.is_recurrent",
+				celebrant_title: "Celebrants.title",
+				celebrant_religious_name: "Celebrants.religious_name",
+				// ajoute d'autres colonnes si nécessaire
+			})
+			.from("UnavailableDays")
+			.leftJoin("Celebrants", "UnavailableDays.celebrant_id", "Celebrants.id")
 	},
 
 	create: async (unavailableDay) => {
