@@ -78,7 +78,7 @@ const RecurringIntentionService = {
 		console.log("DEBUG: Aucune date trouvée")
 		return null
 	},
-	
+
 	handleGenerateRecurringMassPreview: async (params) => {
 		try {
 			const {
@@ -96,6 +96,18 @@ const RecurringIntentionService = {
 				deceased = false,
 				usedCelebrantsByDate = {},
 			} = params
+
+			// Vérification : interdiction des intentions mensuelles le 29, 30, 31
+			const startDateObj = typeof start_date === "string" ? parseISO(start_date) : start_date
+			const day = startDateObj.getDate()
+			const month = startDateObj.getMonth() + 1
+			if (type === "monthly" && day >= 29) {
+				throw new Error("Impossible de choisir une intention récurrente mensuelle le 29, 30 ou 31 d’un mois.")
+			}
+			// Vérification pour annuel (interdire le 29 février)
+			if (type === "yearly" && day === 29 && month === 2) {
+				throw new Error("Impossible de choisir une intention récurrente annuelle le 29 février.")
+			}
 
 			// Initialisation
 			const masses = []
