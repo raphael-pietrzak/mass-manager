@@ -149,7 +149,6 @@ const PonctualIntentionPage: React.FC = () => {
 					<select
 						value={status}
 						className="px-3 py-2 text-sm font-medium rounded-md shadow-sm bg-card border border-border text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary/30"
-						defaultValue="pending"
 						onChange={(e) => handleStatusChange(e.target.value)}
 					>
 						<option value="pending">En attente</option>

@@ -40,12 +40,12 @@ class CelebrantService {
 
   async getAvailableCelebrants(date?: string): Promise<Celebrant[]> {
     try {
-      const response = await fetch(`${API_URL}/celebrants/available?date=${date}`);
-      if (!response.ok) {
+      const response = await axios.get(`${API_URL}/celebrants/available?date=${date}`);
+      if (!response.data) {
         throw new Error('Erreur lors de la récupération des célébrants');
       }
       
-      return await response.json();
+      return response.data;
     } catch (error) {
       console.error('Erreur dans le service célébrant:', error);
       return [];
