@@ -1,6 +1,7 @@
 import { IntentionWithRecurrence } from "../features/intentions/recurring/RecurringIntentionModal"
-import apiClient from "./apiClient"
 import { Masses } from "./intentionService"
+import { API_BASE_URL } from "."
+import axios from "axios"
 
 export interface Recurrence {
 	recurrence_id?: number
@@ -29,33 +30,34 @@ export interface PaginatedRecurringIntentions {
 	}
 }
 
-export const recurrenceService = {
-	getAll: (page = 1): Promise<PaginatedRecurringIntentions> => apiClient.get(`/data/recurrences?page=${page}`).then((response) => response.data),
+const API_URL = `${API_BASE_URL}/api/data/recurrences`
 
-	getById: (id: number): Promise<IntentionWithRecurrence> => apiClient.get(`/data/recurrences/${id}`).then((response) => response.data),
+export const recurrenceService = {
+	getAll: (page = 1): Promise<PaginatedRecurringIntentions> => axios.get(`${API_URL}?page=${page}`).then((response) => response.data),
+
+	getById: (id: number): Promise<IntentionWithRecurrence> => axios.get(`${API_URL}/${id}`).then((response) => response.data),
 
 	previewMasses: async (data: Partial<IntentionWithRecurrence>) => {
 		try {
-			const response = await apiClient.post("/data/recurrences/preview", data)
+			const response = await axios.post(`${API_URL}/preview`, data)
 			return response.data
 		} catch (error: any) {
-			// Axios stocke le message côté server dans error.response.data
 			if (error.response && error.response.data && error.response.data.message) {
 				throw new Error(error.response.data.message)
 			}
-			throw error // ou error.message
+			throw error
 		}
 	},
 
 	create: (data: RecurringIntentionSubmission): Promise<{ recurrence_id: number; intention_id: string; masses_created: number }> =>
-		apiClient.post("/data/recurrences", data).then((response) => response.data),
+		axios.post(API_URL, data).then((response) => response.data),
 
 	update: (id: number, recurrence: Partial<Recurrence>): Promise<void> =>
-		apiClient.put(`/data/recurrences/${id}`, recurrence).then((response) => response.data),
+		axios.put(`${API_URL}/${id}`, recurrence).then((response) => response.data),
 
-	delete: (id: number): Promise<void> => apiClient.delete(`/data/recurrences/${id}`),
+	delete: (id: number): Promise<void> => axios.delete(`${API_URL}/${id}`).then((response) => response.data),
 
-	getActive: (): Promise<Recurrence[]> => apiClient.get("/data/recurrences/active").then((response) => response.data),
+	getActive: (): Promise<Recurrence[]> => axios.get(`${API_URL}/active`).then((response) => response.data),
 
-	getByType: (type: string): Promise<Recurrence[]> => apiClient.get(`/data/recurrences/type/${type}`).then((response) => response.data),
+	getByType: (type: string): Promise<Recurrence[]> => axios.get(`${API_URL}/type/${type}`).then((response) => response.data),
 }

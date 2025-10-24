@@ -17,10 +17,10 @@ router.get('/check_login', authenticateToken, (req, res) => {
   res.status(200).json({ authenticated: true });
 });
 
-router.get('/users', authenticateToken, authorizeAdmin, getUsers);
+router.get('/users', authorizeAdmin, getUsers);
 
-router.post('/change_password/:id', authenticateToken, authorizeAdmin, changeUserPassword);
+router.post('/change_password/:id', authorizeAdmin, changeUserPassword);
 
-router.post('/change_email/:id', authenticateToken, authorizeAdmin, changeUserEmail);
+router.post('/change_email/:id', authorizeAdmin, changeUserEmail);
 
 module.exports = router;

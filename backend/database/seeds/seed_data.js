@@ -582,7 +582,7 @@ exports.seed = function (knex) {
 		})
 		.then(function () {
 			return knex("Users").insert([
-				{ login_name: "admin", password: bcrypt.hashSync("admin", 10), email: "secretariat@lagrasse.org", role: "admin" },
+				{ login_name: "admin", password: bcrypt.hashSync("admin", 10), email: "admin@lagrasse.org", role: "admin" },
 				{ login_name: "secretariat", password: bcrypt.hashSync("Lagrasse123", 10), email: "secretariat@lagrasse.org", role: "secretary" },
 			])
 		})

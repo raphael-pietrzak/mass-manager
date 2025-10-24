@@ -166,8 +166,8 @@ const AdminPage = () => {
         withCredentials: true,
       });
       setNewEmail(newEmail);
-      setShowEmailDialog(false); // Fermer le dialogue après succès
       setSuccessMessage(response.data.success); // Message de succès
+      setShowEmailDialog(false); // Fermer le dialogue après succès
     } catch (error) {
       if (axios.isAxiosError(error)) {
         // Si l'erreur provient d'une requête Axios, afficher le message d'erreur
@@ -176,9 +176,6 @@ const AdminPage = () => {
         setErrorMessage("Une erreur inconnue est survenue.");
       }
     }
-    setNewEmail(newEmail);
-    setSuccessMessage('L\'adresse e-mail a été changée avec succès.');
-    setShowEmailDialog(false);
   };
 
   useEffect(() => {
@@ -379,7 +376,17 @@ const AdminPage = () => {
           </AlertDialog>
 
           {/* Changer l'email */}
-          <AlertDialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
+          <AlertDialog open={showEmailDialog}
+            onOpenChange={(open: boolean | ((prevState: boolean) => boolean)) => {
+              setShowEmailDialog(open);
+              if (!open && selectedUserId !== null) {
+                // Réinitialiser l'email au cas où l'utilisateur ferme sans confirmer
+                const user = users.find(u => u.id === selectedUserId);
+                if (user) setNewEmail(user.email || '');
+                setErrorMessage(""); // on peut aussi réinitialiser l'erreur
+              }
+            }}
+          >
             <AlertDialogTrigger asChild>
               <Button
                 className="w-full justify-start"
@@ -392,9 +399,8 @@ const AdminPage = () => {
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Changer l'adresse e-mail</AlertDialogTitle>
-                <AlertDialogDescription>
-                  <div className="mb-4">
-                    {/* <label className="block text-sm font-medium text-gray-700 mb-2">Sélectionner un utilisateur :</label> */}
+                <AlertDialogDescription className="space-y-4">
+                  <span className="block">
                     <Select value={selectedUserId?.toString()} onValueChange={(val: string) => setSelectedUserId(Number(val))} disabled={true}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Choisir un utilisateur" />
@@ -407,14 +413,17 @@ const AdminPage = () => {
                         ))}
                       </SelectContent>
                     </Select>
-                  </div>
-                  <Input
-                    type="email"
-                    placeholder="Nouvelle adresse e-mail"
-                    value={newEmail}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewEmail(e.target.value)}
-                    className="mt-4 text-black"
-                  />
+                  </span>
+
+                  <span className="block">
+                    <Input
+                      type="email"
+                      placeholder="Nouvelle adresse e-mail"
+                      value={newEmail}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewEmail(e.target.value)}
+                      className="text-black"
+                    />
+                  </span>
                 </AlertDialogDescription>
               </AlertDialogHeader>
               {errorMessage && (
@@ -425,7 +434,10 @@ const AdminPage = () => {
               )}
               <AlertDialogFooter>
                 <AlertDialogCancel>Annuler</AlertDialogCancel>
-                <AlertDialogAction onClick={handleEmailChange}>
+                <AlertDialogAction onClick={async (e: { preventDefault: () => void; }) => {
+                  e.preventDefault();
+                  handleEmailChange();
+                }}>
                   Confirmer
                 </AlertDialogAction>
               </AlertDialogFooter>

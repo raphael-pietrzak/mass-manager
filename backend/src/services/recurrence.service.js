@@ -179,7 +179,7 @@ const RecurringIntentionService = {
 					// Déterminer le nombre d'occurrences selon l'année du start_date
 					const currentYear = new Date().getFullYear()
 					const startYear = getYear(currentDate)
-					const totalOccurrences = startYear === currentYear ? 3 : startYear === currentYear + 1 ? 2 : 1
+					const totalOccurrences = startYear === currentYear ? 2 : startYear === currentYear + 1 ? 1 : 1
 
 					for (let i = 0; i < totalOccurrences; i++) {
 						const celebrant = await getCelebrant(currentDate)

@@ -13,6 +13,7 @@ const recurrencesRoutes = require('./routes/recurrences.routes');
 const exportRoutes = require('./routes/export.routes');
 const authRoutes = require('./routes/auth.routes');
 const mailerRoutes = require('./routes/mailer.routes');
+const cronRoutes = require('./routes/cron.routes');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -26,6 +27,10 @@ app.use(cors({
 
 app.use(express.json());
 
+const { authenticateToken } = require('./middlewares/auth.middleware');
+// Middleware global pour sécuriser toutes les routes sauf celles publiques
+app.use(authenticateToken);
+
 // Utilisation des routes
 app.use('/api/data/donors', donorsRoutes);
 app.use('/api/data/celebrants', celebrantsRoutes);
@@ -37,6 +42,7 @@ app.use('/api/data/recurrences', recurrencesRoutes);
 app.use('/api/export', exportRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/email', mailerRoutes);
+app.use('/api/cron', cronRoutes)
 
 // Lancement du serveur
 app.listen(PORT, () => {
@@ -52,6 +58,5 @@ app.listen(PORT, () => {
   console.log('export masses: http://localhost:3001/api/export/masses/[format]');
   console.log('\n [CTRL + CLICK] on the links to open in browser');
 
-  require("./services/cron/massCheck");
-  require("./services/cron/recurrenceSchedule");
+  require("./services/cron/cron.service");
 });
