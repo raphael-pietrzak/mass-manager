@@ -14,6 +14,7 @@ const exportRoutes = require('./routes/export.routes');
 const authRoutes = require('./routes/auth.routes');
 const mailerRoutes = require('./routes/mailer.routes');
 const cronRoutes = require('./routes/cron.routes');
+const backupRoutes = require('./routes/backup.routes')
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -43,6 +44,7 @@ app.use('/api/export', exportRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/email', mailerRoutes);
 app.use('/api/cron', cronRoutes)
+app.use('/api/backup', backupRoutes)
 
 // Lancement du serveur
 app.listen(PORT, () => {
