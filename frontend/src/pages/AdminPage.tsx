@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Save, Trash2, UserPlus, Lock, Mail, Database, X } from 'lucide-react';
+import { Save, Trash2, UserPlus, Lock, Mail, Database, X, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { CelebrantManager } from '../features/admin/CelebrantManager';
 import axios from 'axios';
@@ -43,8 +43,56 @@ const AdminPage = () => {
     setDeleteBeforeDate(date || new Date()); // Si aucune date n'est sélectionnée, on prend la date actuelle
   };
 
-  const handleSave = () => {
-    console.log('Sauvegarde effectuée');
+  const handleSave = async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/backup/download`,
+        {
+          responseType: "blob", // <- IMPORTANT
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`, // ou autre source
+          },
+        }
+      );
+
+      // Crée un blob et force le téléchargement
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `backup_${Date.now()}.sqlite.gz`
+      ); // nom du fichier
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url); // libère la mémoire
+
+    } catch (err) {
+      console.error("Erreur lors du téléchargement du backup :", err);
+    }
+  };
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const handleRestore = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      alert("Veuillez sélectionner un fichier de sauvegarde.");
+      return;
+    }
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/backup/restore`,
+        formData,
+      );
+      setSuccessMessage("Base de données restaurée avec succès !");
+      e.target.value = '';
+    } catch (err) {
+      console.error("Erreur lors de la restauration :", err);
+      setErrorMessage("Erreur lors de la restauration de la base de données.");
+    }
   };
 
   const handleDeleteHistory = async (date: Date) => {
@@ -202,6 +250,15 @@ const AdminPage = () => {
           <AlertDescription>{successMessage}</AlertDescription>
         </Alert>
       )}
+      {/* Error message */}
+      {errorMessage && (
+        <Alert className="bg-red-50 border-red-300 text-red-800">
+          <AlertTitle className="flex items-center space-x-2">
+            <X color="red" size={22} /> Erreur
+          </AlertTitle>
+          <AlertDescription>{errorMessage}</AlertDescription>
+        </Alert>
+      )}
       <Card>
         <CardHeader>
           <CardTitle>Administration</CardTitle>
@@ -232,10 +289,25 @@ const AdminPage = () => {
             className="w-full justify-start"
             variant="outline"
             onClick={handleSave}
-            disabled={true}
           >
             <Save className="mr-2 h-4 w-4" />
-            Sauvegarder
+            Télécharger Sauvegarde BDD
+          </Button>
+
+          <input
+            type="file"
+            ref={fileInputRef}
+            style={{ display: "none" }}
+            accept=".sqlite,.sqlite.gz"
+            onChange={handleRestore}
+          />
+          <Button
+            className="w-full justify-start"
+            variant="outline"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <Upload className="mr-2 h-4 w-4" />
+            Restaurer un fichier de Sauvegarde BDD
           </Button>
 
           {/* Supprimer l'historique */}
