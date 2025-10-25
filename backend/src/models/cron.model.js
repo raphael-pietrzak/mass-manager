@@ -42,6 +42,7 @@ const Cron = {
 		const today = new Date()
 		const currentYear = today.getFullYear()
 		const nextYear = currentYear + 1
+		const usedCelebrantsByDate = {}
 
 		const processedIntentions = []
 		const createdMasses = []
@@ -71,23 +72,22 @@ const Cron = {
 				}
 
 				// 2️⃣ Calculer la date pour l'année suivante
-				const currentDate = new Date(lastMass.date)
-				const nextDate = new Date(currentDate)
-				nextDate.setFullYear(nextYear)
+				const nextDate = new Date(`${lastMass.date}T00:00:00Z`)
+				nextDate.setUTCFullYear(nextDate.getUTCFullYear() + 1)
+				const nextDateStr = nextDate.toISOString().split("T")[0]
 
 				// 3️⃣ Choisir le célébrant
 				let celebrantId = lastMass.celebrant_id
-				const usedCelebrantsByDate = {}
 
 				if (lastMass.random_celebrant) {
-					const used = usedCelebrantsByDate[nextDate.toISOString().split("T")[0]] || []
-					const availableCelebrant = await Mass.getRandomAvailableCelebrant(nextDate.toISOString().split("T")[0], used)
+					const used = usedCelebrantsByDate[nextDateStr] || []
+					const availableCelebrant = await Mass.getRandomAvailableCelebrant(nextDateStr, used)
 					celebrantId = availableCelebrant.id
 				}
 
 				// 4️⃣ Créer la nouvelle messe
 				const [newMassId] = await db("Masses").insert({
-					date: nextDate.toISOString().split("T")[0],
+					date: nextDateStr,
 					celebrant_id: celebrantId,
 					intention_id: intent.intention_id,
 					status: "scheduled",
@@ -104,7 +104,7 @@ const Cron = {
 
 				processedIntentions.push(intent.intention_id)
 
-				console.log(`🕊️ Messe créée pour intention ${intent.intention_id} le ${nextDate.toISOString().split("T")[0]}`)
+				console.log(`🕊️ Messe créée pour intention ${intent.intention_id} le ${nextDateStr}`)
 			}
 
 			return {
@@ -121,6 +121,7 @@ const Cron = {
 		const now = new Date()
 		const currentMonth = now.getMonth() // 0–11
 		const currentYear = now.getFullYear()
+		const usedCelebrantsByDate = {}
 
 		const processedIntentions = []
 		const createdMasses = []
@@ -159,7 +160,6 @@ const Cron = {
 
 				// 4️⃣ Déterminer le célébrant
 				let celebrantId = lastMass.celebrant_id
-				const usedCelebrantsByDate = {}
 
 				if (lastMass.random_celebrant) {
 					const used = usedCelebrantsByDate[nextDate.toISOString().split("T")[0]] || []
@@ -203,6 +203,7 @@ const Cron = {
 		const now = new Date()
 		const currentMonth = now.getMonth() // 0–11
 		const currentYear = now.getFullYear()
+		const usedCelebrantsByDate = {}
 
 		const processedIntentions = []
 		const createdMasses = []
@@ -268,7 +269,6 @@ const Cron = {
 
 				// 4️⃣ Déterminer le célébrant
 				let celebrantId = massThisMonth.celebrant_id
-				const usedCelebrantsByDate = {}
 
 				if (massThisMonth.random_celebrant) {
 					const used = usedCelebrantsByDate[nextDateStr] ? Array.from(usedCelebrantsByDate[nextDateStr]) : []
