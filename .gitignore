@@ -10,4 +10,4 @@ mass_manager.db
 coverage
 
 # logs
-logs
+backend/logs
