@@ -727,11 +727,11 @@ const MassService = {
 	 */
 	findCelebrantForConsecutiveDates: async (daysNeeded, usedCelebrantsByDate) => {
 		const today = new Date()
-		const offset = parseInt(process.env.START_SEARCH_MONTH_OFFSET, 10)
+		const offset = parseInt(process.env.START_SEARCH_MONTH_OFFSET, 10) || 2
 		const searchStart = new Date(today.getFullYear(), today.getMonth() + offset, 1)
 		searchStart.setHours(12, 0, 0, 0)
 
-		const maxSearchDays = 100
+		const maxSearchDays = parseInt(process.env.MAX_SEARCH_DAYS, 10) || 100
 
 		const celebrantsSorted = await Celebrant.getCelebrantsSortedByBusyForMonth(searchStart)
 

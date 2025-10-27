@@ -61,12 +61,17 @@ const PonctualIntentionPage: React.FC = () => {
 				await intentionService.updateMass(newIntention.id, newIntention);
 				setSuccess("Intention mise à jour avec succès.");
 			} else {
+				// Création
 				await intentionService.createMass(newIntention);
-				if (newIntention.date_type === "imperative" || newIntention.date_type === "desired") setSuccess("Intention créée avec succès et messe(s) attribuée(s)");
-				else setSuccess("Intention créée avec succès.");
+				setSuccess(
+					newIntention.date_type === "imperative" || newIntention.date_type === "desired"
+						? "Intention créée avec succès et messe(s) attribuée(s)"
+						: "Intention créée avec succès."
+				);
+				// retourner à la première page
+				setPage(1);
 			}
 			await fetchIntentions();
-			setIsIntentionModalOpen(false);
 		} catch (err) {
 			setError('Erreur lors de la sauvegarde de l\'intention');
 		}
