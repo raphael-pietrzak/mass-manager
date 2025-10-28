@@ -409,6 +409,181 @@ class Mass {
 				this.whereNull("date")
 			})
 	}
+
+	/**
+	 * Récupère toutes les messes d'un célébrant sur une période en une seule requête
+	 * Optimisé pour vérifier les dates consécutives
+	 */
+	static async getMassesByCelebrantAndPeriod(celebrantId, startDate, endDate) {
+		return db("Masses")
+			.select(db.raw("DATE(date) as date"))
+			.where("celebrant_id", celebrantId)
+			.andWhere(db.raw("DATE(date)"), ">=", startDate.toISOString().split("T")[0])
+			.andWhere(db.raw("DATE(date)"), "<=", endDate.toISOString().split("T")[0])
+			.orderBy("date")
+	}
+
+	/**
+	 * Récupère tous les jours indisponibles d'un célébrant sur une période
+	 */
+	static async getUnavailableDaysByCelebrantAndPeriod(celebrantId, startDate, endDate) {
+		return db("UnavailableDays")
+			.select(db.raw("DATE(date) as date"))
+			.where("celebrant_id", celebrantId)
+			.andWhere(db.raw("DATE(date)"), ">=", startDate.toISOString().split("T")[0])
+			.andWhere(db.raw("DATE(date)"), "<=", endDate.toISOString().split("T")[0])
+			.orderBy("date")
+	}
+
+	/**
+	 * Récupère tous les jours spéciaux bloquants sur une période
+	 */
+	static async getBlockedSpecialDays(startDate, endDate) {
+		return db("SpecialDays")
+			.select(db.raw("DATE(date) as date"))
+			.where("number_of_masses", 0)
+			.andWhere(db.raw("DATE(date)"), ">=", startDate.toISOString().split("T")[0])
+			.andWhere(db.raw("DATE(date)"), "<=", endDate.toISOString().split("T")[0])
+			.orderBy("date")
+	}
+
+	/**
+	 * Trouve N jours consécutifs disponibles pour un célébrant
+	 * Charge toutes les données nécessaires en 3 requêtes au lieu de N*3
+	 */
+	static async findConsecutiveDaysForCelebrant(celebrantId, daysNeeded, usedCelebrantsByDate = {}) {
+		const today = new Date()
+		const offset = parseInt(process.env.START_SEARCH_MONTH_OFFSET, 10) || 0
+		const searchStart = new Date(today.getFullYear(), today.getMonth() + offset, 1)
+		searchStart.setHours(12, 0, 0, 0)
+
+		const maxSearchDays = parseInt(process.env.MAX_SEARCH_DAYS, 10) || 100
+		const searchEnd = new Date(searchStart)
+		searchEnd.setDate(searchEnd.getDate() + maxSearchDays)
+
+		// 1. Récupérer toutes les données en parallèle (3 requêtes au lieu de N*3)
+		const [existingMasses, unavailableDays, blockedDays] = await Promise.all([
+			this.getMassesByCelebrantAndPeriod(celebrantId, searchStart, searchEnd),
+			this.getUnavailableDaysByCelebrantAndPeriod(celebrantId, searchStart, searchEnd),
+			this.getBlockedSpecialDays(searchStart, searchEnd),
+		])
+
+		// 2. Créer des Sets pour recherche O(1)
+		const busyDates = new Set([...existingMasses.map((m) => m.date), ...unavailableDays.map((d) => d.date), ...blockedDays.map((d) => d.date)])
+
+		// 3. Générer toutes les dates et vérifier disponibilité
+		const dates = []
+		for (let i = 0; i <= maxSearchDays; i++) {
+			const date = new Date(searchStart)
+			date.setDate(searchStart.getDate() + i)
+			const dateStr = date.toISOString().split("T")[0]
+
+			const notInUsedCelebrants = !usedCelebrantsByDate[dateStr] || !usedCelebrantsByDate[dateStr].has(parseInt(celebrantId))
+			const notBusy = !busyDates.has(dateStr)
+
+			dates.push({
+				date: date,
+				dateStr: dateStr,
+				available: notBusy && notInUsedCelebrants,
+			})
+		}
+
+		// 4. Trouver la première séquence de N jours consécutifs disponibles
+		for (let i = 0; i <= dates.length - daysNeeded; i++) {
+			const window = dates.slice(i, i + daysNeeded)
+			if (window.every((d) => d.available)) {
+				return window.map((d) => d.dateStr)
+			}
+		}
+
+		return null
+	}
+
+	/**
+	 * Trouve le célébrant le moins chargé ayant N jours consécutifs disponibles
+	 */
+	static async findCelebrantForConsecutiveDays(daysNeeded, usedCelebrantsByDate = {}, searchStart = null) {
+		const today = new Date()
+		const offset = parseInt(process.env.START_SEARCH_MONTH_OFFSET, 10) || 2
+		const start = searchStart || new Date(today.getFullYear(), today.getMonth() + offset, 1)
+		start.setHours(12, 0, 0, 0)
+
+		const maxSearchDays = parseInt(process.env.MAX_SEARCH_DAYS, 10) || 100
+		const searchEnd = new Date(start)
+		searchEnd.setDate(searchEnd.getDate() + maxSearchDays)
+
+		// 1. Récupérer les jours bloqués une seule fois
+		const blockedDays = await this.getBlockedSpecialDays(start, searchEnd)
+		const blockedDatesSet = new Set(blockedDays.map((d) => d.date))
+
+		// 2. Récupérer tous les célébrants triés par charge
+		const celebrants = await db("Celebrants")
+			.select("Celebrants.*")
+			.leftJoin("Masses", function () {
+				this.on("Celebrants.id", "=", "Masses.celebrant_id").andOn(db.raw("EXTRACT(MONTH FROM Masses.date) = ?", [start.getMonth() + 1]))
+			})
+			.groupBy("Celebrants.id")
+			.orderBy(db.raw("COUNT(Masses.id)"), "asc")
+
+		// 3. Pour chaque célébrant, vérifier en parallèle s'il a des jours consécutifs
+		for (const celebrant of celebrants) {
+			const [existingMasses, unavailableDays] = await Promise.all([
+				this.getMassesByCelebrantAndPeriod(celebrant.id, start, searchEnd),
+				this.getUnavailableDaysByCelebrantAndPeriod(celebrant.id, start, searchEnd),
+			])
+
+			const busyDates = new Set([...existingMasses.map((m) => m.date), ...unavailableDays.map((d) => d.date), ...blockedDatesSet])
+
+			// Générer tableau de disponibilité
+			const availability = []
+			for (let i = 0; i <= maxSearchDays; i++) {
+				const date = new Date(start)
+				date.setDate(start.getDate() + i)
+				const dateStr = date.toISOString().split("T")[0]
+
+				const notInUsed = !usedCelebrantsByDate[dateStr] || !usedCelebrantsByDate[dateStr].has(celebrant.id)
+				const notBusy = !busyDates.has(dateStr)
+
+				availability.push({
+					date: date,
+					dateStr: dateStr,
+					available: notBusy && notInUsed,
+				})
+			}
+
+			// Chercher fenêtre consécutive
+			for (let i = 0; i <= availability.length - daysNeeded; i++) {
+				const window = availability.slice(i, i + daysNeeded)
+				if (window.every((d) => d.available)) {
+					return {
+						celebrant: celebrant,
+						startDate: window[0].dateStr,
+						dates: window.map((d) => d.dateStr),
+					}
+				}
+			}
+		}
+
+		return null
+	}
+
+	/**
+	 * Batch update pour plusieurs messes
+	 * permet de mettre à jour plusieurs messes en une seule transaction
+	 */
+	static async batchUpdate(masses) {
+		return db.transaction(async (trx) => {
+			const updatePromises = masses.map((mass) =>
+				trx("Masses").where("id", mass.id).update({
+					date: mass.date,
+					celebrant_id: mass.celebrant_id,
+					intention_id: mass.intention_id,
+					status: mass.status,
+				})
+			)
+			return Promise.all(updatePromises)
+		})
+	}
 }
 
 module.exports = Mass
