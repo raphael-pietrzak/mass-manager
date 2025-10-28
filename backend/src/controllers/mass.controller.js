@@ -114,7 +114,12 @@ exports.updateMass = async (req, res) => {
 exports.deleteMass = async (req, res) => {
   try {
     const id = req.params.id;
-    await Mass.delete(id);
+    const deletedCount = await Mass.delete(id);
+
+    if (deletedCount === 0) {
+      return res.status(404).json({ message: "Messe non trouvée" });
+    }
+
     res.status(204).send();
   } catch (error) {
     console.error(error);

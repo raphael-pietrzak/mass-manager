@@ -68,11 +68,10 @@ function CalendarPage() {
     try {
       if (massToDelete.id) {
         await massService.deleteMass(massToDelete.id);
-        const newMasses = await massService.getMasses();
-        setMasses(newMasses);
+        fetchMasses()
       }
-      //setIsMassModalOpen(false);
     } catch (err) {
+      console.log("erreur super nulle")
       setError('Erreur lors de la suppression de la messe');
     }
   };

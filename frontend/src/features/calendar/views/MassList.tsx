@@ -7,7 +7,7 @@ import { MassModal } from '../MassModal';
 
 interface MassListProps {
   masses: Mass[];
-  onDeleteMass: (mass: Mass) => void;
+  onDeleteMass: (mass: Mass) => Promise<void>;
   onUpdateMass: (mass: Partial<Mass>) => void;
   filters: {
     celebrant: string;
@@ -58,11 +58,16 @@ export const MassList: React.FC<MassListProps> = ({ masses, onDeleteMass, onUpda
     setIsConfirmModalOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (massToDelete) {
-      onDeleteMass(massToDelete);
-      setIsConfirmModalOpen(false);
-      setMassToDelete(null);
+      try {
+        await onDeleteMass(massToDelete);
+      } catch (err) {
+        console.error("Erreur lors de la suppression :", err);
+      } finally {
+        setIsConfirmModalOpen(false);
+        setMassToDelete(null);
+      }
     }
   };
 
