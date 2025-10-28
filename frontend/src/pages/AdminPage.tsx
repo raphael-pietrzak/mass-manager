@@ -375,12 +375,12 @@ const AdminPage = () => {
                 variant="outline"
               >
                 <Lock className="mr-2 h-4 w-4" />
-                Changer les mots de passe des utilisateurs
+                Modifier les mots de passe des utilisateurs
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle className='mb-5'>Changer les mots de passe</AlertDialogTitle>
+                <AlertDialogTitle className='mb-5'>Modifier les mots de passe</AlertDialogTitle>
                 <div className="space-y-10">
                   {/* formulaire de choix utilisateur */}
                   <div className="mb-4">
@@ -465,12 +465,12 @@ const AdminPage = () => {
                 variant="outline"
               >
                 <Mail className="mr-2 h-4 w-4" />
-                Changer l'adresse e-mail du secrétaire
+                Modifier l'adresse e-mail du secrétaire
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Changer l'adresse e-mail</AlertDialogTitle>
+                <AlertDialogTitle>Modifier l'adresse e-mail</AlertDialogTitle>
                 <AlertDialogDescription className="space-y-4">
                   <span className="block">
                     <Select value={selectedUserId?.toString()} onValueChange={(val: string) => setSelectedUserId(Number(val))} disabled={true}>
