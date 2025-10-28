@@ -1,7 +1,7 @@
 const RecurringIntentionService = require("../services/recurrence.service")
 const Mass = require("../models/mass.model")
 const Celebrant = require("../models/celebrant.model")
-const { parseISO, format } = require("date-fns")
+const { parseISO } = require("date-fns")
 
 jest.mock("../models/mass.model")
 jest.mock("../models/celebrant.model")

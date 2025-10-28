@@ -382,6 +382,43 @@ class Mass {
 		}
 	}
 
+	static async getMassesByDateRangeToExport(startDate, endDate) {
+		// Formater les dates au format YYYY-MM-DD
+		const formattedStartDate = new Date(startDate).toISOString().split("T")[0]
+		const formattedEndDate = new Date(endDate).toISOString().split("T")[0]
+
+		// Construire la requête
+		const data = await db("Masses")
+			.leftJoin("Celebrants", "Masses.celebrant_id", "Celebrants.id")
+			.leftJoin("Intentions", "Masses.intention_id", "Intentions.id")
+			.leftJoin("Donors", "Intentions.donor_id", "Donors.id")
+			.select(
+				"Masses.id",
+				"Masses.date",
+				"Masses.status",
+				"Masses.random_celebrant",
+				"Celebrants.title as celebrant_title",
+				"Celebrants.religious_name as celebrant_religious_name",
+				"Celebrants.id as celebrant_id",
+				"Intentions.intention_text as intention",
+				"Intentions.deceased as deceased",
+				"Intentions.amount",
+				"Intentions.date_type as dateType",
+				"Intentions.intention_type as intention_type",
+				"Intentions.wants_celebration_date as wants_notification",
+				"Donors.firstname as donor_firstname",
+				"Donors.lastname as donor_lastname",
+				"Donors.email as donor_email",
+				"Intentions.recurrence_id"
+			)
+			.where("Masses.status", "!=", "pending")
+			.whereRaw("DATE(Masses.date) >= ?", [formattedStartDate])
+			.whereRaw("DATE(Masses.date) <= ?", [formattedEndDate])
+			.orderBy("Masses.date")
+
+		return data
+	}
+
 	static async getMassesByIntentionId(intentionId) {
 		return db("Masses")
 			.select(
