@@ -28,22 +28,25 @@ function CalendarPage() {
   const [error, setError] = useState<string | null>(null);
   const [isSpecialDayModalOpen, setIsSpecialDayModalOpen] = useState(false);
   const [isUnavailableDayModalOpen, setIsUnavailableDayModalOpen] = useState(false)
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const fetchMasses = async () => {
+    setLoading(true);
     try {
-       setLoading(true);
-      const data = await massService.getMassesByDateRange(filters.startDate, filters.endDate);
-      setMasses(data);
-      setLoading(false);
+      const response = await massService.getMassesByDateRange(filters.startDate, filters.endDate, page, filters.celebrant === "all" ? null : filters.celebrant);
+      setMasses(response.data);
+      setTotalPages(response.pagination.totalPages);
     } catch (err) {
       setError('Erreur lors du chargement des messes');
+    } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchMasses();
-  }, [filters.startDate, filters.endDate]);
+  }, [filters.startDate, filters.endDate, filters.celebrant, page]);
 
   const handleMassClick = (mass: Mass) => {
     console.log('Messe cliquée dans le slider du calendrier', mass);
@@ -76,10 +79,12 @@ function CalendarPage() {
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
+    if (key === 'celebrant') setPage(1);
   };
 
   const handleDateFilterChange = (startDate: Date | null, endDate: Date | null) => {
     setFilters(prev => ({ ...prev, startDate, endDate }));
+    setPage(1);
   };
 
   const handleAddSpecialDay = () => {
@@ -148,6 +153,30 @@ function CalendarPage() {
             />
           )}
         </div>
+
+        {!loading && totalPages > 0 && masses.length > 0 && (
+          <div className="flex justify-center items-center mt-6 gap-4">
+            <button
+              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+              disabled={page === 1}
+              className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md disabled:opacity-50 hover:bg-gray-200"
+            >
+              ← Précédent
+            </button>
+
+            <span className="text-sm text-gray-600">
+              Page <strong>{page}</strong> sur <strong>{totalPages}</strong>
+            </span>
+
+            <button
+              onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={page === totalPages}
+              className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md disabled:opacity-50 hover:bg-gray-200"
+            >
+              Suivant →
+            </button>
+          </div>
+        )}
 
         <DaySlider
           date={selectedDate}

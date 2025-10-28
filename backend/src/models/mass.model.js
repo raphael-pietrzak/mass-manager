@@ -303,8 +303,11 @@ class Mass {
 			.orderBy("date")
 	}
 
-	static async getMassesByDateRange(startDate, endDate, celebrant_id) {
-		// Requête pour les messes normales
+	static async getMassesByDateRange(startDate, endDate, celebrant_id, page = 1) {
+		const limit = 15
+		const offset = (page - 1) * limit
+
+		// Requête principale paginée
 		let query = db("Masses")
 			.leftJoin("Celebrants", "Masses.celebrant_id", "Celebrants.id")
 			.leftJoin("Intentions", "Masses.intention_id", "Intentions.id")
@@ -330,6 +333,8 @@ class Mass {
 			)
 			.where("Masses.status", "!=", "pending")
 			.orderBy("Masses.date")
+			.limit(limit)
+			.offset(offset)
 
 		if (celebrant_id) {
 			query = query.where("Masses.celebrant_id", celebrant_id)
@@ -344,7 +349,37 @@ class Mass {
 			const formattedEndDate = new Date(endDate).toISOString().split("T")[0]
 			query = query.where(db.raw("DATE(Masses.date)"), "<=", formattedEndDate)
 		}
-		return query
+
+		// Comptage total pour la pagination
+		let countQuery = db("Masses").countDistinct("Masses.id as total").where("Masses.status", "!=", "pending")
+
+		if (celebrant_id) {
+			countQuery = countQuery.where("Masses.celebrant_id", celebrant_id)
+		}
+
+		if (startDate) {
+			const formattedStartDate = new Date(startDate).toISOString().split("T")[0]
+			countQuery = countQuery.where(db.raw("DATE(Masses.date)"), ">=", formattedStartDate)
+		}
+
+		if (endDate) {
+			const formattedEndDate = new Date(endDate).toISOString().split("T")[0]
+			countQuery = countQuery.where(db.raw("DATE(Masses.date)"), "<=", formattedEndDate)
+		}
+
+		const [data, countResult] = await Promise.all([query, countQuery])
+		const total = Number(countResult[0].total)
+		const totalPages = Math.ceil(total / limit)
+
+		return {
+			data,
+			pagination: {
+				total,
+				page,
+				limit,
+				totalPages,
+			},
+		}
 	}
 
 	static async getMassesByIntentionId(intentionId) {

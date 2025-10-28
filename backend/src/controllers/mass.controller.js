@@ -14,9 +14,9 @@ exports.getAll = async (req, res) => {
 };
 
 exports.getMassesByDateRange = async (req, res) => {
-  const {startDate, endDate, celebrant_id} = req.query
+  const {startDate, endDate, celebrant_id, page = 1 } = req.query
   try {
-    const data = await Mass.getMassesByDateRange(startDate, endDate, celebrant_id);
+    const data = await Mass.getMassesByDateRange(startDate, endDate, celebrant_id, Number(page));
     res.json(data);
   } catch (error) {
     console.error('Erreur getMasses:', error);

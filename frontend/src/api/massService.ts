@@ -6,7 +6,7 @@ export type MassStatus = "pending" | "scheduled" | "cancelled" | "completed"
 
 export interface Mass {
 	id?: string
-	date: string | null// format YYYY-MM-DD
+	date: string | null // format YYYY-MM-DD
 	deceased: number
 	intention?: string
 	celebrant_id: string
@@ -32,7 +32,7 @@ export interface Mass {
 	//massType?: string
 	dateType?: string
 	recurrence_id?: number
-	random_celebrant: number,
+	random_celebrant: number
 }
 
 // Type pour la réponse de prévisualisation avec une structure simplifiée des masses
@@ -82,31 +82,39 @@ export const massService = {
 		}))
 	},
 
-	getMassesByDateRange: async (startDate?: Date | null, endDate?: Date | null): Promise<Mass[]> => {
+	getMassesByDateRange: async (
+		startDate?: Date | null,
+		endDate?: Date | null,
+		page: number = 1,
+		celebrantId?: string | number | null
+	): Promise<{ data: Mass[]; pagination: { total: number; page: number; limit: number; totalPages: number } }> => {
 		let url = API_URL
 		const params = new URLSearchParams()
 
 		if (startDate) {
 			const d = new Date(startDate)
-			d.setHours(12, 0, 0, 0)
 			params.append("startDate", d.toISOString().split("T")[0])
 		}
 		if (endDate) {
 			const d = new Date(endDate)
-			d.setHours(12, 0, 0, 0)
 			params.append("endDate", d.toISOString().split("T")[0])
 		}
-
-		const queryString = params.toString()
-		if (queryString) {
-			url += `?${queryString}`
+		if (celebrantId && celebrantId !== "all") {
+			params.append("celebrant_id", celebrantId.toString())
 		}
 
-		const response = await axios.get(url)
-		return response.data.map((mass: any) => ({
-			...mass,
-			date: mass.date ? new Date(mass.date).toISOString().split("T")[0] : null,
-		}))
+		params.append("page", page.toString())
+		url += `?${params.toString()}`
+
+		const { data: result } = await axios.get(url)
+
+		return {
+			data: result.data.map((mass: any) => ({
+				...mass,
+				date: mass.date ? new Date(mass.date).toISOString().split("T")[0] : null,
+			})),
+			pagination: result.pagination,
+		}
 	},
 
 	updateMass: async (mass: Partial<Mass>) => {
