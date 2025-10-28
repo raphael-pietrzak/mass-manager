@@ -1,6 +1,6 @@
 const cron = require("node-cron")
 const axios = require("axios")
-const { log } = require("../logger")
+const { log } = require("../logs/logger")
 
 // toutes les 30s ==> "*/30 * * * * *"
 // toutes les minutes "* * * * *"

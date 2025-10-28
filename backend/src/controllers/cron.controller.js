@@ -1,5 +1,5 @@
 const Cron = require("../models/cron.model")
-const { log } = require("../services/logger")
+const { log } = require("../services/logs/logger")
 
 exports.checkMassesAndIntentions = async (req, res) => {
 	log("Routine modification statut en terminé", "TRACE", true)

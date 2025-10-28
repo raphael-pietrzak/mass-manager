@@ -1,8 +1,8 @@
 const fs = require("fs")
 const path = require("path")
 
-const logFilePath = path.join(__dirname, "../../logs/cron.log")
-const logsDir = path.join(__dirname, "../../logs")
+const logFilePath = path.join(__dirname, "../../../logs/cron.log")
+const logsDir = path.join(__dirname, "../../../logs")
 if (!fs.existsSync(logsDir)) {
 	fs.mkdirSync(logsDir)
 }
