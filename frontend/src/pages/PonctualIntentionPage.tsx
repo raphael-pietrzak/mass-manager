@@ -120,18 +120,31 @@ const PonctualIntentionPage: React.FC = () => {
 	};
 
 	const handleDistributeIntentions = async () => {
-		// Répartition des messes pour chaque intention séléectionnée
-		try {
-			for (const id of selectedIntentionIds) {
+		setError("");
+		setSuccess("");
+		const successIds: number[] = [];
+		const failedMessages: string[] = [];
+
+		for (const id of selectedIntentionIds) {
+			try {
 				await intentionService.assignIntentions(Number(id));
+				successIds.push(Number(id));
+			} catch (error: any) {
+				failedMessages.push(`Intention ${id} : ${error.message}`);
 			}
-			await fetchIntentions();
-			setSelectedIntentionIds([]);
-			setSuccess("Répartition des messes effectuée avec succès");
-		} catch (error: any) {
-			setError(error.message)
 		}
-	}
+
+		await fetchIntentions();
+		setSelectedIntentionIds([]);
+
+		if (failedMessages.length > 0) {
+			setError(failedMessages.join("\n"));
+		}
+
+		if (successIds.length > 0) {
+			setSuccess(`${successIds.length} intention(s) répartie(s) avec succès`);
+		}
+	};
 
 	const handleStatusChange = async (status: string) => {
 		setStatus(status);

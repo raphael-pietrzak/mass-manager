@@ -113,7 +113,7 @@ function CalendarPage() {
   return (
     <div className="min-h-screen bg-gray-100">
       <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-        <h1 className="text-2xl font-bold mb-6">Calendrier des messes</h1>
+        <h1 className="text-2xl font-bold mb-6">Calendrier des Messes</h1>
         <FilterBar
           viewMode={viewMode}
           onViewModeChange={setViewMode}

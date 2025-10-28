@@ -302,10 +302,14 @@ exports.assignToExistingMasses = async (req, res) => {
 			}
 		} else {
 			updatedMasses = await MassService.assignNeuvaineOrTrentain([intention])
+			if (updatedMasses?.error) {
+				console.log(updatedMasses?.error)
+				return res.status(422).json({ message: updatedMasses.message })
+			}
 		}
 		res.json(updatedMasses)
 	} catch (error) {
 		console.error(error)
-		res.status(500).json({ error: "Erreur lors de l'assignation des messes" })
+		res.status(500).json({ error: "Répartition impossible : pas de jours consécutifs trouvés pour cette intention" })
 	}
 }

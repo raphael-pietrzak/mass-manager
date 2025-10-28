@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { List, Calendar as CalendarIcon } from 'lucide-react';
+import { List } from 'lucide-react';
 import { celebrantService, Celebrant } from '../../../api/celebrantService';
 
 interface FilterBarProps {
@@ -51,10 +51,11 @@ export const FilterBar: React.FC<FilterBarProps> = ({
                 ? 'bg-blue-100 text-blue-800'
                 : 'bg-gray-100 text-gray-600'
                 }`}
+              disabled={true}
             >
               <List className="w-5 h-5" />
             </button>
-            <button
+            {/* <button
               onClick={() => onViewModeChange('calendar')}
               className={`p-2 rounded-lg ${viewMode === 'calendar'
                 ? 'bg-blue-100 text-blue-800'
@@ -62,7 +63,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
                 }`}
             >
               <CalendarIcon className="w-5 h-5" />
-            </button>
+            </button> */}
           </div>
 
           <div className="flex flex-wrap gap-4 items-center">
@@ -93,7 +94,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               + Jours Particuliers
             </button>
             <div className="relative">
-              <span 
+              <span
                 onClick={(e) => e.stopPropagation()}
                 className="ml-1 text-xs bg-yellow-400 hover:bg-yellow-300 rounded-full w-4 h-4 inline-flex items-center justify-center cursor-help group"
               >
@@ -114,7 +115,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               + Jours indisponibles
             </button>
             <div className="relative">
-              <span 
+              <span
                 onClick={(e) => e.stopPropagation()}
                 className="ml-1 text-xs bg-green-400 hover:bg-green-300 rounded-full w-4 h-4 inline-flex items-center justify-center cursor-help group"
               >

@@ -145,7 +145,7 @@ export const MassList: React.FC<MassListProps> = ({ masses, onDeleteMass, onUpda
                     {(() => {
                       const statusConfig = {
                         scheduled: { label: 'Planifiée', color: 'bg-green-100 text-green-800' },
-                        pending: { label: 'Confirmée', color: 'bg-green-100 text-green-800' },
+                        pending: { label: 'En attente', color: 'bg-green-100 text-green-800' },
                         completed: { label: 'Célébrée', color: 'bg-purple-100 text-purple-800' },
                         cancelled: { label: 'Annulée', color: 'bg-red-100 text-red-800' }
                       };

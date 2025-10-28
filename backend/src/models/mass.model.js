@@ -328,7 +328,7 @@ class Mass {
 				"Donors.email as donor_email",
 				"Intentions.recurrence_id"
 			)
-			.where("Masses.status", "=", "scheduled")
+			.where("Masses.status", "!=", "pending")
 			.orderBy("Masses.date")
 
 		if (celebrant_id) {
