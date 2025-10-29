@@ -106,6 +106,7 @@ const AdminPage = () => {
     const endpoints = [
       { url: "special-days", label: "jours particuliers" },
       { url: "unavailable-days", label: "jours indisponibles" },
+      { url: "donors", label: "donateurs" },
       { url: "intentions", label: "intentions" },
     ];
 

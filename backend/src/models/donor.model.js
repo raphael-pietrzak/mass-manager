@@ -23,7 +23,28 @@ const Donor = {
 		return db("Donors").where("id", id).del()
 	},
 
-	// Nouvelle fonction pour trouver un donateur par email
+	deleteBeforeDate: async (date) => {
+		return db("Donors")
+			.whereNotExists(function () {
+				// Donateurs qui ont des intentions non terminées
+				this.select("Masses.intention_id")
+					.from("Masses")
+					.join("Intentions", "Intentions.id", "Masses.intention_id")
+					.whereRaw("Intentions.donor_id = Donors.id")
+					.whereNot("Intentions.status", "completed")
+			})
+			.whereNotExists(function () {
+				// Donateurs ayant une intention complétée liée à une messe après la date donnée
+				this.select("Masses.intention_id")
+					.from("Masses")
+					.join("Intentions", "Intentions.id", "Masses.intention_id")
+					.whereRaw("Intentions.donor_id = Donors.id")
+					.where("Intentions.status", "completed")
+					.andWhere("Masses.date", ">=", date)
+			})
+			.del()
+	},
+
 	findByEmail: async (email) => {
 		return db.select().from("Donors").where("email", email).first()
 	},
