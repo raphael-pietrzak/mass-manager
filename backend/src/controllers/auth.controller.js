@@ -57,7 +57,7 @@ const loginUser = async (req, res) => {
 const logoutUser = (req, res) => {
 	res.clearCookie("refreshToken", {
 		httpOnly: true,
-		secure: process.env.NODE_ENV === "production", // ✅ CORRECTION ICI
+		secure: process.env.NODE_ENV === "production",
 		sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
 		path: "/",
 	})

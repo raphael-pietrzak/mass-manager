@@ -80,37 +80,39 @@ const LoginPage: React.FC = () => {
           <CardDescription>Pour accéder à l'application, veuillez vous connecter</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
-          <div>
-            <label className="block p-1 text-sm font-medium text-gray-700">Nom d'utilisateur</label>
-            <Input
-              type="text"
-              placeholder="Votre nom d'utilisateur"
-              value={loginName}
-              onChange={(e) => setLoginName(e.target.value)}
-              required
-              onKeyDown={handleKeyDown}  // Ajouter l'écouteur d'événements pour "Enter"
-            />
-          </div>
-          <div>
-            <label className="block p-1 text-sm font-medium text-gray-700">Mot de passe</label>
-            <Input
-              type="password"
-              placeholder="Votre mot de passe"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              onKeyDown={handleKeyDown}  // Ajouter l'écouteur d'événements pour "Enter"
-            />
-          </div>
-          <div className="text-right">
-            <a href="/forgot-password" className="text-blue-600 text-sm hover:underline">
-              Mot de passe oublié ?
-            </a>
-          </div>
-          <Button className="w-full bg-blue-600 text-white" onClick={handleLogin}>
-            Se connecter
-          </Button>
+          <form onSubmit={handleLogin}>
+            {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
+            <div>
+              <label className="block p-1 text-sm font-medium text-gray-700">Nom d'utilisateur</label>
+              <Input
+                type="text"
+                placeholder="Votre nom d'utilisateur"
+                value={loginName}
+                onChange={(e) => setLoginName(e.target.value)}
+                required
+                onKeyDown={handleKeyDown}  // Ajouter l'écouteur d'événements pour "Enter"
+              />
+            </div>
+            <div>
+              <label className="block p-1 text-sm font-medium text-gray-700">Mot de passe</label>
+              <Input
+                type="password"
+                placeholder="Votre mot de passe"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                onKeyDown={handleKeyDown}  // Ajouter l'écouteur d'événements pour "Enter"
+              />
+            </div>
+            <div className="text-right">
+              <a href="/forgot-password" className="text-blue-600 text-sm hover:underline">
+                Mot de passe oublié ?
+              </a>
+            </div>
+            <Button type="submit" className="w-full bg-blue-600 text-white">
+              Se connecter
+            </Button>
+          </form>
         </CardContent>
       </Card>
     </div>
