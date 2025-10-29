@@ -92,12 +92,10 @@ export const massService = {
 		const params = new URLSearchParams()
 
 		if (startDate) {
-			const d = new Date(startDate)
-			params.append("startDate", d.toISOString().split("T")[0])
+			params.append("startDate", startDate.toLocaleDateString("en-CA")) // format YYYY-MM-DD
 		}
 		if (endDate) {
-			const d = new Date(endDate)
-			params.append("endDate", d.toISOString().split("T")[0])
+			params.append("endDate", endDate.toLocaleDateString("en-CA")) // format YYYY-MM-DD
 		}
 		if (celebrantId && celebrantId !== "all") {
 			params.append("celebrant_id", celebrantId.toString())

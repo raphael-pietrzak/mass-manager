@@ -18,10 +18,14 @@ function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isSliderOpen, setIsSliderOpen] = useState(false);
 
+  const today = new Date();
+  const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+  const endOfNextMonth = new Date(today.getFullYear(), today.getMonth() + 2, 0);
+
   const [filters, setFilters] = useState({
     celebrant: 'all',
-    startDate: null as Date | null,
-    endDate: null as Date | null,
+    startDate: nextMonth as Date | null,
+    endDate: endOfNextMonth as Date | null,
     futureOnly: false,
   });
   const [loading, setLoading] = useState(true);
@@ -71,7 +75,6 @@ function CalendarPage() {
         fetchMasses()
       }
     } catch (err) {
-      console.log("erreur super nulle")
       setError('Erreur lors de la suppression de la messe');
     }
   };
@@ -85,6 +88,7 @@ function CalendarPage() {
     setFilters(prev => ({ ...prev, startDate, endDate }));
     setPage(1);
   };
+
 
   const handleAddSpecialDay = () => {
     setIsSpecialDayModalOpen(true);

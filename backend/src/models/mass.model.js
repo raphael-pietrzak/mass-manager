@@ -131,10 +131,6 @@ class Mass {
 		return availableCelebrant
 	}
 
-	static async findNextAvailableCelebrant(targetDate) {
-		return await Mass.getRandomAvailableCelebrant(targetDate)
-	}
-
 	static async findAvailableSlotsForMultipleMasses(numberOfMasses, usedCelebrantsByDate = {}) {
 		const now = new Date()
 		const offset = parseInt(process.env.START_SEARCH_MONTH_OFFSET, 10)
@@ -261,6 +257,7 @@ class Mass {
 			// Récupérer les célébrants indisponibles pour cette date
 			const unavailableCelebrants = await db("UnavailableDays")
 				.where(db.raw("DATE(date) = DATE(?)", [formattedDate]))
+				.andWhere("number_of_masses", "=", 0)
 				.select("celebrant_id")
 
 			const unavailableIds = unavailableCelebrants.map((row) => row.celebrant_id)
@@ -341,13 +338,13 @@ class Mass {
 		}
 
 		if (startDate) {
-			const formattedStartDate = new Date(startDate).toISOString().split("T")[0]
-			query = query.where(db.raw("DATE(Masses.date)"), ">=", formattedStartDate)
+			//const formattedStartDate = startDate.split("T")[0]
+			query = query.where("Masses.date", ">=", startDate)
 		}
 
 		if (endDate) {
-			const formattedEndDate = new Date(endDate).toISOString().split("T")[0]
-			query = query.where(db.raw("DATE(Masses.date)"), "<=", formattedEndDate)
+			//const formattedEndDate = endDate.split("T")[0]
+			query = query.where("Masses.date", "<=", endDate)
 		}
 
 		// Comptage total pour la pagination
@@ -358,13 +355,13 @@ class Mass {
 		}
 
 		if (startDate) {
-			const formattedStartDate = new Date(startDate).toISOString().split("T")[0]
-			countQuery = countQuery.where(db.raw("DATE(Masses.date)"), ">=", formattedStartDate)
+			//const formattedStartDate = startDate.split("T")[0]
+			countQuery = countQuery.where("Masses.date", ">=", startDate)
 		}
 
 		if (endDate) {
-			const formattedEndDate = new Date(endDate).toISOString().split("T")[0]
-			countQuery = countQuery.where(db.raw("DATE(Masses.date)"), "<=", formattedEndDate)
+			//const formattedEndDate = endDate.split("T")[0]
+			countQuery = countQuery.where("Masses.date", "<=", endDate)
 		}
 
 		const [data, countResult] = await Promise.all([query, countQuery])
@@ -383,10 +380,6 @@ class Mass {
 	}
 
 	static async getMassesByDateRangeToExport(startDate, endDate) {
-		// Formater les dates au format YYYY-MM-DD
-		const formattedStartDate = new Date(startDate).toISOString().split("T")[0]
-		const formattedEndDate = new Date(endDate).toISOString().split("T")[0]
-
 		// Construire la requête
 		const data = await db("Masses")
 			.leftJoin("Celebrants", "Masses.celebrant_id", "Celebrants.id")
@@ -412,8 +405,8 @@ class Mass {
 				"Intentions.recurrence_id"
 			)
 			.where("Masses.status", "!=", "pending")
-			.whereRaw("DATE(Masses.date) >= ?", [formattedStartDate])
-			.whereRaw("DATE(Masses.date) <= ?", [formattedEndDate])
+			.whereRaw("Masses.date >= ?", startDate)
+			.whereRaw("Masses.date <= ?", endDate)
 			.orderBy("Masses.date")
 
 		return data

@@ -323,7 +323,7 @@ const AdminPage = () => {
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Supprimer les données antérieures à :</AlertDialogTitle>
+                <AlertDialogTitle>Supprimer les données non utilisées avant le 1er janvier {new Date().getFullYear() - 1}</AlertDialogTitle>
                 <div className="mt-4">
                   <CalendarSelector
                     selectedDate={deleteBeforeDate}

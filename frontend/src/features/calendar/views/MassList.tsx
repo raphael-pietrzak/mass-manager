@@ -31,24 +31,7 @@ export const MassList: React.FC<MassListProps> = ({ masses, onDeleteMass, onUpda
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedDetailMass, setSelectedDetailMass] = useState<Mass | null>(null);
 
-  const filteredMasses = masses.filter(mass => {
-    const massDate = new Date(mass.date ?? '');
-
-    // Filter by celebrant
-    const celebrantMatch = filters.celebrant === 'all' || String(mass.celebrant_id) === String(filters.celebrant);
-
-    // Filter by date range
-    const startDateMatch = !filters.startDate || massDate >= filters.startDate;
-    const endDateMatch = !filters.endDate || massDate <= filters.endDate;
-
-    // Filter future only
-    const futureMatch = !filters.futureOnly || massDate >= new Date(new Date().setHours(0, 0, 0, 0));
-
-    return celebrantMatch && startDateMatch && endDateMatch && futureMatch;
-  });
-
-  // Trier les messes par date
-  const sortedMasses = [...filteredMasses].sort((a, b) =>
+  const sortedMasses = [...masses].sort((a, b) =>
     new Date(a.date ?? '').getTime() - new Date(b.date ?? '').getTime()
   );
 
