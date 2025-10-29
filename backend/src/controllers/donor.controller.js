@@ -77,6 +77,28 @@ exports.deleteDonor = async (req, res) => {
 	}
 }
 
+exports.deleteBeforeDate = async (req, res) => {
+	try {
+		const date = req.query.date
+		if (!date || isNaN(new Date(date).getTime())) {
+			return res.status(400).json({ error: "Date invalide ou manquante." })
+		}
+		const result = await Donor.deleteBeforeDate(date)
+		if (result > 0) {
+			return res.status(200).json({
+				message: `${result} donateurs inactifs depuis le ${date} ont été supprimées.`,
+			})
+		} else {
+			return res.status(204).json({
+				message: `Aucun donateur inactifs trouvé avant le ${date}.`,
+			})
+		}
+	} catch (error) {
+		console.error("Erreur lors de la suppression : ", error)
+		res.status(500).send("Erreur lors de la suppression des donateurs")
+	}
+}
+
 exports.getDonorByEmail = async (req, res) => {
 	try {
 		const email = req.params.email

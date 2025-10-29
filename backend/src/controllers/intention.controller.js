@@ -168,6 +168,7 @@ exports.updateIntention = async (req, res) => {
 			start_date: req.body.start_date,
 			end_type: req.body.end_type,
 			end_date: req.body.end_date,
+			status: req.body.status,
 			number_of_masses: req.body.number_of_masses,
 		}
 
@@ -255,11 +256,19 @@ exports.getPonctualIntentions = async (req, res) => {
 
 exports.deleteBeforeDate = async (req, res) => {
 	try {
-		const result = await Intention.deleteBeforeDate()
+		const date = req.query.date
+		if (!date || isNaN(new Date(date).getTime())) {
+			return res.status(400).json({ error: "Date invalide ou manquante." })
+		}
+		const result = await Intention.deleteBeforeDate(date)
 		if (result > 0) {
-			res.status(204).send()
+			return res.status(200).json({
+				message: `${result} intentions antérieures au ${date} ont été supprimées.`,
+			})
 		} else {
-			res.status(404).json({ message: "Aucune intentions trouvées avant cette date." })
+			return res.status(204).json({
+				message: `Aucune intention trouvée avant le ${date}.`,
+			})
 		}
 	} catch (error) {
 		console.error("Erreur lors de la suppression : ", error)
@@ -302,10 +311,14 @@ exports.assignToExistingMasses = async (req, res) => {
 			}
 		} else {
 			updatedMasses = await MassService.assignNeuvaineOrTrentain([intention])
+			if (updatedMasses?.error) {
+				console.log(updatedMasses?.error)
+				return res.status(422).json({ message: updatedMasses.message })
+			}
 		}
 		res.json(updatedMasses)
 	} catch (error) {
 		console.error(error)
-		res.status(500).json({ error: "Erreur lors de l'assignation des messes" })
+		res.status(500).json({ error: "Répartition impossible : pas de jours consécutifs trouvés pour cette intention" })
 	}
 }

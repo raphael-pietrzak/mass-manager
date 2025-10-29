@@ -81,7 +81,18 @@ const Intention = {
 		}
 	},
 
-	deleteBeforeDate: () => db("Intentions").whereNull("recurrence_id").andWhere("status", "completed").del(),
+	deleteBeforeDate: async (date) => {
+		return await db("Intentions")
+			.whereIn("id", function () {
+				this.select("intentions.id")
+					.from("Intentions as intentions")
+					.join("Masses as masses", "masses.intention_id", "intentions.id")
+					.where("masses.date", "<", date)
+			})
+			.whereNull("recurrence_id")
+			.andWhere("status", "completed")
+			.del()
+	},
 }
 
 module.exports = Intention

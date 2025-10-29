@@ -231,7 +231,7 @@ const RecurrenceForm: React.FC<RecurrenceFormProps> = ({
                 selectedDate={formData.end_date ? parseApiDate(formData.end_date) : undefined}
                 onDateChange={(date) => handleChange('end_date', formatDateForApi(date))}
                 ignoreAvailability={false}
-                position='top'
+                position={formData.type === 'relative_position' ? 'top' : 'bottom'}
               />
             )}
             {errors.end_date && (

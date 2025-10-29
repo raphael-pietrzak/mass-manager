@@ -17,9 +17,10 @@ const formatValue = (value: any, columnKey: string, formatters: Record<string, a
   if (!formatter) return value;
 
   // Priorité au display
-  if ('display' in formatter && typeof formatter.display === 'function') {
-    const displayValue = formatter.display(value, row);
-    return displayValue;
+  if (formatter?.display && typeof formatter.display === 'function') {
+    const result = formatter.display(value, row);
+    if (result === null || result === undefined) return <X className="w-4 h-4" />;
+    return result;
   }
 
   // Gestion des boolean/enum/date
@@ -38,7 +39,7 @@ const formatValue = (value: any, columnKey: string, formatters: Record<string, a
     return isNaN(date.getTime()) ? <X className="w-4 h-4 text-red-500" /> : date.toLocaleDateString('fr-FR');
   }
 
-  return value;
+  return value ?? "";
 };
 
 

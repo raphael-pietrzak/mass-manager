@@ -1,4 +1,4 @@
-type FormatterFunction = (value: any, row?: any) => string
+type FormatterFunction = (value: any, row?: any) => string | null
 
 type FormatterConfig = {
 	type: "boolean" | "enum" | "date" | "string"
@@ -20,6 +20,7 @@ export const tabs: TabColumn[] = [
 		label: "Donateurs",
 		endpoint: "http://localhost:3001/api/data/donors",
 		columns: [
+			{ key: "id", label: "ID" },
 			{ key: "lastname", label: "Nom" },
 			{ key: "firstname", label: "Prénom" },
 			{ key: "address", label: "Adresse" },
@@ -34,6 +35,7 @@ export const tabs: TabColumn[] = [
 		label: "Célébrants",
 		endpoint: "http://localhost:3001/api/data/celebrants",
 		columns: [
+			{ key: "id", label: "ID" },
 			{ key: "title", label: "Titre" },
 			{ key: "religious_name", label: "Nom religieux" },
 			{ key: "civil_firstname", label: "Prénom civil" },
@@ -46,6 +48,7 @@ export const tabs: TabColumn[] = [
 		label: "Messes",
 		endpoint: "http://localhost:3001/api/data/masses/all",
 		columns: [
+			{ key: "id", label: "ID" },
 			{ key: "date", label: "Date" },
 			{ key: "celebrant", label: "Célébrant" },
 			{ key: "intention", label: "Intention" },
@@ -84,7 +87,10 @@ export const tabs: TabColumn[] = [
 			celebrant: {
 				type: "string",
 				display: (_value: any, row: any) => {
-					return `${row.celebrant_title} ${row.celebrant_religious_name}`.trim()
+					const title = row.celebrant_title || ""
+					const name = row.celebrant_religious_name || ""
+					const fullName = `${title} ${name}`.trim()
+					return fullName || null
 				},
 			},
 		},
@@ -94,6 +100,7 @@ export const tabs: TabColumn[] = [
 		label: "Jours spéciaux",
 		endpoint: "http://localhost:3001/api/data/special-days",
 		columns: [
+			{ key: "id", label: "ID" },
 			{ key: "date", label: "Date" },
 			{ key: "description", label: "description" },
 			{ key: "number_of_masses", label: "Nombre de messes" },
@@ -118,6 +125,7 @@ export const tabs: TabColumn[] = [
 		label: "Jours indisponibles",
 		endpoint: "http://localhost:3001/api/data/unavailable-days",
 		columns: [
+			{ key: "id", label: "ID" },
 			{ key: "date", label: "Date" },
 			{ key: "celebrant", label: "Célébrant" },
 			{ key: "is_recurrent", label: "Récurrent" },
@@ -147,6 +155,7 @@ export const tabs: TabColumn[] = [
 		label: "Intentions",
 		endpoint: "http://localhost:3001/api/data/intentions",
 		columns: [
+			{ key: "id", label: "ID" },
 			{ key: "donor", label: "Donateur" },
 			{ key: "intention_text", label: "Intention" },
 			{ key: "amount", label: "Montant" },
@@ -235,6 +244,7 @@ export const tabs: TabColumn[] = [
 		label: "Récurrences",
 		endpoint: "http://localhost:3001/api/data/recurrences",
 		columns: [
+			{ key: "id", label: "ID" },
 			{ key: "type", label: "Type" },
 			{ key: "start_date", label: "Date de début" },
 			{ key: "end_type", label: "Type de fin" },

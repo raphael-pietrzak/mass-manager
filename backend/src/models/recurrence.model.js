@@ -11,6 +11,7 @@ const Recurrence = {
 			.from("Recurrences as r")
 			.leftJoin("Intentions as i", "r.id", "i.recurrence_id")
 			.leftJoin("Donors as d", "i.donor_id", "d.id")
+			.where("i.status", "!=", "completed")
 			.orderBy("r.created_at", "asc")
 			.limit(limit)
 			.offset(offset)

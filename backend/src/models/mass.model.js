@@ -131,10 +131,6 @@ class Mass {
 		return availableCelebrant
 	}
 
-	static async findNextAvailableCelebrant(targetDate) {
-		return await Mass.getRandomAvailableCelebrant(targetDate)
-	}
-
 	static async findAvailableSlotsForMultipleMasses(numberOfMasses, usedCelebrantsByDate = {}) {
 		const now = new Date()
 		const offset = parseInt(process.env.START_SEARCH_MONTH_OFFSET, 10)
@@ -261,6 +257,7 @@ class Mass {
 			// Récupérer les célébrants indisponibles pour cette date
 			const unavailableCelebrants = await db("UnavailableDays")
 				.where(db.raw("DATE(date) = DATE(?)", [formattedDate]))
+				.andWhere("number_of_masses", "=", 0)
 				.select("celebrant_id")
 
 			const unavailableIds = unavailableCelebrants.map((row) => row.celebrant_id)
@@ -303,8 +300,11 @@ class Mass {
 			.orderBy("date")
 	}
 
-	static async getMassesByDateRange(startDate, endDate, celebrant_id) {
-		// Requête pour les messes normales
+	static async getMassesByDateRange(startDate, endDate, celebrant_id, page = 1) {
+		const limit = 15
+		const offset = (page - 1) * limit
+
+		// Requête principale paginée
 		let query = db("Masses")
 			.leftJoin("Celebrants", "Masses.celebrant_id", "Celebrants.id")
 			.leftJoin("Intentions", "Masses.intention_id", "Intentions.id")
@@ -328,23 +328,88 @@ class Mass {
 				"Donors.email as donor_email",
 				"Intentions.recurrence_id"
 			)
-			.where("Masses.status", "=", "scheduled")
+			.where("Masses.status", "!=", "pending")
 			.orderBy("Masses.date")
+			.limit(limit)
+			.offset(offset)
 
 		if (celebrant_id) {
 			query = query.where("Masses.celebrant_id", celebrant_id)
 		}
 
 		if (startDate) {
-			const formattedStartDate = new Date(startDate).toISOString().split("T")[0]
-			query = query.where(db.raw("DATE(Masses.date)"), ">=", formattedStartDate)
+			//const formattedStartDate = startDate.split("T")[0]
+			query = query.where("Masses.date", ">=", startDate)
 		}
 
 		if (endDate) {
-			const formattedEndDate = new Date(endDate).toISOString().split("T")[0]
-			query = query.where(db.raw("DATE(Masses.date)"), "<=", formattedEndDate)
+			//const formattedEndDate = endDate.split("T")[0]
+			query = query.where("Masses.date", "<=", endDate)
 		}
-		return query
+
+		// Comptage total pour la pagination
+		let countQuery = db("Masses").countDistinct("Masses.id as total").where("Masses.status", "!=", "pending")
+
+		if (celebrant_id) {
+			countQuery = countQuery.where("Masses.celebrant_id", celebrant_id)
+		}
+
+		if (startDate) {
+			//const formattedStartDate = startDate.split("T")[0]
+			countQuery = countQuery.where("Masses.date", ">=", startDate)
+		}
+
+		if (endDate) {
+			//const formattedEndDate = endDate.split("T")[0]
+			countQuery = countQuery.where("Masses.date", "<=", endDate)
+		}
+
+		const [data, countResult] = await Promise.all([query, countQuery])
+		const total = Number(countResult[0].total)
+		const totalPages = Math.ceil(total / limit)
+
+		return {
+			data,
+			pagination: {
+				total,
+				page,
+				limit,
+				totalPages,
+			},
+		}
+	}
+
+	static async getMassesByDateRangeToExport(startDate, endDate) {
+		// Construire la requête
+		const data = await db("Masses")
+			.leftJoin("Celebrants", "Masses.celebrant_id", "Celebrants.id")
+			.leftJoin("Intentions", "Masses.intention_id", "Intentions.id")
+			.leftJoin("Donors", "Intentions.donor_id", "Donors.id")
+			.select(
+				"Masses.id",
+				"Masses.date",
+				"Masses.status",
+				"Masses.random_celebrant",
+				"Celebrants.title as celebrant_title",
+				"Celebrants.religious_name as celebrant_religious_name",
+				"Celebrants.id as celebrant_id",
+				"Intentions.intention_text as intention",
+				"Intentions.deceased as deceased",
+				"Intentions.amount",
+				"Intentions.date_type as dateType",
+				"Intentions.intention_type as intention_type",
+				"Intentions.wants_celebration_date as wants_notification",
+				"Donors.firstname as donor_firstname",
+				"Donors.lastname as donor_lastname",
+				"Donors.email as donor_email",
+				"Intentions.recurrence_id"
+			)
+			.where("Masses.status", "!=", "pending")
+			.whereRaw("Masses.date >= ?", startDate)
+			.whereRaw("Masses.date <= ?", endDate)
+			.orderBy("Masses.date")
+
+		return data
 	}
 
 	static async getMassesByIntentionId(intentionId) {
@@ -373,6 +438,181 @@ class Mass {
 			.andWhere(function () {
 				this.whereNull("date")
 			})
+	}
+
+	/**
+	 * Récupère toutes les messes d'un célébrant sur une période en une seule requête
+	 * Optimisé pour vérifier les dates consécutives
+	 */
+	static async getMassesByCelebrantAndPeriod(celebrantId, startDate, endDate) {
+		return db("Masses")
+			.select(db.raw("DATE(date) as date"))
+			.where("celebrant_id", celebrantId)
+			.andWhere(db.raw("DATE(date)"), ">=", startDate.toISOString().split("T")[0])
+			.andWhere(db.raw("DATE(date)"), "<=", endDate.toISOString().split("T")[0])
+			.orderBy("date")
+	}
+
+	/**
+	 * Récupère tous les jours indisponibles d'un célébrant sur une période
+	 */
+	static async getUnavailableDaysByCelebrantAndPeriod(celebrantId, startDate, endDate) {
+		return db("UnavailableDays")
+			.select(db.raw("DATE(date) as date"))
+			.where("celebrant_id", celebrantId)
+			.andWhere(db.raw("DATE(date)"), ">=", startDate.toISOString().split("T")[0])
+			.andWhere(db.raw("DATE(date)"), "<=", endDate.toISOString().split("T")[0])
+			.orderBy("date")
+	}
+
+	/**
+	 * Récupère tous les jours spéciaux bloquants sur une période
+	 */
+	static async getBlockedSpecialDays(startDate, endDate) {
+		return db("SpecialDays")
+			.select(db.raw("DATE(date) as date"))
+			.where("number_of_masses", 0)
+			.andWhere(db.raw("DATE(date)"), ">=", startDate.toISOString().split("T")[0])
+			.andWhere(db.raw("DATE(date)"), "<=", endDate.toISOString().split("T")[0])
+			.orderBy("date")
+	}
+
+	/**
+	 * Trouve N jours consécutifs disponibles pour un célébrant
+	 * Charge toutes les données nécessaires en 3 requêtes au lieu de N*3
+	 */
+	static async findConsecutiveDaysForCelebrant(celebrantId, daysNeeded, usedCelebrantsByDate = {}) {
+		const today = new Date()
+		const offset = parseInt(process.env.START_SEARCH_MONTH_OFFSET, 10) || 0
+		const searchStart = new Date(today.getFullYear(), today.getMonth() + offset, 1)
+		searchStart.setHours(12, 0, 0, 0)
+
+		const maxSearchDays = parseInt(process.env.MAX_SEARCH_DAYS, 10) || 100
+		const searchEnd = new Date(searchStart)
+		searchEnd.setDate(searchEnd.getDate() + maxSearchDays)
+
+		// 1. Récupérer toutes les données en parallèle (3 requêtes au lieu de N*3)
+		const [existingMasses, unavailableDays, blockedDays] = await Promise.all([
+			this.getMassesByCelebrantAndPeriod(celebrantId, searchStart, searchEnd),
+			this.getUnavailableDaysByCelebrantAndPeriod(celebrantId, searchStart, searchEnd),
+			this.getBlockedSpecialDays(searchStart, searchEnd),
+		])
+
+		// 2. Créer des Sets pour recherche O(1)
+		const busyDates = new Set([...existingMasses.map((m) => m.date), ...unavailableDays.map((d) => d.date), ...blockedDays.map((d) => d.date)])
+
+		// 3. Générer toutes les dates et vérifier disponibilité
+		const dates = []
+		for (let i = 0; i <= maxSearchDays; i++) {
+			const date = new Date(searchStart)
+			date.setDate(searchStart.getDate() + i)
+			const dateStr = date.toISOString().split("T")[0]
+
+			const notInUsedCelebrants = !usedCelebrantsByDate[dateStr] || !usedCelebrantsByDate[dateStr].has(parseInt(celebrantId))
+			const notBusy = !busyDates.has(dateStr)
+
+			dates.push({
+				date: date,
+				dateStr: dateStr,
+				available: notBusy && notInUsedCelebrants,
+			})
+		}
+
+		// 4. Trouver la première séquence de N jours consécutifs disponibles
+		for (let i = 0; i <= dates.length - daysNeeded; i++) {
+			const window = dates.slice(i, i + daysNeeded)
+			if (window.every((d) => d.available)) {
+				return window.map((d) => d.dateStr)
+			}
+		}
+
+		return null
+	}
+
+	/**
+	 * Trouve le célébrant le moins chargé ayant N jours consécutifs disponibles
+	 */
+	static async findCelebrantForConsecutiveDays(daysNeeded, usedCelebrantsByDate = {}, searchStart = null) {
+		const today = new Date()
+		const offset = parseInt(process.env.START_SEARCH_MONTH_OFFSET, 10) || 2
+		const start = searchStart || new Date(today.getFullYear(), today.getMonth() + offset, 1)
+		start.setHours(12, 0, 0, 0)
+
+		const maxSearchDays = parseInt(process.env.MAX_SEARCH_DAYS, 10) || 100
+		const searchEnd = new Date(start)
+		searchEnd.setDate(searchEnd.getDate() + maxSearchDays)
+
+		// 1. Récupérer les jours bloqués une seule fois
+		const blockedDays = await this.getBlockedSpecialDays(start, searchEnd)
+		const blockedDatesSet = new Set(blockedDays.map((d) => d.date))
+
+		// 2. Récupérer tous les célébrants triés par charge
+		const celebrants = await db("Celebrants")
+			.select("Celebrants.*")
+			.leftJoin("Masses", function () {
+				this.on("Celebrants.id", "=", "Masses.celebrant_id").andOn(db.raw("EXTRACT(MONTH FROM Masses.date) = ?", [start.getMonth() + 1]))
+			})
+			.groupBy("Celebrants.id")
+			.orderBy(db.raw("COUNT(Masses.id)"), "asc")
+
+		// 3. Pour chaque célébrant, vérifier en parallèle s'il a des jours consécutifs
+		for (const celebrant of celebrants) {
+			const [existingMasses, unavailableDays] = await Promise.all([
+				this.getMassesByCelebrantAndPeriod(celebrant.id, start, searchEnd),
+				this.getUnavailableDaysByCelebrantAndPeriod(celebrant.id, start, searchEnd),
+			])
+
+			const busyDates = new Set([...existingMasses.map((m) => m.date), ...unavailableDays.map((d) => d.date), ...blockedDatesSet])
+
+			// Générer tableau de disponibilité
+			const availability = []
+			for (let i = 0; i <= maxSearchDays; i++) {
+				const date = new Date(start)
+				date.setDate(start.getDate() + i)
+				const dateStr = date.toISOString().split("T")[0]
+
+				const notInUsed = !usedCelebrantsByDate[dateStr] || !usedCelebrantsByDate[dateStr].has(celebrant.id)
+				const notBusy = !busyDates.has(dateStr)
+
+				availability.push({
+					date: date,
+					dateStr: dateStr,
+					available: notBusy && notInUsed,
+				})
+			}
+
+			// Chercher fenêtre consécutive
+			for (let i = 0; i <= availability.length - daysNeeded; i++) {
+				const window = availability.slice(i, i + daysNeeded)
+				if (window.every((d) => d.available)) {
+					return {
+						celebrant: celebrant,
+						startDate: window[0].dateStr,
+						dates: window.map((d) => d.dateStr),
+					}
+				}
+			}
+		}
+
+		return null
+	}
+
+	/**
+	 * Batch update pour plusieurs messes
+	 * permet de mettre à jour plusieurs messes en une seule transaction
+	 */
+	static async batchUpdate(masses) {
+		return db.transaction(async (trx) => {
+			const updatePromises = masses.map((mass) =>
+				trx("Masses").where("id", mass.id).update({
+					date: mass.date,
+					celebrant_id: mass.celebrant_id,
+					intention_id: mass.intention_id,
+					status: mass.status,
+				})
+			)
+			return Promise.all(updatePromises)
+		})
 	}
 }
 

@@ -49,7 +49,7 @@ exports.exportToWord = async (req, res) => {
 		const { startDate, endDate } = req.query
 
 		// Récupérer les masses selon les filtres de date fournis
-		const masses = await Mass.getMassesByDateRange(startDate, endDate)
+		const masses = await Mass.getMassesByDateRangeToExport(startDate, endDate)
 
 		// Générer le fichier Word
 		const buffer = await exportService.generateWord(masses)
@@ -100,7 +100,7 @@ exports.exportIntentionToExcel = async (req, res) => {
 
 		// Générer le fichier Excel à partir des intentions
 		const buffer = await exportService.generateExcelIntention(validIntentions)
-		
+
 		// Envoyer le fichier
 		res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 		res.setHeader("Content-Disposition", 'attachment; filename="intentions-don.xlsx"')

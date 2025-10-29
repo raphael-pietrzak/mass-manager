@@ -6,6 +6,7 @@ router.get('/', donorController.getDonors);
 router.get('/:id', donorController.getDonor);
 router.post('/', donorController.createDonor);
 router.put('/:id', donorController.updateDonor);
+router.delete('/', donorController.deleteBeforeDate);
 router.delete('/:id', donorController.deleteDonor);
 
 module.exports = router;

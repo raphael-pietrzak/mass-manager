@@ -63,9 +63,7 @@ const DatabaseTabs: React.FC = () => {
 
   const handleSave = (updatedData: any) => {
     if (isCreating) {
-      // Logique pour créer un nouveau champ
       console.log("Créer un nouveau champ:", updatedData);
-      // Vous pourriez implémenter un hook useCreateData similaire à useUpdateData
     } else {
       handleUpdate(updatedData);
     }

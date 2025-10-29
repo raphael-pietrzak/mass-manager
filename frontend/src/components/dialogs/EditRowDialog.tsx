@@ -44,10 +44,10 @@ export const EditRowDialog: React.FC<EditRowDialogProps> = ({
   const getDisplayValue = (key: string, value: any, row: any) => {
     const formatter = formatters[key];
     if (!formatter) return value ?? '';
-    if (formatter.display) return formatter.display(value, row);
+    if (formatter.display) return formatter.display(value, row ?? "");
     if ((formatter.type === 'enum' || formatter.type === 'boolean') && formatter.options) {
       const option = formatter.options.find(opt => opt.value === value);
-      return option ? option.label : value;
+      return option ? option.label : '';
     }
     return value ?? '';
   };
@@ -105,6 +105,9 @@ export const EditRowDialog: React.FC<EditRowDialogProps> = ({
                 }
                 // Champ célébrant (readonly)
                 if (column.key === 'celebrant') {
+                  const title = formData.celebrant_title || "";
+                  const name = formData.celebrant_religious_name || "";
+                  const fullName = `${title} ${name}`.trim();
                   return (
                     <div key="celebrant" className="mb-4">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -113,8 +116,8 @@ export const EditRowDialog: React.FC<EditRowDialogProps> = ({
                       <input
                         type="text"
                         readOnly
-                        className="w-full border border-gray-300 rounded-md p-2 bg-gray-100"
-                        value={`${formData.celebrant_title} ${formData.celebrant_religious_name}` || ''}
+                        className="w-full border border-gray-300 rounded-md p-2 bg-gray-100 cursor-not-allowed"
+                        value={fullName || ""}
                       />
                     </div>
                   );
@@ -130,7 +133,7 @@ export const EditRowDialog: React.FC<EditRowDialogProps> = ({
                         type="text"
                         readOnly
                         className="w-full border border-gray-300 rounded-md p-2 bg-gray-100"
-                        value={getDisplayValue(column.key, formData[column.key], formData)}
+                        value={getDisplayValue(column.key, formData[column.key] ?? null, formData)}
                       />
                     </div>
                   );
@@ -226,7 +229,7 @@ export const EditRowDialog: React.FC<EditRowDialogProps> = ({
                     ) : formatter?.type === 'date' ? (
                       <div className="w-full border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed">
                         <CalendarSelector
-                          selectedDate={value ? new Date(value) : new Date()}
+                          selectedDate={value ? new Date(value) : undefined}
                           onDateChange={(newDate) => {
                             if (newDate) {
                               setFormData({
@@ -242,14 +245,14 @@ export const EditRowDialog: React.FC<EditRowDialogProps> = ({
                     ) : formatter?.type === 'enum' || formatter?.type === 'boolean' ? (
                       <select
                         className="w-full border border-gray-300 rounded-md p-2"
-                        value={String(value)}
+                        value={value ?? ''}
                         onChange={(e) =>
                           setFormData({
                             ...formData,
                             [column.key]:
                               formatter?.type === 'boolean'
-                                ? parseInt(e.target.value)
-                                : e.target.value,
+                                ? e.target.value === '' ? null : parseInt(e.target.value)
+                                : e.target.value || null,
                           })
                         }
                       >

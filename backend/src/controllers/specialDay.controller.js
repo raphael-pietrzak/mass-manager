@@ -108,18 +108,18 @@ exports.deleteSpecialDay = async (req, res) => {
 exports.deleteBeforeDate = async (req, res) => {
 	try {
 		const date = req.query.date
-		if (!date) {
-			return res.status(400).json({ message: "La date est requise." })
+		if (!date || isNaN(new Date(date).getTime())) {
+			return res.status(400).json({ error: "Date invalide ou manquante." })
 		}
-		const parsedDate = new Date(date)
-		if (isNaN(parsedDate)) {
-			return res.status(400).json({ message: "Date invalide." })
-		}
-		const result = await SpecialDay.deleteBeforeDate(parsedDate.toISOString())
+		const result = await SpecialDay.deleteBeforeDate(date)
 		if (result > 0) {
-			res.status(204).send()
+			return res.status(200).json({
+				message: `${result} jours particuliers antérieures au ${date} ont été supprimées.`,
+			})
 		} else {
-			res.status(404).json({ message: "Aucun jours spéciaux trouvés avant cette date." })
+			return res.status(204).json({
+				message: `Aucun jour particulier trouvé avant le ${date}.`,
+			})
 		}
 	} catch (error) {
 		console.error("Erreur lors de la suppression : ", error)

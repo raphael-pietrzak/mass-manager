@@ -61,12 +61,17 @@ const PonctualIntentionPage: React.FC = () => {
 				await intentionService.updateMass(newIntention.id, newIntention);
 				setSuccess("Intention mise à jour avec succès.");
 			} else {
+				// Création
 				await intentionService.createMass(newIntention);
-				if (newIntention.date_type === "imperative" || newIntention.date_type === "desired") setSuccess("Intention créée avec succès et messe(s) attribuée(s)");
-				else setSuccess("Intention créée avec succès.");
+				setSuccess(
+					newIntention.date_type === "imperative" || newIntention.date_type === "desired"
+						? "Intention créée avec succès et messe(s) attribuée(s)"
+						: "Intention créée avec succès."
+				);
+				// retourner à la première page
+				setPage(1);
 			}
 			await fetchIntentions();
-			setIsIntentionModalOpen(false);
 		} catch (err) {
 			setError('Erreur lors de la sauvegarde de l\'intention');
 		}
@@ -115,18 +120,31 @@ const PonctualIntentionPage: React.FC = () => {
 	};
 
 	const handleDistributeIntentions = async () => {
-		// Répartition des messes pour chaque intention séléectionnée
-		try {
-			for (const id of selectedIntentionIds) {
+		setError("");
+		setSuccess("");
+		const successIds: number[] = [];
+		const failedMessages: string[] = [];
+
+		for (const id of selectedIntentionIds) {
+			try {
 				await intentionService.assignIntentions(Number(id));
+				successIds.push(Number(id));
+			} catch (error: any) {
+				failedMessages.push(`Intention ${id} : ${error.message}`);
 			}
-			await fetchIntentions();
-			setSelectedIntentionIds([]);
-			setSuccess("Répartition des messes effectuée avec succès");
-		} catch (error: any) {
-			setError(error.message)
 		}
-	}
+
+		await fetchIntentions();
+		setSelectedIntentionIds([]);
+
+		if (failedMessages.length > 0) {
+			setError(failedMessages.join("\n"));
+		}
+
+		if (successIds.length > 0) {
+			setSuccess(`${successIds.length} intention(s) répartie(s) avec succès`);
+		}
+	};
 
 	const handleStatusChange = async (status: string) => {
 		setStatus(status);

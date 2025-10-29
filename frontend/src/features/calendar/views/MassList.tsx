@@ -7,7 +7,7 @@ import { MassModal } from '../MassModal';
 
 interface MassListProps {
   masses: Mass[];
-  onDeleteMass: (mass: Mass) => void;
+  onDeleteMass: (mass: Mass) => Promise<void>;
   onUpdateMass: (mass: Partial<Mass>) => void;
   filters: {
     celebrant: string;
@@ -31,24 +31,7 @@ export const MassList: React.FC<MassListProps> = ({ masses, onDeleteMass, onUpda
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedDetailMass, setSelectedDetailMass] = useState<Mass | null>(null);
 
-  const filteredMasses = masses.filter(mass => {
-    const massDate = new Date(mass.date ?? '');
-
-    // Filter by celebrant
-    const celebrantMatch = filters.celebrant === 'all' || String(mass.celebrant_id) === String(filters.celebrant);
-
-    // Filter by date range
-    const startDateMatch = !filters.startDate || massDate >= filters.startDate;
-    const endDateMatch = !filters.endDate || massDate <= filters.endDate;
-
-    // Filter future only
-    const futureMatch = !filters.futureOnly || massDate >= new Date(new Date().setHours(0, 0, 0, 0));
-
-    return celebrantMatch && startDateMatch && endDateMatch && futureMatch;
-  });
-
-  // Trier les messes par date
-  const sortedMasses = [...filteredMasses].sort((a, b) =>
+  const sortedMasses = [...masses].sort((a, b) =>
     new Date(a.date ?? '').getTime() - new Date(b.date ?? '').getTime()
   );
 
@@ -58,11 +41,16 @@ export const MassList: React.FC<MassListProps> = ({ masses, onDeleteMass, onUpda
     setIsConfirmModalOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (massToDelete) {
-      onDeleteMass(massToDelete);
-      setIsConfirmModalOpen(false);
-      setMassToDelete(null);
+      try {
+        await onDeleteMass(massToDelete);
+      } catch (err) {
+        console.error("Erreur lors de la suppression :", err);
+      } finally {
+        setIsConfirmModalOpen(false);
+        setMassToDelete(null);
+      }
     }
   };
 
@@ -145,7 +133,7 @@ export const MassList: React.FC<MassListProps> = ({ masses, onDeleteMass, onUpda
                     {(() => {
                       const statusConfig = {
                         scheduled: { label: 'Planifiée', color: 'bg-green-100 text-green-800' },
-                        pending: { label: 'Confirmée', color: 'bg-green-100 text-green-800' },
+                        pending: { label: 'En attente', color: 'bg-green-100 text-green-800' },
                         completed: { label: 'Célébrée', color: 'bg-purple-100 text-purple-800' },
                         cancelled: { label: 'Annulée', color: 'bg-red-100 text-red-800' }
                       };

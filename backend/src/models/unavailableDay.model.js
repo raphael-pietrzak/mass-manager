@@ -86,11 +86,7 @@ const UnavailableDay = {
 	},
 
 	deleteBeforeDate: async (date) => {
-		const formattedDate = new Date(date).toISOString().split("T")[0]
-		return db("UnavailableDays")
-			.where(db.raw("DATE(date) < DATE(?)", [formattedDate]))
-			.where(db.raw("is_recurrent = 0"))
-			.del()
+		return await db("UnavailableDays").where("date", "<", date).andWhere("is_recurrent", 0).del()
 	},
 }
 

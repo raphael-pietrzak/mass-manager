@@ -223,6 +223,7 @@ export const SpecialDaysModal: React.FC<Props> = ({ isOpen, onClose }) => {
                     min={0}
                     value={newDay.number_of_masses ?? ''}
                     //onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('number_of_masses', e.target.value)}
+                    disabled
                     className={"bg-gray-100 cursor-not-allowed text-gray-500"}
                   />
                 </div>

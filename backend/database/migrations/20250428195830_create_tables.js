@@ -105,5 +105,5 @@ exports.down = function (knex) {
 		.dropTableIfExists("Donors")
 		.dropTableIfExists("Celebrants")
 		.dropTableIfExists("Users")
-		.dropTableIfExists("UnavailabledDay")
+		.dropTableIfExists("UnavailabledDays")
 }
