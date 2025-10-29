@@ -13,7 +13,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Save, Trash2, UserPlus, Lock, Mail, Database, X, Upload } from 'lucide-react';
+import { Save, Trash2, UserPlus, Lock, Mail, Database, X, Upload, Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { CelebrantManager } from '../features/admin/CelebrantManager';
 import axios from 'axios';
@@ -33,8 +33,13 @@ const AdminPage = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [successMessage, setSuccessMessage] = useState<string>();
   const [errorMessage, setErrorMessage] = useState<string>();
+  const [infoMessage, setInfoMessage] = useState<string>();
   const navigate = useNavigate();
-  const [deleteBeforeDate, setDeleteBeforeDate] = useState(new Date());
+
+  const initialDeleteDate = new Date();
+  initialDeleteDate.setFullYear(initialDeleteDate.getFullYear() - 2, 0, 1); // Janvier = 0, jour = 1
+  const [deleteBeforeDate, setDeleteBeforeDate] = useState<Date>(initialDeleteDate);
+
   const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false);
   const [users, setUsers] = useState<{ id: number; login_name: string, email: string }[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
@@ -96,45 +101,32 @@ const AdminPage = () => {
   };
 
   const handleDeleteHistory = async (date: Date) => {
-    let deletedSomething = false; // pour savoir si au moins une suppression a fonctionné
-    // Suppression des jours spéciaux
-    try {
-      await axios.delete(`${API_BASE_URL}/api/data/special-days`, { params: { date } });
-      deletedSomething = true;
-    } catch (error: any) {
-      if (error.response?.status === 404) {
-        console.log('Rien à supprimer pour special-days');
-      } else {
-        console.error('Erreur sur special-days:', error);
+    let deletedSomething = false;
+
+    const endpoints = [
+      { url: "special-days", label: "jours particuliers" },
+      { url: "unavailable-days", label: "jours indisponibles" },
+      { url: "intentions", label: "intentions" },
+    ];
+
+    for (const endpoint of endpoints) {
+      try {
+        const response = await axios.delete(`${API_BASE_URL}/api/data/${endpoint.url}`, {
+          params: { date: date.toLocaleDateString("en-CA") },
+        });
+
+        if (response.status === 200) {
+          deletedSomething = true;
+        }
+      } catch (error: any) {
+        setErrorMessage(`Erreur lors de la suppression des ${endpoint.label} : ${error.message || error}`);
       }
     }
-    // Suppression des jours indisponibles
-    try {
-      await axios.delete(`${API_BASE_URL}/api/data/unavailable-days`, { params: { date } });
-      deletedSomething = true;
-    } catch (error: any) {
-      if (error.response?.status === 404) {
-        console.log('Rien à supprimer pour unavailable-days');
-      } else {
-        console.error('Erreur sur unavailable-days:', error);
-      }
-    }
-    // Suppression des intentions
-    try {
-      await axios.delete(`${API_BASE_URL}/api/data/intentions`);
-      deletedSomething = true;
-    } catch (error: any) {
-      if (error.response?.status === 404) {
-        console.log('Rien à supprimer pour intentions');
-      } else {
-        console.error('Erreur sur intentions:', error);
-      }
-    }
-    // Message final
+
     if (deletedSomething) {
-      setSuccessMessage('Les données ont été supprimées avec succès.');
+      setSuccessMessage("Les données ont été supprimées avec succès.");
     } else {
-      setSuccessMessage('Rien à supprimer.');
+      setInfoMessage("Rien à supprimer.");
     }
   };
 
@@ -239,7 +231,13 @@ const AdminPage = () => {
       }, 4000);
       return () => clearTimeout(timer);
     }
-  }, [successMessage, errorMessage]);
+    if (infoMessage) {
+      const timer = setTimeout(() => {
+        setInfoMessage(undefined);
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage, errorMessage, infoMessage]);
 
   return (
     <div className="p-8 max-w-4xl mx-auto space-y-6">
@@ -257,6 +255,15 @@ const AdminPage = () => {
             <X color="red" size={22} /> Erreur
           </AlertTitle>
           <AlertDescription>{errorMessage}</AlertDescription>
+        </Alert>
+      )}
+      {/* Info message */}
+      {infoMessage && (
+        <Alert className="bg-blue-50 border-blue-300 text-blue-800">
+          <AlertTitle className="flex items-center gap-1">
+            <Info color="blue" size={18} />Info
+          </AlertTitle>
+          <AlertDescription>{infoMessage}</AlertDescription>
         </Alert>
       )}
       <Card>
@@ -323,12 +330,13 @@ const AdminPage = () => {
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Supprimer les données non utilisées avant le 1er janvier {new Date().getFullYear() - 1}</AlertDialogTitle>
+                <AlertDialogTitle>Supprimer les données non utilisées avant le 1er janvier {new Date().getFullYear() - 2}</AlertDialogTitle>
                 <div className="mt-4">
                   <CalendarSelector
                     selectedDate={deleteBeforeDate}
                     onDateChange={handleDateChange}
                     ignoreAvailability
+                    disabled={true}
                   />
                 </div>
                 <AlertDialogDescription className="mt-4">
@@ -350,7 +358,7 @@ const AdminPage = () => {
               <AlertDialogHeader>
                 <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Êtes-vous sûr de vouloir supprimer toutes les données non utilisées antérieures à cette date ?
+                  Êtes-vous sûr de vouloir supprimer toutes les données non utilisées antérieures au 1er janvier {new Date().getFullYear() - 2} ?
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
