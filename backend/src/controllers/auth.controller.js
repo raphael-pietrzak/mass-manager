@@ -24,7 +24,7 @@ const loginUser = async (req, res) => {
 		const accessToken = jwt.sign(
 			{ userId: user.id, login_name: user.login_name, role: user.role },
 			process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET_KEY,
-			{ expiresIn: "1m" }
+			{ expiresIn: "15m" }
 		)
 
 		// Créer un refresh token (longue durée)

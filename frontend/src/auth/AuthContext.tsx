@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useRef } from "react";
+import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 
@@ -12,8 +12,10 @@ interface AuthContextType {
   getAccessToken: () => Promise<string | null>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
 type UserRole = 'admin' | 'secretary' | 'celebrant';
+interface DecodedToken { exp: number; role: string; }
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -21,120 +23,125 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
 
-  // Fonction pour obtenir un nouveau accessToken en utilisant le refreshToken
-  const refreshAccessToken = async (): Promise<string | null> => {
+  const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Vérifie si token expiré (avec buffer de 30s)
+  const isTokenExpired = useCallback((token: string, bufferSeconds = 30) => {
+    try {
+      const decoded = jwtDecode<DecodedToken>(token);
+      return decoded.exp * 1000 < Date.now() + bufferSeconds * 1000;
+    } catch {
+      return true;
+    }
+  }, []);
+
+  // Rafraîchit l'accessToken
+  const refreshAccessToken = useCallback(async (): Promise<string | null> => {
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/auth/refresh-token`,
         {},
         { withCredentials: true }
       );
-      const newAccessToken = response.data.accessToken;
-      setAccessToken(newAccessToken);
-      const decoded: any = jwtDecode(newAccessToken);
-      setUserRole((decoded.role as string).toLowerCase() as UserRole);
-      return newAccessToken;
-    } catch (error) {
-      console.error("Erreur lors du rafraîchissement du token:", error);
+      const newToken = response.data.accessToken;
+      setAccessToken(newToken);
+
+      const decoded: DecodedToken = jwtDecode(newToken);
+      setUserRole(decoded.role.toLowerCase() as UserRole);
+      setIsAuthenticated(true);
+
+      // Planifie prochain refresh
+      scheduleRefresh(newToken);
+
+      return newToken;
+    } catch (err) {
+      console.error("Erreur lors du refresh token:", err);
       setIsAuthenticated(false);
+      setAccessToken(null);
+      setUserRole(null);
       return null;
     }
-  };
+  }, []);
 
-  // Fonction pour vérifier si le token est expiré
-  const isTokenExpired = (token: string): boolean => {
-    try {
-      const decodedToken: any = jwtDecode(token);
-      return decodedToken.exp * 1000 < Date.now();
-    } catch (error) {
-      return true;
-    }
-  };
+  // Planifie le rafraîchissement automatique
+  const scheduleRefresh = useCallback((token: string) => {
+    if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
 
-  // Fonction pour obtenir un accessToken valide
-  const getAccessToken = async (): Promise<string | null> => {
-    // Si on a déjà un token et qu'il n'est pas expiré, on le retourne
-    if (accessToken && !isTokenExpired(accessToken)) {
-      return accessToken;
-    }
-    // Sinon on demande un nouveau token
+    const decoded: DecodedToken = jwtDecode(token);
+    const expiresIn = decoded.exp * 1000 - Date.now();
+    const refreshTime = Math.max(0, expiresIn - 30000); // rafraîchir 30s avant
+
+    refreshTimeoutRef.current = setTimeout(() => {
+      refreshAccessToken();
+    }, refreshTime);
+  }, [refreshAccessToken]);
+
+  const getAccessToken = useCallback(async (): Promise<string | null> => {
+    if (accessToken && !isTokenExpired(accessToken)) return accessToken;
     return await refreshAccessToken();
-  };
+  }, [accessToken, isTokenExpired, refreshAccessToken]);
 
-  // Création d'une instance axios avec intercepteur
+  // Axios interceptor pour ajouter accessToken
   useEffect(() => {
-    const interceptor = axios.interceptors.request.use(
-      async (config) => {
-        if (!config.url?.includes('/auth/login') && !config.url?.includes('/auth/refresh-token')) {
-          const token = await getAccessToken();
-          if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-          }
+    const interceptor = axios.interceptors.request.use(async (config) => {
+      if (
+        !config.url?.includes("/auth/login") &&
+        !config.url?.includes("/auth/refresh-token")
+      ) {
+        const token = await getAccessToken();
+        if (token && config.headers) {
+          config.headers.Authorization = `Bearer ${token}`;
         }
-        return config;
-      },
-      (error) => Promise.reject(error)
-    );
+      }
+      return config;
+    });
 
-    return () => {
-      axios.interceptors.request.eject(interceptor);
-    };
-  }, [accessToken]);
+    return () => axios.interceptors.request.eject(interceptor);
+  }, [getAccessToken]);
 
-  const checkAuth = async () => {
+  // Vérifie l'auth au montage
+  const checkAuth = useCallback(async () => {
     try {
-      const token = await getAccessToken();
+      // Toujours tenter de récupérer un accessToken (refresh si nécessaire)
+      const token = await refreshAccessToken(); // <-- ici
       if (!token) {
         setIsAuthenticated(false);
-        setLoading(false);
         return;
       }
-      const decoded: any = jwtDecode(token);
-      setUserRole((decoded.role as string).toLowerCase() as UserRole);
+
+      // Token valide, on peut vérifier la session côté backend
       await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/check_login`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` }
       });
+
       setIsAuthenticated(true);
-    } catch (error) {
+    } catch {
       setIsAuthenticated(false);
     } finally {
       setLoading(false);
     }
-  };
+  }, [refreshAccessToken]);
 
-  const hasRun = useRef(false);
-  useEffect(() => {
-    if (hasRun.current) return;
-    hasRun.current = true;
-    checkAuth();
-  }, []);
 
-  const logout = async () => {
+  useEffect(() => { checkAuth(); }, [checkAuth]);
+
+  // Déconnexion
+  const logout = useCallback(async () => {
     try {
-      await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/auth/logout`,
-        {},
-        { withCredentials: true }
-      );
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/logout`, {}, { withCredentials: true });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
       setAccessToken(null);
       setIsAuthenticated(false);
       setUserRole(null);
-    } catch (err) {
-      console.error("Erreur de déconnexion", err);
     }
-  };
+  }, []);
 
   return (
     <AuthContext.Provider value={{
-      isAuthenticated,
-      setIsAuthenticated,
-      checkAuth,
-      logout,
-      loading,
-      userRole,
-      getAccessToken
+      isAuthenticated, setIsAuthenticated, checkAuth, logout, loading, userRole, getAccessToken
     }}>
       {children}
     </AuthContext.Provider>
