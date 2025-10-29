@@ -24,17 +24,21 @@ const loginUser = async (req, res) => {
 		const accessToken = jwt.sign(
 			{ userId: user.id, login_name: user.login_name, role: user.role },
 			process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET_KEY,
-			{ expiresIn: "15m" }
+			{ expiresIn: "1m" }
 		)
 
 		// Créer un refresh token (longue durée)
-		const refreshToken = jwt.sign({ userId: user.id }, process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET_KEY, { expiresIn: "7d" })
+		const refreshToken = jwt.sign(
+			{ userId: user.id }, 
+			process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET_KEY, 
+			{ expiresIn: "7d" }
+		)
 
 		// Envoyer le refresh token dans un cookie HttpOnly
 		res.cookie("refreshToken", refreshToken, {
 			httpOnly: true,
-			secure: process.env.NODE_ENV === "development",
-			sameSite: "Lax",
+			secure: process.env.NODE_ENV === "production",
+			sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
 			maxAge: 7 * 24 * 60 * 60 * 1000, // 7 jours
 			path: "/",
 		})
@@ -53,8 +57,8 @@ const loginUser = async (req, res) => {
 const logoutUser = (req, res) => {
 	res.clearCookie("refreshToken", {
 		httpOnly: true,
-		secure: process.env.NODE_ENV === "development",
-		sameSite: "Lax",
+		secure: process.env.NODE_ENV === "production", // ✅ CORRECTION ICI
+		sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
 		path: "/",
 	})
 	res.status(200).json({ message: "Déconnexion réussie" })
