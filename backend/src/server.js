@@ -5,11 +5,16 @@ const cors = require("cors")
 const { logError } = require("../src/services/logs/logError")
 
 console.error = (
-	(originalError) =>
+	() =>
 	(...args) => {
 		logError(args.map((a) => (a instanceof Error ? a.stack : a)).join(" "), "ERROR")
 	}
 )(console.error)
+
+// Désactiver les logs en production
+if (process.env.NODE_ENV === "production") {
+	console.log = function () {}
+}
 
 // Import des routes
 const donorsRoutes = require("./routes/donors.routes")

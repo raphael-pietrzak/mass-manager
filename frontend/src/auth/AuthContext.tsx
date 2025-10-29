@@ -113,13 +113,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
-      console.log("Déconnexion...");
-      const response = await axios.post(
+      await axios.post(
         `${import.meta.env.VITE_API_URL}/api/auth/logout`,
         {},
         { withCredentials: true }
       );
-      console.log("Réponse logout :", response.data);
       setAccessToken(null);
       setIsAuthenticated(false);
       setUserRole(null);
