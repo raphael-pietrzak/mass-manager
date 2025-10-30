@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Déplacer dans le dossier backend si nécessaire
-cd backend || exit
-
 # Installer les dépendances
 npm install
 
