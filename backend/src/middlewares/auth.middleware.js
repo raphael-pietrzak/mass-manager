@@ -1,7 +1,7 @@
 // src/middlewares/auth.middleware.js
 const jwt = require("jsonwebtoken")
 exports.authenticateToken = (req, res, next) => {
-	const publicPaths = ["/api/auth/login", "/api/cron"]
+	const publicPaths = ["/api/auth/login", "/api/auth/refresh-token","/api/cron"]
 
 	// Si la route est publique, on passe
 	if (publicPaths.some((path) => req.originalUrl.startsWith(path))) return next()
