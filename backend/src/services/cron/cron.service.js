@@ -12,7 +12,7 @@ const { log } = require("../logs/logger")
 // Vérification effectuée tous les dimanche à minuit
 cron.schedule("0 0 0 * * SUN", async () => {
 	try {
-		await axios.patch("http://localhost:3001/api/cron/updateMasses")
+		await axios.patch(`${process.env.API_URL}/api/cron/updateMasses`)
 	} catch (err) {
 		console.error("Erreur CRON mensuel :", err.message)
 		log(err.message, "ERROR")
@@ -23,7 +23,7 @@ cron.schedule("0 0 0 * * SUN", async () => {
 // on affecte la messe pour l'année suivante
 cron.schedule("0 12 1 1 *", async () => {
 	try {
-		await axios.post("http://localhost:3001/api/cron/assignAnnualMassesWithNoEnd")
+		await axios.post(`${process.env.API_URL}/api/cron/assignAnnualMassesWithNoEnd`)
 	} catch (err) {
 		console.error("Erreur CRON mensuel :", err.message)
 		log(err.message, "ERROR")
@@ -34,8 +34,8 @@ cron.schedule("0 12 1 1 *", async () => {
 // on affecte les messes de ce mois pour 12 mois après
 cron.schedule("0 12 1 * *", async () => {
 	try {
-		await axios.post("http://localhost:3001/api/cron/assignMonthlyMassesWithNoEnd")
-		await axios.post("http://localhost:3001/api/cron/assignMonthlyRelativePositionMassesWithNoEnd")
+		await axios.post(`${process.env.API_URL}/api/cron/assignMonthlyMassesWithNoEnd`)
+		await axios.post(`${process.env.API_URL}/api/cron/assignMonthlyRelativePositionMassesWithNoEnd`)
 	} catch (err) {
 		console.error("Erreur CRON mensuel :", err.message)
 		log(err.message, "ERROR")
