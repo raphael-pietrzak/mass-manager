@@ -1,3 +1,5 @@
+import { API_BASE_URL } from "../../api";
+
 type FormatterFunction = (value: any, row?: any) => string | null
 
 type FormatterConfig = {
@@ -18,7 +20,7 @@ export const tabs: TabColumn[] = [
 	{
 		key: "donors",
 		label: "Donateurs",
-		endpoint: "http://localhost:3001/api/data/donors",
+		endpoint: `${API_BASE_URL}/api/data/donors`,
 		columns: [
 			{ key: "id", label: "ID" },
 			{ key: "lastname", label: "Nom" },
@@ -33,7 +35,7 @@ export const tabs: TabColumn[] = [
 	{
 		key: "celebrants",
 		label: "Célébrants",
-		endpoint: "http://localhost:3001/api/data/celebrants",
+		endpoint: `${API_BASE_URL}/api/data/celebrants`,
 		columns: [
 			{ key: "id", label: "ID" },
 			{ key: "title", label: "Titre" },
@@ -46,7 +48,7 @@ export const tabs: TabColumn[] = [
 	{
 		key: "masses",
 		label: "Messes",
-		endpoint: "http://localhost:3001/api/data/masses/all",
+		endpoint: `${API_BASE_URL}/api/data/masses/all`,
 		columns: [
 			{ key: "id", label: "ID" },
 			{ key: "date", label: "Date" },
@@ -98,7 +100,7 @@ export const tabs: TabColumn[] = [
 	{
 		key: "special-days",
 		label: "Jours spéciaux",
-		endpoint: "http://localhost:3001/api/data/special-days",
+		endpoint: `${API_BASE_URL}/api/data/special-days`,
 		columns: [
 			{ key: "id", label: "ID" },
 			{ key: "date", label: "Date" },
@@ -123,7 +125,7 @@ export const tabs: TabColumn[] = [
 	{
 		key: "unavailable-days",
 		label: "Jours indisponibles",
-		endpoint: "http://localhost:3001/api/data/unavailable-days",
+		endpoint: `${API_BASE_URL}/api/data/unavailable-days`,
 		columns: [
 			{ key: "id", label: "ID" },
 			{ key: "date", label: "Date" },
@@ -153,7 +155,7 @@ export const tabs: TabColumn[] = [
 	{
 		key: "intention",
 		label: "Intentions",
-		endpoint: "http://localhost:3001/api/data/intentions",
+		endpoint: `${API_BASE_URL}/api/data/intentions`,
 		columns: [
 			{ key: "id", label: "ID" },
 			{ key: "donor", label: "Donateur" },
@@ -242,7 +244,7 @@ export const tabs: TabColumn[] = [
 	{
 		key: "recurrences",
 		label: "Récurrences",
-		endpoint: "http://localhost:3001/api/data/recurrences",
+		endpoint: `${API_BASE_URL}/api/data/recurrences`,
 		columns: [
 			{ key: "id", label: "ID" },
 			{ key: "type", label: "Type" },
