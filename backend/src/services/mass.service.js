@@ -527,7 +527,7 @@ const MassService = {
 	handleIndifferentDateWithoutCelebrantForPonctualIntention: async (intention_id, intention_text, deceased, usedCelebrantsByDate) => {
 		const intention = await Intention.findById(intention_id)
 		console.log(intention)
-		if (intention.intention_type === "unit" && intention.number_of_masses > 1) {
+		if (intention.intention_type === "unit" && intention.number_of_masses >= 1) {
 			const slots = await Mass.findAvailableSlotsForMultipleMasses(intention.number_of_masses, usedCelebrantsByDate)
 			if (!slots) {
 				return {
