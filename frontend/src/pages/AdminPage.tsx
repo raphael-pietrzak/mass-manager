@@ -37,7 +37,7 @@ const AdminPage = () => {
   const navigate = useNavigate();
 
   const initialDeleteDate = new Date();
-  initialDeleteDate.setFullYear(initialDeleteDate.getFullYear() - 2, 0, 1); // Janvier = 0, jour = 1
+  initialDeleteDate.setFullYear(initialDeleteDate.getFullYear() - 1, 0, 1); // Janvier = 0, jour = 1
   const [deleteBeforeDate, setDeleteBeforeDate] = useState<Date>(initialDeleteDate);
 
   const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false);
@@ -45,7 +45,7 @@ const AdminPage = () => {
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
   const handleDateChange = (date: Date | undefined) => {
-    setDeleteBeforeDate(date || new Date()); // Si aucune date n'est sélectionnée, on prend la date actuelle
+    setDeleteBeforeDate(date || new Date()); // Si aucune date n'est sélectionnée on prend la date actuelle
   };
 
   const handleSave = async () => {
@@ -53,7 +53,7 @@ const AdminPage = () => {
       const response = await axios.get(
         `${import.meta.env.VITE_API_URL}/api/backup/download`,
         {
-          responseType: "blob", // <- IMPORTANT
+          responseType: "blob", // IMPORTANT
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`, // ou autre source
           },
@@ -331,7 +331,7 @@ const AdminPage = () => {
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Supprimer les données non utilisées avant le 1er janvier {new Date().getFullYear() - 2}</AlertDialogTitle>
+                <AlertDialogTitle>Supprimer les données non utilisées avant le 1er janvier {new Date().getFullYear() - 1}</AlertDialogTitle>
                 <div className="mt-4">
                   <CalendarSelector
                     selectedDate={deleteBeforeDate}
