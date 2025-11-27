@@ -53,7 +53,7 @@ const AdminPage = () => {
       const response = await axios.get(
         `${import.meta.env.VITE_API_URL}/api/backup/download`,
         {
-          responseType: "blob", // <- IMPORTANT
+          responseType: "blob", // IMPORTANT
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`, // ou autre source
           },
