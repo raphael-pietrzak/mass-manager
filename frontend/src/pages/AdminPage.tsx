@@ -45,7 +45,7 @@ const AdminPage = () => {
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
   const handleDateChange = (date: Date | undefined) => {
-    setDeleteBeforeDate(date || new Date()); // Si aucune date n'est sélectionnée, on prend la date actuelle
+    setDeleteBeforeDate(date || new Date()); // Si aucune date n'est sélectionnée on prend la date actuelle
   };
 
   const handleSave = async () => {
