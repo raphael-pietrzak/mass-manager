@@ -319,6 +319,6 @@ exports.assignToExistingMasses = async (req, res) => {
 		res.json(updatedMasses)
 	} catch (error) {
 		console.error(error)
-		res.status(500).json({ error: "Répartition impossible : pas de jours consécutifs trouvés pour cette intention" })
+		res.status(500).json({ error: "Erreur lors de la répartition des intentions" })
 	}
 }

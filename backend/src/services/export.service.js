@@ -349,23 +349,63 @@ class ExportService {
 	}
 
 	async generateWord(masses) {
+		const pad = (n) => (n < 10 ? "0" + n : n)
+
+		// Récupérer la première date pour le titre (ou date actuelle si vide)
+		const firstDate = masses && masses.length > 0 ? new Date(masses[0].date) : new Date()
+
+		const mainTitleParagraphs = [
+			new Paragraph({
+				text: "Intentions de Messe",
+				heading: HeadingLevel.HEADING1,
+				alignment: AlignmentType.CENTER,
+			}),
+			new Paragraph({
+				text: `Mois : ${firstDate.toLocaleString("fr-FR", {
+					month: "long",
+					year: "numeric",
+				})}`,
+				alignment: AlignmentType.CENTER,
+			}),
+			new Paragraph({ text: "" }),
+		]
+
+		// Si aucune messe, on génère un document avec le message
 		if (!masses || masses.length === 0) {
-			throw new Error("Aucune donnée à exporter")
+			const sections = [{
+				properties: {
+					page: { margin: { top: 0, bottom: 0, left: 0, right: 0 } },
+				},
+				children: mainTitleParagraphs.concat([
+					new Paragraph({
+						text: "Aucune intention de Messe ce mois-ci",
+						alignment: AlignmentType.CENTER,
+					})
+				]),
+			}]
+
+			const doc = new Document({ sections })
+			return await Packer.toBuffer(doc)
 		}
 
+		// Sinon, on continue avec le traitement normal
 		const celebrantsMap = {}
+		const year = firstDate.getFullYear()
+		const month = firstDate.getMonth()
 
 		for (const mass of masses) {
 			const date = new Date(mass.date)
 			const day = date.getDate()
-			const month = date.getMonth()
-			const year = date.getFullYear()
+			const massMonth = date.getMonth()
+			const massYear = date.getFullYear()
 
-			const key = mass.celebrant_title && mass.celebrant_religious_name ? `${mass.celebrant_title} ${mass.celebrant_religious_name}` : "Non assigné"
+			const key = mass.celebrant_title && mass.celebrant_religious_name
+				? `${mass.celebrant_title} ${mass.celebrant_religious_name}`
+				: "Non assigné"
+
 			if (!celebrantsMap[key]) celebrantsMap[key] = {}
 
-			const pad = (n) => (n < 10 ? "0" + n : n)
-			const massDateKey = `${year}-${pad(month + 1)}-${pad(day)}`
+			const massDateKey = `${massYear}-${pad(massMonth + 1)}-${pad(day)}`
 			celebrantsMap[key][massDateKey] = {
 				intention: mass.intention,
 				deceased: mass.deceased,
@@ -375,12 +415,7 @@ class ExportService {
 			}
 		}
 
-		const allDates = masses.map((m) => new Date(m.date))
-		const firstDate = allDates[0]
-		const year = firstDate.getFullYear()
-		const month = firstDate.getMonth()
 		const daysInMonth = new Date(year, month + 1, 0).getDate()
-
 		const celebrants = Object.keys(celebrantsMap)
 		const maxCelebrantsPerGroup = 3
 
@@ -433,7 +468,6 @@ class ExportService {
 			rows.push(titleRow, headerRow)
 
 			for (let day = 1; day <= daysInMonth; day++) {
-				const pad = (n) => (n < 10 ? "0" + n : n)
 				const dateKey = `${year}-${pad(month + 1)}-${pad(day)}`
 
 				const row = new TableRow({
@@ -459,7 +493,7 @@ class ExportService {
 							if (mass.deceased === 1 || mass.deceased === true || mass.deceased === "1") {
 								text += " (D)"
 							}
-							if (mass.date_type === "desired" || "imperative") {
+							if (mass.date_type === "desired" || mass.date_type === "imperative") {
 								text += " (Fixe)"
 							} else if (mass.date_type === "indifferent") {
 								text += " (Mobile)"
@@ -495,22 +529,6 @@ class ExportService {
 
 		const sections = []
 		let isFirstSection = true
-
-		const mainTitleParagraphs = [
-			new Paragraph({
-				text: "Intentions de messes",
-				heading: HeadingLevel.HEADING1,
-				alignment: AlignmentType.CENTER,
-			}),
-			new Paragraph({
-				text: `Mois : ${firstDate.toLocaleString("fr-FR", {
-					month: "long",
-					year: "numeric",
-				})}`,
-				alignment: AlignmentType.CENTER,
-			}),
-			new Paragraph({ text: "" }),
-		]
 
 		for (const { table } of tablesByGroup) {
 			sections.push({
@@ -550,10 +568,10 @@ class ExportService {
 					intention.intention_type === "novena"
 						? "Neuvaine"
 						: intention.intention_type === "thirty"
-						? "Trentain"
-						: intention.intention_type === "unit"
-						? `Unité${intention.number_of_masses !== 1 ? ` (${intention.number_of_masses} messes)` : ""}`
-						: ""
+							? "Trentain"
+							: intention.intention_type === "unit"
+								? `Unité${intention.number_of_masses !== 1 ? ` (${intention.number_of_masses} messes)` : ""}`
+								: ""
 
 				const donorText = `${intention.firstname || ""} ${intention.lastname || ""}`.trim() || "Non renseigné"
 
@@ -599,10 +617,10 @@ class ExportService {
 						intention.intention_type === "novena"
 							? "Neuvaine"
 							: intention.intention_type === "thirty"
-							? "Trentain"
-							: intention.intention_type === "unit"
-							? `Unité${intention.number_of_masses !== 1 ? ` \n(${intention.number_of_masses} messes)` : ""}`
-							: ""
+								? "Trentain"
+								: intention.intention_type === "unit"
+									? `Unité${intention.number_of_masses !== 1 ? ` \n(${intention.number_of_masses} messes)` : ""}`
+									: ""
 
 					const intentionText = `${intention.intention_text || ""} ${deceasedText} ${dateTypeText}`.trim()
 					const amount = intention.amount || 0
@@ -690,8 +708,8 @@ class ExportService {
 					intention.date_type === "imperative" || intention.date_type === "desired"
 						? "(fixe)"
 						: intention.date_type === "indifferent"
-						? "(mobile)"
-						: ""
+							? "(mobile)"
+							: ""
 
 				// Correction : créer le texte du type d'intention comme une chaîne
 				let intentionTypeText = ""

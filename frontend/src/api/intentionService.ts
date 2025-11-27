@@ -79,13 +79,13 @@ export interface IntentionWithMasses extends Intention {
 }
 
 export interface PaginatedIntentions {
-  data: Intention[];
-  pagination: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
+	data: Intention[];
+	pagination: {
+		total: number;
+		page: number;
+		limit: number;
+		totalPages: number;
+	};
 }
 
 const API_URL = `${API_BASE_URL}/api/data/intentions`
@@ -109,9 +109,11 @@ export const intentionService = {
 			const response = await axios.post(`${API_URL}/${intentionId}/assignMasses`)
 			return response.data
 		} catch (error: any) {
-			if (error.response && error.response.data && error.response.data.message) {
-				throw new Error(error.response.data.message)
-			}
+			const msg =
+				(error.response && (error.response.data?.message || error.response.data?.error)) ||
+				error.message ||
+				"Erreur inconnue";
+			throw new Error(msg);
 		}
 	},
 

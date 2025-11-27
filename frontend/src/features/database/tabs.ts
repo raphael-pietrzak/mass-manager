@@ -48,7 +48,7 @@ export const tabs: TabColumn[] = [
 	{
 		key: "masses",
 		label: "Messes",
-		endpoint: `${API_BASE_URL}/api/data/masses/all`,
+		endpoint: `${API_BASE_URL}/api/data/masses`,
 		columns: [
 			{ key: "id", label: "ID" },
 			{ key: "date", label: "Date" },
