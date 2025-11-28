@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: backend_dev
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./backend:/app                   # Hot reload (code)
+      - ./backend/database/mass_manager.db:/app/database/mass_manager.db  # Base SQLite persistante
+    environment:
+      NODE_ENV: development
+    command: ["npm", "run", "dev"]

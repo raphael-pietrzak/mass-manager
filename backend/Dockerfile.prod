@@ -1,0 +1,17 @@
+# Backend Dockerfile.prod
+FROM node:18
+
+WORKDIR /app
+
+# Copier uniquement les manifestes
+COPY package*.json ./
+
+# Installer uniquement prod deps
+RUN npm install --production
+
+# Copier le code du backend (la DB sera montée ensuite)
+COPY . .
+
+EXPOSE 3001
+
+CMD ["npm", "start"]
