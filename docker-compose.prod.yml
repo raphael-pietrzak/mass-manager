@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    container_name: backend_prod
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./backend/database/mass_manager.db:/app/database/mass_manager.db   # Base persistante
+    environment:
+      NODE_ENV: production
+    restart: unless-stopped

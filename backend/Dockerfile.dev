@@ -1,0 +1,20 @@
+# Frontend Dockerfile.dev
+FROM node:18
+
+# Dossier de travail dans le conteneur
+WORKDIR /app
+
+# Copier uniquement ce qui sert à installer les dépendances
+COPY package*.json ./
+
+# Installer les dépendances de dev
+RUN npm install
+
+# Copier uniquement le code du frontend (sans node_modules)
+COPY . .
+
+# Exposer Vite
+EXPOSE 5173
+
+# Lancer le serveur de dev (hot reload)
+CMD ["npm", "run", "dev", "--", "--host"]
