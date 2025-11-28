@@ -9,7 +9,7 @@ services:
     ports:
       - "3001:3001"
     volumes:
-      - ./backend/database/mass_manager.db:/app/database/mass_manager.db   # Base persistante
+      - ./backend/database/mass_manager.db:/app/database/mass_manager.db   # Base persistant
     environment:
       NODE_ENV: production
     restart: unless-stopped
